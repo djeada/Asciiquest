@@ -166,22 +166,3 @@ class MazeGenerator
         }
 
 };
-
-int main() {
-    MazeGenerator mazeGenerator(50, 20, MazeGeneratorAlgorithm::RandomizedPrim);
-    auto maze = mazeGenerator.getMaze();
-    auto start = mazeGenerator.getStart();
-    auto end = mazeGenerator.getEnd();
-    for (auto row : maze) {
-        for (auto cell : row) {
-            std::cout << cell;
-        }
-        std::cout << std::endl;
-    }
-    std::cout << "Start: " << start.first << ", " << start.second << std::endl;
-    std::cout << "End: " << end.first << ", " << end.second << std::endl;
-    return 0;
-}
-
-        
-    
