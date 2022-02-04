@@ -9,7 +9,9 @@
 * Maze generation
 * Multiplayer
 * Multithreaded 
-* 
+* Pathfinding graph algorithms
+* Enemy AI
+* Multilevel
 
 ## Game design
 
