@@ -1,4 +1,5 @@
 #include "game.h"
+#include <csignal>
 #include <cstdlib>
 #include <ncurses.h>
 
@@ -15,13 +16,18 @@ void screenSetUp() {
   init_pair(DRAGON_COLOR, COLOR_YELLOW, COLOR_BLACK);
 }
 
+void exitCleanup(int _) {
+  endwin();
+  std::system("clear");
+  exit(0);
+}
+
 int main() {
+  signal(SIGQUIT, exitCleanup);
 
   screenSetUp();
   Game game;
   game.run();
-  endwin();
-  std::system("clear");
 
   return 0;
 }

@@ -1,12 +1,13 @@
 #include "game.h"
 #include "monster.h"
+#include <csignal>
 #include <cstdlib>
 #include <functional>
+#include <iostream>
 
 Game::Game() {
-  this->map = new Map();
+  this->map = new Map(80, 20);
   player = Player(Point(0, 0), PLAYER_HEALTH, PLAYER_ATTACK);
-  loadLevel();
 }
 
 Game::~Game() { delete this->map; }
@@ -26,31 +27,45 @@ void Game::initalizeMonsters(int count) {
 
   // lambda function that creates a Monster object
   // second parameter is function pointer
-  auto createMonster = [&](int count, std::function<Monster *(Point)> builder) {
-    for (int i = 0; i < count; i++) {
-      Point position = map->randomFreePosition();
-      monsters.push_back(builder(position));
-    }
-  };
+  auto createMonster =
+      [&](int count, std::function<std::unique_ptr<Monster>(Point)> builder) {
+        for (int i = 0; i < count; i++) {
+          Point position = map->randomFreePosition();
+          monsters.push_back(builder(position));
+        }
+      };
 
-  createMonster(goblinsCount,
-                [](Point position) { return new Goblin(position); });
-  createMonster(orcsCount, [](Point position) { return new Orc(position); });
-  createMonster(trollsCount,
-                [](Point position) { return new Troll(position); });
-  createMonster(dragonsCount,
-                [](Point position) { return new Dragon(position); });
+  createMonster(goblinsCount, [](Point position) {
+    return std::make_unique<Goblin>(position);
+  });
+  createMonster(orcsCount,
+                [](Point position) { return std::make_unique<Orc>(position); });
+  createMonster(trollsCount, [](Point position) {
+    return std::make_unique<Troll>(position);
+  });
+  createMonster(dragonsCount, [](Point position) {
+    return std::make_unique<Dragon>(position);
+  });
+}
+
+void Game::updateEntityPosition(Entity &entity, int dx, int dy) {
+
+  auto oldPos = entity.getPosition();
+  entity.move(dx, dy);
+
+  if (!map->isPositionFree(entity.getPosition()))
+    entity.setPosition(oldPos);
 }
 
 void Game::run() {
   init();
   while (!isGameOver()) {
+    render();
     updatePositions();
     handleInput();
     if (isLevelComplete()) {
       loadLevel();
     }
-    render();
   }
 }
 
@@ -64,7 +79,7 @@ void Game::init() {
 
 void Game::updatePositions() {
   for (auto &monster : monsters) {
-    monster->move();
+    updateEntityPosition(*monster);
     // check if player is in the same position as monster
     if (player.getPosition() == monster->getPosition()) {
       fight(*monster, player);
@@ -86,25 +101,22 @@ void Game::handleInput() {
   int ch = getch();
   switch (ch) {
   case 'q':
-    endwin();
-    std::system("clear");
-
-    exit(0);
+    raise(SIGQUIT);
   case KEY_UP:
   case 'W':
-    player.move(0, -1);
+    updateEntityPosition(player, 0, -1);
     break;
   case KEY_DOWN:
   case 'S':
-    player.move(0, 1);
+    updateEntityPosition(player, 0, 1);
     break;
   case KEY_LEFT:
   case 'A':
-    player.move(-1, 0);
+    updateEntityPosition(player, -1, 0);
     break;
   case KEY_RIGHT:
   case 'D':
-    player.move(1, 0);
+    updateEntityPosition(player, 1, 0);
     break;
   case ' ':
     // check if any monster is in the same position as player
@@ -138,12 +150,13 @@ void Game::fight(Entity &attacker, Entity &defender) {
   player.setExp(player.getExp() + 10);
 
   // remove the dead entity from the map
-  monsters.erase(std::remove_if(monsters.begin(), monsters.end(),
-                                [&defender](Monster *monster) {
-                                  return monster->getPosition() ==
-                                         defender.getPosition();
-                                }),
-                 monsters.end());
+  /*
+    monsters.erase(std::remove_if(monsters.begin(), monsters.end(),
+                                  [&defender](std::unique_ptr<Monster> monster)
+    { return monster->getPosition() == defender.getPosition();
+                                  }),
+                   monsters.end());
+  */
 }
 
 void Game::loadLevel() {
@@ -158,9 +171,9 @@ void Game::gameOver() {
   mvprintw(LINES / 2, COLS / 2, "Game Over");
   refresh();
   getch();
-  exit(0);
+  raise(SIGQUIT);
 }
 
 bool Game::isGameOver() { return !player.isAlive(); }
 
-bool Game::isLevelComplete() { return player.getPosition() == map->getStart(); }
+bool Game::isLevelComplete() { return player.getPosition() == map->getEnd(); }

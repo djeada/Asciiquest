@@ -1,12 +1,14 @@
 #include "map.h"
 #include "monster.h"
+#include <memory>
 
 class Game {
   int level;
   Player player;
   Map *map;
-  std::vector<Monster *> monsters;
+  std::vector<std::unique_ptr<Monster>> monsters;
   void initalizeMonsters(int count);
+  void updateEntityPosition(Entity &entity, int dx = 0, int dy = 0);
 
 public:
   Game();

@@ -50,6 +50,8 @@ void MazeGenerator::generateRecursiveDFS() {
       }
     }
   }
+  // mark end with ' '
+  this->maze[end.second][end.first] = ' ';
 }
 
 void MazeGenerator::generateRandomizedPrim() {
@@ -78,6 +80,8 @@ void MazeGenerator::generateRandomizedPrim() {
       }
     }
   }
+  // mark end with ' '
+  this->maze[end.second][end.first] = ' ';
 }
 
 MazeGenerator::MazeGenerator(int width, int height,

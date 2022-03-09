@@ -4,11 +4,13 @@
 #include <ncurses.h>
 #include <sstream>
 
-Map::Map() {}
+// commen
+Map::Map(unsigned int _width, unsigned int _height)
+    : width(_width), height(_height) {}
 
 void Map::loadLevel() {
   auto generator =
-      MazeGenerator(10, 10, MazeGeneratorAlgorithm::DepthFirstSearch);
+      MazeGenerator(width, height, MazeGeneratorAlgorithm::DepthFirstSearch);
   map = generator.getMaze();
   auto startingPoint = generator.getStart();
   start = Point(startingPoint.first, startingPoint.second);
@@ -70,17 +72,18 @@ void Map::draw(const Player &player) {
 
 char Map::getChar(Point point) { return map[point.y][point.x]; }
 
-int Map::screenWidth() { return map[0].size(); }
+int Map::screenWidth() { return width; }
 
-int Map::screenHeight() { return map.size(); }
+int Map::screenHeight() { return height; }
 
+bool Map::isPositionFree(Point point) { return getChar(point) == ' '; }
 Point Map::randomFreePosition() {
   int x = 0;
   int y = 0;
   do {
     x = rand() % screenWidth();
     y = rand() % screenHeight();
-  } while (getChar(Point(x, y)) != ' ');
+  } while (!isPositionFree(Point(x, y)));
   return Point(x, y);
 }
 
