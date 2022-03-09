@@ -3,6 +3,7 @@
 #include "utils.h"
 #include <ncurses.h>
 
+/*
 Treasure::Treasure(int _x, int _y) {
   x = _x;
   y = _y;
@@ -37,4 +38,4 @@ std::vector<Treasure> initalizeTreasures(int how_many, Map myMap) {
   }
 
   return treasures;
-}
+}*/

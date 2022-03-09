@@ -3,6 +3,13 @@
 #include <algorithm>
 #include <random>
 
+Point::Point(int _x, int _y) : x(_x), y(_y) {}
+Point::Point() : x(0), y(0) {}
+Point::Point(const Point &other) : x(other.x), y(other.y) {}
+
+bool Point::operator==(const Point &p) const { return (x == p.x && y == p.y); }
+
+/*
 int randomFromRange(int start, int end) {
   std::random_device rd;
   std::mt19937 gen(rd());
@@ -175,3 +182,4 @@ std::vector<Position> findTheRoute(int playerX, int playerY, int monsterX,
 
   return getRoute(nodeStart, nodeEnd);
 }
+*/

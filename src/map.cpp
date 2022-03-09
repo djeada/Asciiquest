@@ -4,29 +4,23 @@
 #include <ncurses.h>
 #include <sstream>
 
-const char *maps[number_of_levels] = {"maps/map_1.txt", "maps/map_2.txt",
-                                      "maps/map_3.txt"};
+Map::Map() {}
 
-Map::Map() {
-  currentLevel = 0;
-  loadTheMap(maps[currentLevel]);
+void Map::loadLevel() {
+  auto generator =
+      MazeGenerator(10, 10, MazeGeneratorAlgorithm::DepthFirstSearch);
+  map = generator.getMaze();
+  auto startingPoint = generator.getStart();
+  start = Point(startingPoint.first, startingPoint.second);
+  auto endPoint = generator.getEnd();
+  end = Point(endPoint.first, endPoint.second);
 }
 
-void Map::levelUp() {
-  currentLevel++;
-  if (currentLevel != number_of_levels) {
-    rows.clear();
-    loadTheMap(maps[currentLevel]);
-  }
-}
-
-void Map::loadTheMap(std::string path) {
-  std::ifstream in;
-  in.open(path);
-  std::string row;
-  while (in) {
-    std::getline(in, row);
-    rows.push_back(row);
+void Map::clear() {
+  for (int i = 0; i < map.size(); i++) {
+    for (int j = 0; j < map[i].size(); j++) {
+      map[i][j] = ' ';
+    }
   }
 }
 
@@ -62,21 +56,34 @@ void displayPlayerInfo(int y, int health, int level, int exp,
   mvprintw(y, x, pchar);
 }
 
-void Map::draw(int health, int level, int exp) {
+void Map::draw(const Player &player) {
   int y = 0;
   int x = 0;
-  for (auto &row : rows) {
+  for (auto &row : map) {
     const char *s = row.c_str();
     mvprintw(y, x, s);
-    y += 1;
+    y++;
   }
-  displayPlayerInfo(y, health, level, exp, currentLevel);
+  displayPlayerInfo(y, player.getHealth(), player.getLevel(), player.getExp(),
+                    1);
 }
 
-char Map::getChar(int x, int y) { return rows[y][x]; }
+char Map::getChar(Point point) { return map[point.y][point.x]; }
 
-int Map::getLevel() { return currentLevel; }
+int Map::screenWidth() { return map[0].size(); }
 
-int Map::screenWidth() { return rows[0].size(); }
+int Map::screenHeight() { return map.size(); }
 
-int Map::screenHeight() { return rows.size(); }
+Point Map::randomFreePosition() {
+  int x = 0;
+  int y = 0;
+  do {
+    x = rand() % screenWidth();
+    y = rand() % screenHeight();
+  } while (getChar(Point(x, y)) != ' ');
+  return Point(x, y);
+}
+
+Point Map::getStart() { return start; }
+
+Point Map::getEnd() { return end; }

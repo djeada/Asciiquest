@@ -1,6 +1,7 @@
 #ifndef treasure_h
 #define treasure_h
 
+/*
 #include "map.h"
 
 class Treasure {
@@ -23,5 +24,6 @@ public:
 };
 
 std::vector<Treasure> initalizeTreasures(int how_many, Map myMap);
+*/
 
 #endif

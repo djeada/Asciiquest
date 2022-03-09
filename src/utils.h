@@ -1,14 +1,16 @@
 #ifndef utils_h
 #define utils_h
 
-#include "map.h"
-#include <vector>
-
-typedef struct pos {
+struct Point {
   int x;
   int y;
-} Position;
+  Point(int _x, int _y);
+  Point();
+  Point(const Point &other);
+  bool operator==(const Point &p) const;
+};
 
+/*
 typedef struct node {
   bool isBorder;
   float distanceFromStart;
@@ -24,4 +26,5 @@ void giveValidPositions(int (&myArray)[2], Map myMap);
 std::vector<Position> findTheRoute(int playerX, int playerY, int monsterX,
                                    int MonsterY, Map &myMap);
 
+                                   */
 #endif

@@ -1,37 +1,41 @@
 #ifndef monster_h
 #define monster_h
 
+#include "entity.h"
 #include "game_settings.h"
 #include "map.h"
 #include "utils.h"
 #include <ncurses.h>
 
-class Monster {
-private:
-  int x;
-  int y;
-  int vx;
-  int vy;
-  int attack;
-  int health;
-  char tile;
-
+class Monster : public Entity {
 public:
-  Monster(int _x, int _y, char t);
-  void draw();
-  void moveMonster(Map myMap, int playerX, int playerY);
-  bool checkNoColisions(Map myMap, int playerX, int playerY);
-
-  int getX();
-  int getY();
-  int getAttack();
-  int getHealth();
-  char getTile();
-
+  Monster(Point _position, int _health, int _attack,
+          Represetiation _representation);
   void randomizeVelocity();
-  void setHealth(int a);
 };
 
-std::vector<Monster> initalizeMonsters(int how_many, Map myMap);
+class Goblin : public Monster {
+public:
+  Goblin(Point _position);
+  void move(int dx, int dy);
+};
+
+class Orc : public Monster {
+public:
+  Orc(Point _position);
+  void move(int dx, int dy);
+};
+
+class Troll : public Monster {
+public:
+  Troll(Point _position);
+  void move(int dx, int dy);
+};
+
+class Dragon : public Monster {
+public:
+  Dragon(Point _position);
+  void move(int dx, int dy);
+};
 
 #endif
