@@ -1,5 +1,5 @@
-#ifndef treasure_h
-#define treasure_h
+#ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_TREASURE_H
+#define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_TREASURE_H
 
 /*
 #include "map.h"

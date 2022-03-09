@@ -16,13 +16,13 @@ void screenSetUp() {
   init_pair(DRAGON_COLOR, COLOR_YELLOW, COLOR_BLACK);
 }
 
-void exitCleanup(int _) {
+void exitCleanup(int /*_*/) {
   endwin();
   std::system("clear");
   exit(0);
 }
 
-int main() {
+auto main() -> int {
   signal(SIGQUIT, exitCleanup);
 
   screenSetUp();

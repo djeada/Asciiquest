@@ -1,7 +1,7 @@
 #include "maze_generator.h"
 
-std::vector<std::pair<unsigned int, unsigned int>>
-MazeGenerator::getNeighbors(unsigned int x, unsigned int y) {
+auto MazeGenerator::getNeighbors(unsigned int x, unsigned int y) const
+    -> std::vector<std::pair<unsigned int, unsigned int>> {
   /**
    * @brief Returns the neighbors of a cell.
    * @param x The x coordinate of the cell.
@@ -36,10 +36,13 @@ void MazeGenerator::generateRecursiveDFS() {
   std::pair<unsigned int, unsigned int> current = this->start;
   std::vector<std::pair<unsigned int, unsigned int>> stack = {current};
   std::default_random_engine random_engine(time(0));
-  while (stack.size() > 0) {
+  while (!stack.empty()) {
     current = stack.back();
-    if (current == this->end)
-      break;
+    if (current == this->end) {
+      {
+        { break; }
+      }
+    }
     stack.pop_back();
     this->maze[current.second][current.first] = ' ';
     auto neighbors = this->getNeighbors(current.first, current.second);
@@ -68,8 +71,11 @@ void MazeGenerator::generateRandomizedPrim() {
   while (!queue.empty()) {
     auto currentDistance = queue.top().first;
     current = queue.top().second;
-    if (current == this->end)
-      break;
+    if (current == this->end) {
+      {
+        { break; }
+      }
+    }
     queue.pop();
     this->maze[current.second][current.first] = ' ';
     auto neighbors = this->getNeighbors(current.first, current.second);
@@ -105,7 +111,7 @@ MazeGenerator::MazeGenerator(int width, int height,
   }
 }
 
-std::vector<std::string> MazeGenerator::getMaze() {
+auto MazeGenerator::getMaze() -> std::vector<std::string> {
   /**
    * @brief Returns the maze.
    * @return The maze.
@@ -113,7 +119,7 @@ std::vector<std::string> MazeGenerator::getMaze() {
   return this->maze;
 }
 
-std::pair<unsigned int, unsigned int> MazeGenerator::getStart() {
+auto MazeGenerator::getStart() -> std::pair<unsigned int, unsigned int> {
   /**
    * @brief Returns the start position.
    * @return The start position.
@@ -121,7 +127,7 @@ std::pair<unsigned int, unsigned int> MazeGenerator::getStart() {
   return this->start;
 }
 
-std::pair<unsigned int, unsigned int> MazeGenerator::getEnd() {
+auto MazeGenerator::getEnd() -> std::pair<unsigned int, unsigned int> {
   /**
    * @brief Returns the end position.
    * @return The end position.

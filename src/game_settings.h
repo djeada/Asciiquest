@@ -1,3 +1,6 @@
+#ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_GAME_SETTINGS_H
+#define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_GAME_SETTINGS_H
+
 #define PLAYER_TILE "@"
 #define DEAD_PLAYER_TILE "X"
 #define TREASURE_TILE "*"
@@ -25,3 +28,5 @@
 #define TREASURE_COLOR 5
 
 #define number_of_levels 3
+
+#endif

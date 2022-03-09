@@ -4,7 +4,6 @@
 #include <ncurses.h>
 #include <sstream>
 
-// commen
 Map::Map(unsigned int _width, unsigned int _height)
     : width(_width), height(_height) {}
 
@@ -19,14 +18,14 @@ void Map::loadLevel() {
 }
 
 void Map::clear() {
-  for (int i = 0; i < map.size(); i++) {
-    for (int j = 0; j < map[i].size(); j++) {
-      map[i][j] = ' ';
+  for (auto &i : map) {
+    for (char &j : i) {
+      j = ' ';
     }
   }
 }
 
-std::string intToStr(int value) {
+auto intToStr(int value) -> std::string {
   std::stringstream ss;
   ss << value;
   return ss.str();
@@ -36,7 +35,7 @@ void displayPlayerInfo(int y, int health, int level, int exp,
                        int currentLevel) {
   int x = 0;
 
-  std::string message = "";
+  std::string message;
 
   if (health > 0) {
 
@@ -70,14 +69,16 @@ void Map::draw(const Player &player) {
                     1);
 }
 
-char Map::getChar(Point point) { return map[point.y][point.x]; }
+auto Map::getChar(const Point &point) -> char { return map[point.y][point.x]; }
 
-int Map::screenWidth() { return width; }
+auto Map::screenWidth() const -> int { return width; }
 
-int Map::screenHeight() { return height; }
+auto Map::screenHeight() const -> int { return height; }
 
-bool Map::isPositionFree(Point point) { return getChar(point) == ' '; }
-Point Map::randomFreePosition() {
+auto Map::isPositionFree(const Point &point) -> bool {
+  return getChar(point) == ' ';
+}
+auto Map::randomFreePosition() -> Point {
   int x = 0;
   int y = 0;
   do {
@@ -87,6 +88,6 @@ Point Map::randomFreePosition() {
   return Point(x, y);
 }
 
-Point Map::getStart() { return start; }
+auto Map::getStart() -> Point { return start; }
 
-Point Map::getEnd() { return end; }
+auto Map::getEnd() -> Point { return end; }

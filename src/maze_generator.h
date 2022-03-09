@@ -1,3 +1,6 @@
+#ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_MAZE_GENERATOR_H
+#define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_MAZE_GENERATOR_H
+
 #include <algorithm>
 #include <iostream>
 #include <queue>
@@ -43,7 +46,7 @@ private:
   std::pair<unsigned int, unsigned int> end;
 
   std::vector<std::pair<unsigned int, unsigned int>>
-  getNeighbors(unsigned int x, unsigned int y);
+  getNeighbors(unsigned int x, unsigned int y) const;
   void generateRecursiveDFS();
   void generateRandomizedPrim();
 
@@ -53,3 +56,4 @@ public:
   std::pair<unsigned int, unsigned int> getStart();
   std::pair<unsigned int, unsigned int> getEnd();
 };
+#endif

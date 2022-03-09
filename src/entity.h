@@ -1,5 +1,5 @@
-#ifndef entity_h
-#define entity_h
+#ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_ENTITY_H
+#define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_ENTITY_H
 
 #include "utils.h"
 
@@ -18,21 +18,21 @@ protected:
   Represetiation representation;
 
 public:
-  Entity(Point _position, int _health, int _attack,
+  Entity(const Point &_position, int _health, int _attack,
          Represetiation _representation);
   Entity();
   virtual ~Entity();
 
-  Point getPosition();
-  int getHealth() const;
-  int getAttack() const;
-  char getSymbol() const;
-  bool isAlive();
-  void setPosition(Point _position);
+  auto getPosition() -> Point;
+  auto getHealth() const -> int;
+  auto getAttack() const -> int;
+  auto getSymbol() const -> char;
+  auto isAlive() const -> bool;
+  void setPosition(const Point &_position);
   void setHealth(int _health);
   void setAttack(int _attack);
   void draw();
-  virtual void move(int dx = 1, int dy = 1);
+  virtual void move(int dx, int dy);
   virtual void takeDamage(int damage);
 
   friend void attack(Entity &attacker, Entity &defender);

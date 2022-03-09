@@ -1,5 +1,5 @@
-#ifndef utils_h
-#define utils_h
+#ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_UTILS_H
+#define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_UTILS_H
 
 struct Point {
   int x;
@@ -7,7 +7,7 @@ struct Point {
   Point(int _x, int _y);
   Point();
   Point(const Point &other);
-  bool operator==(const Point &p) const;
+  auto operator==(const Point &p) const -> bool;
 };
 
 /*

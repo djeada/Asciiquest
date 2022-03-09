@@ -1,22 +1,24 @@
 #include "monster.h"
 #include "utils.h"
 
-Monster::Monster(Point _position, int _health, int _attack,
+Monster::Monster(const Point &_position, int _health, int _attack,
                  Represetiation _representation)
     : Entity(_position, _health, _attack, _representation) {}
 
 void Monster::randomizeVelocity() {
   int dx = rand() % 3 - 1;
   int dy = rand() % 3 - 1;
-  if (dx == 0 && dy == 0)
-    randomizeVelocity();
-  else {
+  if (dx == 0 && dy == 0) {
+    {
+      { randomizeVelocity(); }
+    }
+  } else {
     velocity.x *= dx;
     velocity.y *= dy;
   }
 }
 
-Goblin::Goblin(Point _position)
+Goblin::Goblin(const Point &_position)
     : Monster(_position, 10, 2, Represetiation('G', MONSTER_COLOR)) {}
 
 void Goblin::move(int dx, int dy) {
@@ -24,15 +26,15 @@ void Goblin::move(int dx, int dy) {
   randomizeVelocity();
 }
 
-Orc::Orc(Point _position)
+Orc::Orc(const Point &_position)
     : Monster(_position, 20, 3, Represetiation('O', MONSTER_COLOR)) {}
 
 void Orc::move(int dx, int dy) {
   Entity::move(dx, dy);
-  // TODO: implement orc movement
+  // TODO(adam): implement orc movement
 }
 
-Troll::Troll(Point _position)
+Troll::Troll(const Point &_position)
     : Monster(_position, 30, 4, Represetiation('T', MONSTER_COLOR)) {
   velocity = Point(3, 3);
 }
@@ -42,9 +44,9 @@ void Troll::move(int dx, int dy) {
   randomizeVelocity();
 }
 
-Dragon::Dragon(Point _position)
+Dragon::Dragon(const Point &_position)
     : Monster(_position, 40, 5, Represetiation('D', MONSTER_COLOR)) {
   velocity = Point(0, 0);
 }
 
-void Dragon::move(int dx, int dy) { return; }
+void Dragon::move(int /*dx*/, int /*dy*/) {}

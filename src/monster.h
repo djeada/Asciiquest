@@ -1,5 +1,5 @@
-#ifndef monster_h
-#define monster_h
+#ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_MONSTER_H
+#define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_MONSTER_H
 
 #include "entity.h"
 #include "game_settings.h"
@@ -9,33 +9,33 @@
 
 class Monster : public Entity {
 public:
-  Monster(Point _position, int _health, int _attack,
+  Monster(const Point &_position, int _health, int _attack,
           Represetiation _representation);
   void randomizeVelocity();
 };
 
 class Goblin : public Monster {
 public:
-  Goblin(Point _position);
-  void move(int dx, int dy);
+  explicit Goblin(const Point &_position);
+  void move(int dx, int dy) override;
 };
 
 class Orc : public Monster {
 public:
-  Orc(Point _position);
-  void move(int dx, int dy);
+  explicit Orc(const Point &_position);
+  void move(int dx, int dy) override;
 };
 
 class Troll : public Monster {
 public:
-  Troll(Point _position);
-  void move(int dx, int dy);
+  explicit Troll(const Point &_position);
+  void move(int dx, int dy) override;
 };
 
 class Dragon : public Monster {
 public:
-  Dragon(Point _position);
-  void move(int dx, int dy);
+  explicit Dragon(const Point &_position);
+  void move(int dx, int dy) override;
 };
 
 #endif

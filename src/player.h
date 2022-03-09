@@ -1,5 +1,5 @@
-#ifndef player_h
-#define player_h
+#ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_PLAYER_H
+#define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_PLAYER_H
 
 #include "entity.h"
 
@@ -8,14 +8,14 @@ private:
   int level;
   int exp;
   void levelUp();
-  int expToNextLevel();
-  bool isLevelUp();
+  auto expToNextLevel() const -> int;
+  auto isLevelUp() -> bool;
 
 public:
-  Player(Point _position, int _health, int _attack);
+  Player(const Point &_position, int _health, int _attack);
   Player();
-  int getLevel() const;
-  int getExp() const;
+  auto getLevel() const -> int;
+  auto getExp() const -> int;
   void setExp(int _exp);
   // void exploreTreasure(const Treasure &treasure);
 };

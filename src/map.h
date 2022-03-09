@@ -1,5 +1,5 @@
-#ifndef map_h
-#define map_h
+#ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_MAP_H
+#define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_MAP_H
 
 #include "maze_generator.h"
 #include "player.h"
@@ -18,15 +18,15 @@ private:
 public:
   Map(unsigned int _width, unsigned int _height);
   void draw(const Player &player);
-  char getChar(Point point);
-  int screenWidth();
-  int screenHeight();
+  auto getChar(const Point &point) -> char;
+  auto screenWidth() const -> int;
+  auto screenHeight() const -> int;
   void clear();
   void loadLevel();
-  bool isPositionFree(Point point);
-  Point randomFreePosition();
-  Point getStart();
-  Point getEnd();
+  auto isPositionFree(const Point &point) -> bool;
+  auto randomFreePosition() -> Point;
+  auto getStart() -> Point;
+  auto getEnd() -> Point;
 };
 
 #endif

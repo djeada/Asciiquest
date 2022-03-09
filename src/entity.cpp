@@ -2,9 +2,9 @@
 #include "game_settings.h"
 #include <ncurses.h>
 
-// TODO: convert attack to strength
+// TODO(adam): convert attack to strength
 
-Entity::Entity(Point _position, int _health, int _attack,
+Entity::Entity(const Point &_position, int _health, int _attack,
                Represetiation _representation)
     : position(_position), health(_health), strength(_attack),
       representation(_representation) {
@@ -19,17 +19,17 @@ Entity::Entity()
 
 Entity::~Entity() {}
 
-Point Entity::getPosition() { return position; }
+auto Entity::getPosition() -> Point { return position; }
 
-int Entity::getHealth() const { return health; }
+auto Entity::getHealth() const -> int { return health; }
 
-int Entity::getAttack() const { return strength; }
+auto Entity::getAttack() const -> int { return strength; }
 
-char Entity::getSymbol() const { return representation.symbol; }
+auto Entity::getSymbol() const -> char { return representation.symbol; }
 
-bool Entity::isAlive() { return health > 0; }
+auto Entity::isAlive() const -> bool { return health > 0; }
 
-void Entity::setPosition(Point _position) { position = _position; }
+void Entity::setPosition(const Point &_position) { position = _position; }
 
 void Entity::setHealth(int _health) { health = _health; }
 

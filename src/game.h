@@ -1,9 +1,12 @@
+#ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_GAME_H
+#define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_GAME_H
+
 #include "map.h"
 #include "monster.h"
 #include <memory>
 
 class Game {
-  int level;
+  int level{};
   Player player;
   Map *map;
   std::vector<std::unique_ptr<Monster>> monsters;
@@ -21,7 +24,9 @@ public:
   void fight(Entity &attacker, Entity &defender);
   void handleInput();
   void loadLevel();
-  bool isGameOver();
-  bool isLevelComplete();
+  auto isGameOver() -> bool;
+  auto isLevelComplete() -> bool;
   void gameOver();
 };
+
+#endif

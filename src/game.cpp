@@ -28,22 +28,24 @@ void Game::initalizeMonsters(int count) {
   // lambda function that creates a Monster object
   // second parameter is function pointer
   auto createMonster =
-      [&](int count, std::function<std::unique_ptr<Monster>(Point)> builder) {
+      [&](int count,
+          const std::function<std::unique_ptr<Monster>(Point)> &builder) {
         for (int i = 0; i < count; i++) {
           Point position = map->randomFreePosition();
           monsters.push_back(builder(position));
         }
       };
 
-  createMonster(goblinsCount, [](Point position) {
+  createMonster(goblinsCount, [](const Point &position) {
     return std::make_unique<Goblin>(position);
   });
-  createMonster(orcsCount,
-                [](Point position) { return std::make_unique<Orc>(position); });
-  createMonster(trollsCount, [](Point position) {
+  createMonster(orcsCount, [](const Point &position) {
+    return std::make_unique<Orc>(position);
+  });
+  createMonster(trollsCount, [](const Point &position) {
     return std::make_unique<Troll>(position);
   });
-  createMonster(dragonsCount, [](Point position) {
+  createMonster(dragonsCount, [](const Point &position) {
     return std::make_unique<Dragon>(position);
   });
 }
@@ -174,6 +176,8 @@ void Game::gameOver() {
   raise(SIGQUIT);
 }
 
-bool Game::isGameOver() { return !player.isAlive(); }
+auto Game::isGameOver() -> bool { return !player.isAlive(); }
 
-bool Game::isLevelComplete() { return player.getPosition() == map->getEnd(); }
+auto Game::isLevelComplete() -> bool {
+  return player.getPosition() == map->getEnd();
+}
