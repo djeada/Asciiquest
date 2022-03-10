@@ -14,6 +14,7 @@ protected:
   Point position;
   Point velocity;
   int health;
+  int maxHealth;
   int strength;
   Represetiation representation;
 
@@ -25,6 +26,7 @@ public:
 
   auto getPosition() -> Point;
   auto getHealth() const -> int;
+  auto getMaxHealth() const -> int;
   auto getAttack() const -> int;
   auto getSymbol() const -> char;
   auto isAlive() const -> bool;

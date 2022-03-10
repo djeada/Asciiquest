@@ -9,7 +9,7 @@ Game::Game() {
   int maxWidth, maxHeight;
   initscr();
   getmaxyx(stdscr, maxHeight, maxWidth);
-  this->map = new Map(maxWidth, maxHeight);
+  this->map = new Map(maxWidth, maxHeight - 1);
   player = Player(Point(0, 0), PLAYER_HEALTH, PLAYER_ATTACK);
 }
 

@@ -21,6 +21,10 @@ void Player::levelUp() {
 
   level++;
   exp -= expToNextLevel();
+  setHealth(maxHealth * pow(1.1, level - 1));
+
+  if (isLevelUp())
+    levelUp();
 }
 
 auto Player::expToNextLevel() const -> int {

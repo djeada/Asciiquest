@@ -31,7 +31,7 @@ auto intToStr(int value) -> std::string {
   return ss.str();
 }
 
-void displayPlayerInfo(int y, int health, int level, int exp,
+void displayPlayerInfo(int y, int health, int maxHealth, int level, int exp,
                        int currentLevel) {
   int x = 0;
 
@@ -40,9 +40,8 @@ void displayPlayerInfo(int y, int health, int level, int exp,
   if (health > 0) {
 
     if (currentLevel != number_of_levels) {
-      message = "Health: " + intToStr(health) + "/" +
-                intToStr((level + 1) * 10) + " Level: " + intToStr(level) +
-                " Exp: " + intToStr(exp);
+      message = "Health: " + intToStr(health) + "/" + intToStr(maxHealth) +
+                " Level: " + intToStr(level) + " Exp: " + intToStr(exp);
     } else {
       message = "You won!";
     }
@@ -65,8 +64,8 @@ void Map::draw(const Player &player) {
     mvprintw(y, x, s);
     y++;
   }
-  displayPlayerInfo(y, player.getHealth(), player.getLevel(), player.getExp(),
-                    1);
+  displayPlayerInfo(y, player.getHealth(), player.getMaxHealth(),
+                    player.getLevel(), player.getExp(), 1);
 }
 
 auto Map::getChar(const Point &point) -> char { return map[point.y][point.x]; }
