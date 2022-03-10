@@ -21,7 +21,6 @@ typedef struct node {
 } Node;
 
 int randomFromRange(int start, int end);
-int headOrTail();
 void giveValidPositions(int (&myArray)[2], Map myMap);
 std::vector<Position> findTheRoute(int playerX, int playerY, int monsterX,
                                    int MonsterY, Map &myMap);

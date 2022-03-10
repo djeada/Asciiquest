@@ -76,6 +76,12 @@ auto Map::screenWidth() const -> int { return width; }
 auto Map::screenHeight() const -> int { return height; }
 
 auto Map::isPositionFree(const Point &point) -> bool {
+  if (point.x < 0 || point.x >= screenWidth())
+    return false;
+
+  if (point.y < 0 || point.y >= screenHeight())
+    return false;
+
   return getChar(point) == ' ';
 }
 auto Map::randomFreePosition() -> Point {

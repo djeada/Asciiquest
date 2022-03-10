@@ -6,7 +6,10 @@
 #include <iostream>
 
 Game::Game() {
-  this->map = new Map(80, 20);
+  int maxWidth, maxHeight;
+  initscr();
+  getmaxyx(stdscr, maxHeight, maxWidth);
+  this->map = new Map(maxWidth, maxHeight);
   player = Player(Point(0, 0), PLAYER_HEALTH, PLAYER_ATTACK);
 }
 
@@ -81,7 +84,7 @@ void Game::init() {
 
 void Game::updatePositions() {
   for (auto &monster : monsters) {
-    updateEntityPosition(*monster);
+    updateEntityPosition(*monster, 1, 1);
     // check if player is in the same position as monster
     if (player.getPosition() == monster->getPosition()) {
       fight(*monster, player);
@@ -105,19 +108,19 @@ void Game::handleInput() {
   case 'q':
     raise(SIGQUIT);
   case KEY_UP:
-  case 'W':
+  case 'w':
     updateEntityPosition(player, 0, -1);
     break;
   case KEY_DOWN:
-  case 'S':
+  case 's':
     updateEntityPosition(player, 0, 1);
     break;
   case KEY_LEFT:
-  case 'A':
+  case 'a':
     updateEntityPosition(player, -1, 0);
     break;
   case KEY_RIGHT:
-  case 'D':
+  case 'd':
     updateEntityPosition(player, 1, 0);
     break;
   case ' ':

@@ -17,19 +17,19 @@ public:
 class Goblin : public Monster {
 public:
   explicit Goblin(const Point &_position);
-  void move(int dx, int dy) override;
+  void move(int dx = 1, int dy = 1) override;
 };
 
 class Orc : public Monster {
 public:
   explicit Orc(const Point &_position);
-  void move(int dx, int dy) override;
+  void move(int dx = 1, int dy = 1) override;
 };
 
 class Troll : public Monster {
 public:
   explicit Troll(const Point &_position);
-  void move(int dx, int dy) override;
+  void move(int dx = 1, int dy = 1) override;
 };
 
 class Dragon : public Monster {

@@ -6,16 +6,27 @@ Monster::Monster(const Point &_position, int _health, int _attack,
     : Entity(_position, _health, _attack, _representation) {}
 
 void Monster::randomizeVelocity() {
-  int dx = rand() % 3 - 1;
-  int dy = rand() % 3 - 1;
-  if (dx == 0 && dy == 0) {
-    {
-      { randomizeVelocity(); }
-    }
-  } else {
-    velocity.x *= dx;
-    velocity.y *= dy;
+  int dx = 0;
+  int dy = 0;
+
+  while (dx == 0 && dy == 0) {
+    // dx = headOrTail() - headOrTail();
+    // dy = headOrTail() - headOrTail();
+    dx = rand() % 3 - 1;
+    dy = rand() % 3 - 1;
   }
+
+  if (velocity.x * dx == 0 && velocity.y * dy == 0) {
+
+    if (velocity.y == 0 && velocity.x != 0)
+      velocity.y = velocity.x;
+    if (velocity.x == 0 && velocity.y != 0)
+      velocity.x = velocity.y;
+    return;
+  }
+
+  velocity.x *= dx;
+  velocity.y *= dy;
 }
 
 Goblin::Goblin(const Point &_position)
@@ -36,7 +47,7 @@ void Orc::move(int dx, int dy) {
 
 Troll::Troll(const Point &_position)
     : Monster(_position, 30, 4, Represetiation('T', MONSTER_COLOR)) {
-  velocity = Point(3, 3);
+  velocity = Point(1, 1);
 }
 
 void Troll::move(int dx, int dy) {
