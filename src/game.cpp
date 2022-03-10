@@ -3,7 +3,6 @@
 #include <csignal>
 #include <cstdlib>
 #include <functional>
-#include <iostream>
 
 Game::Game() {
   int maxWidth = 10; 
@@ -11,8 +10,7 @@ Game::Game() {
   initscr();
   getmaxyx(stdscr, maxHeight, maxWidth);
   map = std::make_unique<Map>(maxWidth, maxHeight - 1);
-  auto startingPoint = map->getStart();
-  player = Player(startingPoint);
+  player = Player(map->getStart());
 }
 
 Game::~Game() {}

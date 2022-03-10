@@ -50,7 +50,8 @@ void Entity::move(int dx, int dy) {
 
 void Entity::draw() {
   attron(COLOR_PAIR(representation.color));
-  mvprintw(position.y, position.x, &representation.symbol);
+  const char symbol = representation.symbol;
+  mvprintw(position.y, position.x, &symbol);
   attroff(COLOR_PAIR(representation.color));
 }
 

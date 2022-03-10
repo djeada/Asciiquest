@@ -33,7 +33,7 @@ public:
   void setPosition(const Point &_position);
   void setHealth(int _health);
   void setAttack(int _attack);
-  void draw();
+  virtual void draw();
   virtual void move(int dx, int dy);
   virtual void takeDamage(int damage);
 
