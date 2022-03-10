@@ -8,14 +8,15 @@ private:
   int level;
   int exp;
   void levelUp();
-  auto expToNextLevel() const -> int;
-  auto isLevelUp() -> bool;
+  auto isLevelUp() const -> bool;
 
 public:
   Player(const Point &_position, int _health, int _attack);
+  explicit Player(const Point &_position);
   Player();
   auto getLevel() const -> int;
   auto getExp() const -> int;
+  auto expToNextLevel() const -> int;
   void setExp(int _exp);
   // void exploreTreasure(const Treasure &treasure);
 };

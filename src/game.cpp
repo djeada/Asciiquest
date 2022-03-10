@@ -6,14 +6,16 @@
 #include <iostream>
 
 Game::Game() {
-  int maxWidth, maxHeight;
+  int maxWidth = 10; 
+  int maxHeight = 10;
   initscr();
   getmaxyx(stdscr, maxHeight, maxWidth);
-  this->map = new Map(maxWidth, maxHeight - 1);
-  player = Player(Point(0, 0), PLAYER_HEALTH, PLAYER_ATTACK);
+  map = std::make_unique<Map>(maxWidth, maxHeight - 1);
+  auto startingPoint = map->getStart();
+  player = Player(startingPoint);
 }
 
-Game::~Game() { delete this->map; }
+Game::~Game() {}
 
 void Game::initalizeMonsters(int count) {
 
@@ -58,8 +60,9 @@ void Game::updateEntityPosition(Entity &entity, int dx, int dy) {
   auto oldPos = entity.getPosition();
   entity.move(dx, dy);
 
-  if (!map->isPositionFree(entity.getPosition()))
+  if (!map->isPositionFree(entity.getPosition())) {
     entity.setPosition(oldPos);
+  }
 }
 
 void Game::run() {
@@ -141,8 +144,9 @@ void Game::fight(Entity &attacker, Entity &defender) {
   int damage = attacker.getAttack();
   defender.takeDamage(damage);
 
-  if (defender.isAlive())
+  if (defender.isAlive()) {
     return;
+  }
 
   // check if player is dead
   if (!player.isAlive()) {
