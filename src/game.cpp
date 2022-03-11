@@ -66,12 +66,12 @@ void Game::updateEntityPosition(Entity &entity, int dx, int dy) {
 void Game::run() {
   init();
   while (!isGameOver()) {
-    render();
-    updatePositions();
     handleInput();
+    updatePositions();
     if (isLevelComplete()) {
       loadLevel();
     }
+    render();
   }
 }
 
@@ -89,6 +89,7 @@ void Game::updatePositions() {
     // check if player is in the same position as monster
     if (player.getPosition() == monster->getPosition()) {
       fight(*monster, player);
+      break;
     }
   }
 }
@@ -139,11 +140,10 @@ void Game::handleInput() {
 }
 
 void Game::fight(Entity &attacker, Entity &defender) {
-  int damage = attacker.getAttack();
-  defender.takeDamage(damage);
-
-  if (defender.isAlive()) {
-    return;
+  
+  while (attacker.isAlive() && defender.isAlive()) {
+    defender.takeDamage(attacker.getAttack());
+    attacker.takeDamage(defender.getAttack());
   }
 
   // check if player is dead
@@ -156,14 +156,12 @@ void Game::fight(Entity &attacker, Entity &defender) {
   // update player exp
   player.setExp(player.getExp() + 10);
 
-  // remove the dead entity from the map
-  /*
-    monsters.erase(std::remove_if(monsters.begin(), monsters.end(),
-                                  [&defender](std::unique_ptr<Monster> monster)
-    { return monster->getPosition() == defender.getPosition();
-                                  }),
-                   monsters.end());
-  */
+  // remove the dead entity from the monsters vector
+  monsters.erase(std::remove_if(monsters.begin(), monsters.end(),
+                                [](const auto &monster) {
+                                  return !monster->isAlive();
+                                }),
+                 monsters.end());
 }
 
 void Game::loadLevel() {
