@@ -18,6 +18,7 @@ public:
   auto getExp() const -> int;
   auto expToNextLevel() const -> int;
   void setExp(int _exp);
+  auto toString() const -> std::string override;
   // void exploreTreasure(const Treasure &treasure);
 };
 

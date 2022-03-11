@@ -9,7 +9,7 @@ Game::Game() {
   int maxHeight = 10;
   initscr();
   getmaxyx(stdscr, maxHeight, maxWidth);
-  map = std::make_unique<Map>(maxWidth, maxHeight - 1);
+  map = std::make_unique<Map>(maxWidth - 25, maxHeight - 1);
   player = Player(map->getStart());
 }
 
@@ -156,9 +156,24 @@ void Game::handleInput() {
 
 void Game::fight(Entity &attacker, Entity &defender) {
 
+  std::vector<std::string> fightInfo{attacker.toString() + " attacks " +
+                                     defender.toString() + "!"};
+
   while (attacker.isAlive() && defender.isAlive()) {
-    defender.takeDamage(attacker.getAttack());
-    attacker.takeDamage(defender.getAttack());
+    if (rand() % 3 != 0) {
+      defender.takeDamage(attacker.getAttack());
+      fightInfo.push_back(defender.toString() + " is loosing " +
+                          std::to_string(attacker.getAttack()) + " HP!");
+    } else {
+      fightInfo.push_back(attacker.toString() + " missed!");
+    }
+    if (rand() % 3 != 0) {
+      attacker.takeDamage(defender.getAttack());
+      fightInfo.push_back(attacker.toString() + " is loosing " +
+                          std::to_string(defender.getAttack()) + " HP!");
+    } else {
+      fightInfo.push_back(defender.toString() + " missed!");
+    }
   }
 
   // check if player is dead
@@ -176,6 +191,10 @@ void Game::fight(Entity &attacker, Entity &defender) {
       std::remove_if(monsters.begin(), monsters.end(),
                      [](const auto &monster) { return !monster->isAlive(); }),
       monsters.end());
+
+  // display fight info on the map
+  fightInfo.push_back(defender.toString() + " is dead!");
+  map->setFightInfo(fightInfo);
 }
 
 void Game::loadLevel() {

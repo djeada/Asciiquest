@@ -25,36 +25,28 @@ void Map::clear() {
   }
 }
 
-auto intToStr(int value) -> std::string {
-  std::stringstream ss;
-  ss << value;
-  return ss.str();
-}
-
-void displayPlayerInfo(int y, int health, int maxHealth, int level, int exp,
-                       int nextExp, int currentLevel) {
-  int x = 0;
-
-  std::string message = "Health: " + intToStr(health) + "/" +
-                        intToStr(maxHealth) + " Exp: " + intToStr(exp) + "/" +
-                        intToStr(nextExp) + " Level: " + intToStr(level);
-
-  char const *pchar = message.c_str();
-
-  mvprintw(y, x, pchar);
-}
-
 void Map::draw(const Player &player) {
-  int y = 0;
-  int x = 0;
-  for (auto &row : map) {
-    const char *s = row.c_str();
-    mvprintw(y, x, s);
-    y++;
-  }
-  displayPlayerInfo(y, player.getHealth(), player.getMaxHealth(),
-                    player.getLevel(), player.getExp(), player.expToNextLevel(),
-                    1);
+
+  auto displayVector = [](int y, int x, std::vector<std::string> &info) {
+    for (auto &i : info) {
+      const char *pchar = i.c_str();
+      mvprintw(y, x, pchar);
+      y++;
+    }
+  };
+
+  auto displayPlayerInfo = [](int y, int x, const PlayerInfo &playerInfo) {
+    std::string message = "Health: " + playerInfo.health + "/" +
+                          playerInfo.maxHealth + " Level: " + playerInfo.level +
+                          " Exp: " + playerInfo.exp + "/" + playerInfo.nextExp;
+
+    char const *pchar = message.c_str();
+    mvprintw(y, x, pchar);
+  };
+
+  displayVector(0, 0, map);
+  displayPlayerInfo(screenHeight(), 0, PlayerInfo(player));
+  displayVector(0, screenWidth() + 1, fightInfo);
 }
 
 auto Map::getChar(const Point &point) -> char { return map[point.y][point.x]; }
@@ -72,6 +64,7 @@ auto Map::isPositionFree(const Point &point) -> bool {
 
   return getChar(point) == ' ';
 }
+
 auto Map::randomFreePosition() -> Point {
   int x = 0;
   int y = 0;
@@ -85,3 +78,7 @@ auto Map::randomFreePosition() -> Point {
 auto Map::getStart() -> Point { return start; }
 
 auto Map::getEnd() -> Point { return end; }
+
+void Map::setFightInfo(const std::vector<std::string> &info) {
+  fightInfo = info;
+}

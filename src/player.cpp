@@ -45,3 +45,5 @@ void Player::setExp(int _exp) {
 
 auto Player::getLevel() const -> int { return level; }
 auto Player::getExp() const -> int { return exp; }
+
+auto Player::toString() const -> std::string { return "Player"; }

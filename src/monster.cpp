@@ -29,6 +29,8 @@ void Monster::randomizeVelocity() {
   velocity.y *= dy;
 }
 
+auto Monster::toString() const -> std::string { return "Monster"; }
+
 Goblin::Goblin(const Point &_position)
     : Monster(_position, 10, 2, Represetiation('G', MONSTER_COLOR)) {}
 
@@ -37,6 +39,8 @@ void Goblin::move(int dx, int dy) {
   randomizeVelocity();
 }
 
+auto Goblin::toString() const -> std::string { return "Goblin"; }
+
 Orc::Orc(const Point &_position)
     : Monster(_position, 20, 3, Represetiation('O', MONSTER_COLOR)) {}
 
@@ -44,6 +48,8 @@ void Orc::move(int dx, int dy) {
   Entity::move(dx, dy);
   // TODO(adam): implement orc movement
 }
+
+auto Orc::toString() const -> std::string { return "Orc"; }
 
 Troll::Troll(const Point &_position)
     : Monster(_position, 30, 4, Represetiation('T', MONSTER_COLOR)) {
@@ -55,9 +61,13 @@ void Troll::move(int dx, int dy) {
   randomizeVelocity();
 }
 
+auto Troll::toString() const -> std::string { return "Troll"; }
+
 Dragon::Dragon(const Point &_position)
     : Monster(_position, 40, 5, Represetiation('D', MONSTER_COLOR)) {
   velocity = Point(0, 0);
 }
 
 void Dragon::move(int /*dx*/, int /*dy*/) {}
+
+auto Dragon::toString() const -> std::string { return "Dragon"; }

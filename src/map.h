@@ -7,6 +7,22 @@
 #include <string>
 #include <vector>
 
+struct PlayerInfo {
+  std::string health;
+  std::string maxHealth;
+  std::string level;
+  std::string exp;
+  std::string nextExp;
+
+  PlayerInfo(const Player &player) {
+    health = std::to_string(player.getHealth());
+    maxHealth = std::to_string(player.getMaxHealth());
+    level = std::to_string(player.getLevel());
+    exp = std::to_string(player.getExp());
+    nextExp = std::to_string(player.expToNextLevel());
+  }
+};
+
 class Map {
 private:
   std::vector<std::string> map;
@@ -14,6 +30,7 @@ private:
   Point end;
   unsigned int width;
   unsigned int height;
+  std::vector<std::string> fightInfo;
 
 public:
   Map(unsigned int _width, unsigned int _height);
@@ -27,6 +44,7 @@ public:
   auto randomFreePosition() -> Point;
   auto getStart() -> Point;
   auto getEnd() -> Point;
+  void setFightInfo(const std::vector<std::string> &info);
 };
 
 #endif

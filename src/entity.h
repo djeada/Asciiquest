@@ -2,6 +2,7 @@
 #define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_ENTITY_H
 
 #include "utils.h"
+#include <string>
 
 struct Represetiation {
   char symbol;
@@ -36,7 +37,8 @@ public:
   virtual void draw();
   virtual void move(int dx, int dy);
   virtual void takeDamage(int damage);
-
+  // give it a string representation of the entity
+  virtual auto toString() const -> std::string = 0;
   friend void attack(Entity &attacker, Entity &defender);
 };
 
