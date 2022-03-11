@@ -7,9 +7,8 @@ Player::Player(const Point &_position, int _health, int _attack)
   level = 1;
   exp = 0;
 }
-Player::Player(const Point &_position)
-    : Player() {
-      position = Point(_position);
+Player::Player(const Point &_position) : Player() {
+  position = Point(_position);
 }
 
 Player::Player() : Entity(Point(), 100, 10, Represetiation('@', PLAYER_COLOR)) {
@@ -39,7 +38,7 @@ auto Player::isLevelUp() const -> bool { return exp >= expToNextLevel(); }
 
 void Player::setExp(int _exp) {
   exp = _exp;
-  if (isLevelUp()){
+  if (isLevelUp()) {
     levelUp();
   }
 }

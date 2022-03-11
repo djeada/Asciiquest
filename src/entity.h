@@ -24,7 +24,7 @@ public:
   Entity();
   virtual ~Entity();
 
-  auto getPosition() -> Point;
+  auto getPosition() const -> Point;
   auto getHealth() const -> int;
   auto getMaxHealth() const -> int;
   auto getAttack() const -> int;

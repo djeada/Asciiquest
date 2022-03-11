@@ -8,6 +8,7 @@ struct Point {
   Point();
   Point(const Point &other);
   auto operator==(const Point &p) const -> bool;
+  auto distance(const Point &p) const -> double;
 };
 
 /*

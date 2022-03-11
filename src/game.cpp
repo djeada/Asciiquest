@@ -5,7 +5,7 @@
 #include <functional>
 
 Game::Game() {
-  int maxWidth = 10; 
+  int maxWidth = 10;
   int maxHeight = 10;
   initscr();
   getmaxyx(stdscr, maxHeight, maxWidth);
@@ -85,7 +85,22 @@ void Game::init() {
 
 void Game::updatePositions() {
   for (auto &monster : monsters) {
-    updateEntityPosition(*monster, 1, 1);
+    int dx = 1;
+    int dy = 1;
+    if (areEntitiesInVicinity(player, *monster, 10)) {
+      // move the monster in the direction of the player
+      dx = player.getPosition().x - monster->getPosition().x;
+      dy = player.getPosition().y - monster->getPosition().y;
+      // but dx and dy can only be 1, -1 or 0
+      if (dx != 0) {
+        dx = dx / abs(dx);
+      }
+      if (dy != 0) {
+        dy = dy / abs(dy);
+      }
+    }
+
+    updateEntityPosition(*monster, dx, dy);
     // check if player is in the same position as monster
     if (player.getPosition() == monster->getPosition()) {
       fight(*monster, player);
@@ -140,7 +155,7 @@ void Game::handleInput() {
 }
 
 void Game::fight(Entity &attacker, Entity &defender) {
-  
+
   while (attacker.isAlive() && defender.isAlive()) {
     defender.takeDamage(attacker.getAttack());
     attacker.takeDamage(defender.getAttack());
@@ -157,11 +172,10 @@ void Game::fight(Entity &attacker, Entity &defender) {
   player.setExp(player.getExp() + 10);
 
   // remove the dead entity from the monsters vector
-  monsters.erase(std::remove_if(monsters.begin(), monsters.end(),
-                                [](const auto &monster) {
-                                  return !monster->isAlive();
-                                }),
-                 monsters.end());
+  monsters.erase(
+      std::remove_if(monsters.begin(), monsters.end(),
+                     [](const auto &monster) { return !monster->isAlive(); }),
+      monsters.end());
 }
 
 void Game::loadLevel() {
@@ -183,4 +197,10 @@ auto Game::isGameOver() -> bool { return !player.isAlive(); }
 
 auto Game::isLevelComplete() -> bool {
   return player.getPosition() == map->getEnd();
+}
+
+auto Game::areEntitiesInVicinity(const Entity &entity1, const Entity &entity2,
+                                 int distance) const -> bool {
+  return entity1.getPosition().distance(entity2.getPosition()) <=
+         static_cast<double>(distance);
 }

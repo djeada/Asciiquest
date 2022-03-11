@@ -5,7 +5,9 @@
 #include "monster.h"
 #include <memory>
 
-// TODO(adam): class 'Game' defines a non-default destructor but does not define a copy constructor, a copy assignment operator, a move constructor or a move assignment operator
+// TODO(adam): class 'Game' defines a non-default destructor but does not define
+// a copy constructor, a copy assignment operator, a move constructor or a move
+// assignment operator
 
 class Game {
   int level{};
@@ -14,6 +16,8 @@ class Game {
   std::vector<std::unique_ptr<Monster>> monsters;
   void initalizeMonsters(int count);
   void updateEntityPosition(Entity &entity, int dx = 0, int dy = 0);
+  auto areEntitiesInVicinity(const Entity &entity1, const Entity &entity2,
+                             int range) const -> bool;
 
 public:
   Game();

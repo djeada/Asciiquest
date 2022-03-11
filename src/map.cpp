@@ -31,12 +31,13 @@ auto intToStr(int value) -> std::string {
   return ss.str();
 }
 
-void displayPlayerInfo(int y, int health, int maxHealth, int level, int exp, int nextExp,
-                       int currentLevel) {
+void displayPlayerInfo(int y, int health, int maxHealth, int level, int exp,
+                       int nextExp, int currentLevel) {
   int x = 0;
 
-  std::string message = "Health: " + intToStr(health) + "/" + intToStr(maxHealth) +
-                " Exp: " + intToStr(exp) + "/" + intToStr(nextExp) + " Level: " + intToStr(level);
+  std::string message = "Health: " + intToStr(health) + "/" +
+                        intToStr(maxHealth) + " Exp: " + intToStr(exp) + "/" +
+                        intToStr(nextExp) + " Level: " + intToStr(level);
 
   char const *pchar = message.c_str();
 
@@ -52,7 +53,8 @@ void Map::draw(const Player &player) {
     y++;
   }
   displayPlayerInfo(y, player.getHealth(), player.getMaxHealth(),
-                    player.getLevel(), player.getExp(), player.expToNextLevel(), 1);
+                    player.getLevel(), player.getExp(), player.expToNextLevel(),
+                    1);
 }
 
 auto Map::getChar(const Point &point) -> char { return map[point.y][point.x]; }

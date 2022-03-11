@@ -22,7 +22,7 @@ Entity::Entity()
 
 Entity::~Entity() {}
 
-auto Entity::getPosition() -> Point { return position; }
+auto Entity::getPosition() const -> Point { return position; }
 
 auto Entity::getHealth() const -> int { return health; }
 
