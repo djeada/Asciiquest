@@ -5,11 +5,12 @@
 #include <functional>
 
 Game::Game() {
-  int maxWidth = 10;
-  int maxHeight = 10;
+  int maxWidth = GameSettings::maxWidth;
+  int maxHeight = GameSettings::maxHeight;
   initscr();
   getmaxyx(stdscr, maxHeight, maxWidth);
-  map = std::make_unique<Map>(maxWidth - 25, maxHeight - 1);
+  map = std::make_unique<Map>(maxWidth - GameSettings::horizontalOffset,
+                              maxHeight - GameSettings::verticalOffset);
   player = Player(map->getStart());
 }
 
@@ -76,10 +77,21 @@ void Game::run() {
 }
 
 void Game::init() {
+
+  auto initColorPairs = []() {
+    init_pair(Colors::player, COLOR_WHITE, COLOR_BLUE);
+    init_pair(Colors::goblin, COLOR_WHITE, COLOR_RED);
+    init_pair(Colors::orc, COLOR_WHITE, COLOR_GREEN);
+    init_pair(Colors::troll, COLOR_WHITE, COLOR_YELLOW);
+    init_pair(Colors::dragon, COLOR_WHITE, COLOR_MAGENTA);
+    init_pair(Colors::treasure, COLOR_WHITE, COLOR_CYAN);
+  };
+
   initscr();
   noecho();
   curs_set(0);
   keypad(stdscr, true);
+  initColorPairs();
   loadLevel();
 }
 
@@ -200,7 +212,7 @@ void Game::fight(Entity &attacker, Entity &defender) {
 void Game::loadLevel() {
   map->loadLevel();
   player.setPosition(map->getStart());
-  initalizeMonsters(MONSTERS_COUNT + pow(2, level - 1));
+  initalizeMonsters(GameSettings::monsterCount + pow(2, level - 1));
 }
 
 void Game::gameOver() {

@@ -15,7 +15,7 @@ Entity::Entity(const Point &_position, int _health, int _attack,
 
 Entity::Entity()
     : position(Point(0, 0)), health(0), strength(0),
-      representation(Represetiation('@', PLAYER_COLOR)) {
+      representation(Represetiation(Symbols::player, Colors::player)) {
   maxHealth = health;
   velocity = Point(1, 1);
 }

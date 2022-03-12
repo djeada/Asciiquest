@@ -20,7 +20,7 @@ void Map::loadLevel() {
 void Map::clear() {
   for (auto &i : map) {
     for (char &j : i) {
-      j = ' ';
+      j = Symbols::emptySpace;
     }
   }
 }
@@ -62,7 +62,7 @@ auto Map::isPositionFree(const Point &point) -> bool {
   if (point.y < 0 || point.y >= screenHeight())
     return false;
 
-  return getChar(point) == ' ';
+  return getChar(point) == Symbols::emptySpace;
 }
 
 auto Map::randomFreePosition() -> Point {

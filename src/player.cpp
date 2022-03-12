@@ -3,7 +3,8 @@
 #include <cmath>
 
 Player::Player(const Point &_position, int _health, int _attack)
-    : Entity(_position, _health, _attack, Represetiation('@', PLAYER_COLOR)) {
+    : Entity(_position, _health, _attack,
+             Represetiation(Symbols::player, Colors::player)) {
   level = 1;
   exp = 0;
 }
@@ -11,7 +12,9 @@ Player::Player(const Point &_position) : Player() {
   position = Point(_position);
 }
 
-Player::Player() : Entity(Point(), 100, 10, Represetiation('@', PLAYER_COLOR)) {
+Player::Player()
+    : Entity(Point(), GameSettings::playerHealth, GameSettings::playerDamage,
+             Represetiation(Symbols::player, Colors::player)) {
   level = 1;
   exp = 0;
 }
