@@ -100,6 +100,7 @@ void AStar::solveAStar(const Map &map, const Point &start, const Point &end) {
         // set the current node to the neighbour
         current = minNeighbour;
       }
+      bestPath.pop_back();
       return;
     }
 

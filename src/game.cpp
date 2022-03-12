@@ -3,8 +3,8 @@
 #include "monster.h"
 #include <csignal>
 #include <cstdlib>
-#include <fstream>
 #include <functional>
+#include <thread>
 
 Game::Game() {
   int maxWidth = GameSettings::maxWidth;
@@ -62,20 +62,29 @@ void Game::updateEntityPosition(Entity &entity, int dx, int dy) {
   if (dynamic_cast<Orc *>(&entity) != nullptr) {
     // if entity is an Orc, check if there is a path to the player
     // if not update the path
-    if (dynamic_cast<Orc &>(entity).isPathEmpty()) {
-      auto path =
-          AStar(*map, entity.getPosition(), player.getPosition()).getPath();
+    if (dynamic_cast<Orc &>(entity).isPathEmpty() ||
+        entity.getPosition().distance(player.getPosition()) < 8) {
 
-      // log to file path
-      std::ofstream logFile("log.txt", std::ios::app);
-      logFile << "Orc path: ";
-      for (auto &p : path) {
-        logFile << p.toString() << " ";
-      }
-      logFile << std::endl;
-      logFile.close();
+      // create a separate thread to calculate the path
+      std::thread t(
+          [&](Orc &orc) {
+            try {
+              auto path =
+                  AStar(*map, entity.getPosition(), player.getPosition())
+                      .getPath();
+              // check if orc is still a valid pointer
+              if (dynamic_cast<Orc *>(&orc) != nullptr && !path.empty()) {
+                orc.setPath(path);
+              }
+            } catch (std::runtime_error &e) {
+              // if path is not found, do nothing
+              return;
+            }
+          },
+          std::ref(dynamic_cast<Orc &>(entity)));
 
-      dynamic_cast<Orc &>(entity).setPath(path);
+      // continue with the main thread
+      t.detach();
     }
   }
 
