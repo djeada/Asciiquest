@@ -24,7 +24,7 @@ struct Colors {
 };
 
 struct GameSettings {
-  static const int playerHealth = 10;
+  static const int playerHealth = 1000;
   static const int playerDamage = 10;
   static const int monsterCount = 10;
   static const int goblinHealth = 5;

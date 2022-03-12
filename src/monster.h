@@ -23,10 +23,14 @@ public:
 };
 
 class Orc : public Monster {
+  std::deque<Point> path;
+
 public:
   explicit Orc(const Point &_position);
   void move(int dx = 1, int dy = 1) override;
   auto toString() const -> std::string override;
+  void setPath(const std::deque<Point> &_path);
+  auto isPathEmpty() const -> bool;
 };
 
 class Troll : public Monster {

@@ -35,16 +35,18 @@ private:
 public:
   Map(unsigned int _width, unsigned int _height);
   void draw(const Player &player);
-  auto getChar(const Point &point) -> char;
+  auto getChar(const Point &point) const -> char;
   auto screenWidth() const -> int;
   auto screenHeight() const -> int;
   void clear();
   void loadLevel();
-  auto isPositionFree(const Point &point) -> bool;
-  auto randomFreePosition() -> Point;
-  auto getStart() -> Point;
-  auto getEnd() -> Point;
+  auto isPositionFree(const Point &point) const -> bool;
+  auto randomFreePosition() const -> Point;
+  auto getStart() const -> Point;
+  auto getEnd() const -> Point;
   void setFightInfo(const std::vector<std::string> &info);
+  auto getNeighbours(const Point &point) const -> std::vector<Point>;
+  auto distance(const Point &point1, const Point &point2) const -> double;
 };
 
 #endif

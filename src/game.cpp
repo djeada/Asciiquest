@@ -1,7 +1,9 @@
 #include "game.h"
+#include "a_star.h"
 #include "monster.h"
 #include <csignal>
 #include <cstdlib>
+#include <fstream>
 #include <functional>
 
 Game::Game() {
@@ -55,6 +57,27 @@ void Game::initalizeMonsters(int count) {
 }
 
 void Game::updateEntityPosition(Entity &entity, int dx, int dy) {
+
+  // handle special case: check if entity is an Orc
+  if (dynamic_cast<Orc *>(&entity) != nullptr) {
+    // if entity is an Orc, check if there is a path to the player
+    // if not update the path
+    if (dynamic_cast<Orc &>(entity).isPathEmpty()) {
+      auto path =
+          AStar(*map, entity.getPosition(), player.getPosition()).getPath();
+
+      // log to file path
+      std::ofstream logFile("log.txt", std::ios::app);
+      logFile << "Orc path: ";
+      for (auto &p : path) {
+        logFile << p.toString() << " ";
+      }
+      logFile << std::endl;
+      logFile.close();
+
+      dynamic_cast<Orc &>(entity).setPath(path);
+    }
+  }
 
   auto oldPos = entity.getPosition();
   entity.move(dx, dy);

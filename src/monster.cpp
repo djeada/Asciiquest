@@ -46,12 +46,18 @@ Orc::Orc(const Point &_position)
     : Monster(_position, GameSettings::orcHealth, GameSettings::orcDamage,
               Represetiation(Symbols::orc, Colors::orc)) {}
 
-void Orc::move(int dx, int dy) {
-  Entity::move(dx, dy);
-  // TODO(adam): implement orc movement
+void Orc::move(int /*dx*/, int /*dy*/) {
+  if (!path.empty()) {
+    position = path.front();
+    path.pop_front();
+  }
 }
 
 auto Orc::toString() const -> std::string { return "Orc"; }
+
+void Orc::setPath(const std::deque<Point> &_path) { path = _path; }
+
+auto Orc::isPathEmpty() const -> bool { return path.empty(); }
 
 Troll::Troll(const Point &_position)
     : Monster(_position, GameSettings::trollHealth, GameSettings::trollDamage,
