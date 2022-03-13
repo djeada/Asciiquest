@@ -4,10 +4,16 @@
 #include "entity.h"
 #include "game_settings.h"
 #include "map.h"
-#include "utils.h"
 #include <ncurses.h>
 
 class Monster : public Entity {
+  /**
+   * @brief Base class for all monsters used in the game.
+   * @details This class is used to represent all monsters in the game.
+   *          It contains crucial information about the monster such as
+   *          the position, health, attack and representation of the
+   *          monster, as well as the common functions.
+   */
 public:
   Monster(const Point &_position, int _health, int _attack,
           Represetiation _representation);
@@ -16,6 +22,13 @@ public:
 };
 
 class Goblin : public Monster {
+  /**
+   * @brief Class for Goblin.
+   * @details This class is used to represent Goblin in the game.
+   *          It contains crucial information about the Goblin such as
+   *          the position, health, attack and representation of the
+   *          Goblin, as well as the common functions.
+   */
 public:
   explicit Goblin(const Point &_position);
   void move(int dx = 1, int dy = 1) override;
@@ -23,6 +36,13 @@ public:
 };
 
 class Orc : public Monster {
+  /**
+   * @brief Class for Orc.
+   * @details This class is used to represent Orc in the game.
+   *          It contains crucial information about the Orc such as
+   *          the position, health, attack and representation of the
+   *          Orc, as well as the common functions.
+   */
   std::deque<Point> path;
 
 public:
@@ -34,6 +54,13 @@ public:
 };
 
 class Troll : public Monster {
+  /**
+   * @brief Class for Troll.
+   * @details This class is used to represent Troll in the game.
+   *          It contains crucial information about the Troll such as
+   *          the position, health, attack and representation of the
+   *          Troll, as well as the common functions.
+   */
 public:
   explicit Troll(const Point &_position);
   void move(int dx = 1, int dy = 1) override;
@@ -41,6 +68,13 @@ public:
 };
 
 class Dragon : public Monster {
+  /**
+   * @brief Class for Dragon.
+   * @details This class is used to represent Dragon in the game.
+   *          It contains crucial information about the Dragon such as
+   *          the position, health, attack and representation of the
+   *          Dragon, as well as the common functions.
+   */
 public:
   explicit Dragon(const Point &_position);
   void move(int dx, int dy) override;

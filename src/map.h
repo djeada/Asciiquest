@@ -3,11 +3,14 @@
 
 #include "maze_generator.h"
 #include "player.h"
-#include "utils.h"
+#include "point.h"
 #include <string>
 #include <vector>
 
 struct PlayerInfo {
+  /**
+   * @brief All player information that will be displayed on the screen.
+   */
   std::string health;
   std::string maxHealth;
   std::string level;
@@ -24,6 +27,14 @@ struct PlayerInfo {
 };
 
 class Map {
+  /**
+   * @brief The purpose of this class is to represent the map.
+   * @details The map is represented by a vector of strings.
+   *          The map is stored within the class. There are
+   *          two important points on the map:
+   *          - the player's starting position
+   *          - the exit point (the goal)
+   */
 private:
   std::vector<std::string> map;
   Point start;

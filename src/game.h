@@ -10,6 +10,14 @@
 // assignment operator
 
 class Game {
+  /**
+   * @brief The purpose of this class is to represent the game.
+   * @details The game is represented by a map and a player.
+   *          The player is represented by a character and a color.
+   *          The map is represented by a vector of strings.
+   *          The map is not stored within the class, only a pointer to it.
+   *          The path is a vector of points.
+   */
   int level{};
   Player player;
   std::unique_ptr<Map> map;

@@ -1,16 +1,26 @@
 #ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_ENTITY_H
 #define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_ENTITY_H
 
-#include "utils.h"
+#include "point.h"
 #include <string>
 
 struct Represetiation {
+  /**
+   * @brief Symbol and color used to represent the entity.
+   */
   char symbol;
   int color;
   Represetiation(char _symbol, int _color) : symbol(_symbol), color(_color) {}
 };
 
 class Entity {
+  /**
+   * @brief Base class for all entities used in the game.
+   * @details This class is used to represent all entities in the game.
+   *          It contains crucial information about the entity such as
+   *          the position, health, attack and representation of the
+   *          entity, as well as the common functions.
+   */
 protected:
   Point position;
   Point velocity;

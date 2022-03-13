@@ -7,10 +7,29 @@
 #include <unordered_map>
 
 AStar::AStar(const Map &map, const Point &start, const Point &end) {
+  /**
+   * Call the solveAStar function to find the best path between
+   * the start and end points.
+   * The function does not return anything, but it will update
+   * the private member variables.
+   * @brief Constructor for AStar class.
+   * @param map Map to be used for pathfinding.
+   * @param start Starting point of the path.
+   * @param end Ending point of the path.
+   * @return AStar object.
+   */
   solveAStar(map, start, end);
 }
 
 void AStar::solveAStar(const Map &map, const Point &start, const Point &end) {
+  /**
+   * @brief Solve the A* pathfinding problem.
+   * @param map Map to be used for pathfinding.
+   * @param start Starting point of the path.
+   * @param end Ending point of the path.
+   * @return Nothing.
+   * @throws std::runtime_error if the given points are not valid.
+   */
 
   // clear the bestPath vector
   bestPath.clear();
@@ -130,4 +149,10 @@ void AStar::solveAStar(const Map &map, const Point &start, const Point &end) {
   }
 }
 
-auto AStar::getPath() const -> std::deque<Point> { return bestPath; }
+auto AStar::getPath() const -> std::deque<Point> {
+  /**
+   * @brief Get the best path found by the A* algorithm.
+   * @return The best path found by the A* algorithm.
+   */
+  return bestPath;
+}

@@ -1,41 +1,50 @@
 #include "treasure.h"
 #include "game_settings.h"
-#include "utils.h"
-#include <ncurses.h>
+#include <random>
 
-/*
-Treasure::Treasure(int _x, int _y) {
-  x = _x;
-  y = _y;
-  bonus_attack = randomFromRange(0, 2);
-  bonus_exp = randomFromRange(0, 10);
-  bonus_health = randomFromRange(0, 100);
-}
+Treasure::Treasure(const Point &_position, int multiplier)
+    : Entity(_position, 0, 0,
+             Represetiation(Symbols::treasure, Colors::treasure)) {
+  /**
+   * @brief Constructor for Treasure class.
+   * @param _position Position of the entity.
+   * @param multiplier Multiplier of the treasure.
+   * @return Treasure object.
+   */
 
-void Treasure::draw() {
-  attron(COLOR_PAIR(TREASURE_COLOR));
-  mvprintw(y, x, TREASURE_TILE);
-  attroff(COLOR_PAIR(TREASURE_COLOR));
-}
-
-int Treasure::getX() { return x; }
-
-int Treasure::getY() { return y; }
-
-int Treasure::getBonusAttack() { return bonus_attack; }
-
-int Treasure::getBonusExp() { return bonus_exp; }
-
-int Treasure::getBonusHealth() { return bonus_health; }
-
-std::vector<Treasure> initalizeTreasures(int how_many, Map myMap) {
-  std::vector<Treasure> treasures;
-  int pos[2] = {};
-
-  for (int i = 0; i < how_many; i++) {
-    giveValidPositions(pos, myMap);
-    treasures.push_back(Treasure(pos[0], pos[1]));
+  auto val = rand() % 3;
+  switch (val) {
+  case 0:
+    bonus.health = GameSettings::treasureHealth * pow(1.25, multiplier);
+    break;
+  case 1:
+    bonus.attack = GameSettings::treasureAttack * pow(1.25, multiplier);
+    break;
+  case 2:
+    bonus.exp = GameSettings::treasureExperience * pow(1.25, multiplier);
+    break;
   }
+}
 
-  return treasures;
-}*/
+void Treasure::move(int /*dx*/, int /*dy*/) {
+  /**
+   * @brief Override the move method of the Entity class. Do nothing.
+   * @return Nothing.
+   */
+}
+
+auto Treasure::toString() const -> std::string {
+  /**
+   * @brief Get the string representation of the treasure.
+   * @return String representation of the treasure.
+   */
+  return "Treasure";
+}
+
+auto Treasure::getBonus() const -> Bonus {
+  /**
+   * @brief Get the bonus of the treasure.
+   * @return Bonus of the treasure.
+   */
+  return bonus;
+}

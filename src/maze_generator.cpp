@@ -32,6 +32,7 @@ auto MazeGenerator::getNeighbors(unsigned int x, unsigned int y) const
 void MazeGenerator::generateRecursiveDFS() {
   /**
    * @brief Generates a maze using the recursive backtracking algorithm.
+   * @return Nothing.
    */
   std::pair<unsigned int, unsigned int> current = this->start;
   std::vector<std::pair<unsigned int, unsigned int>> stack = {current};
@@ -60,6 +61,7 @@ void MazeGenerator::generateRecursiveDFS() {
 void MazeGenerator::generateRandomizedPrim() {
   /**
    * @brief Generates a maze using the randomized prims algorithm.
+   * @return Nothing.
    */
   std::priority_queue<
       std::pair<unsigned int, std::pair<unsigned int, unsigned int>>>
@@ -92,6 +94,13 @@ void MazeGenerator::generateRandomizedPrim() {
 
 MazeGenerator::MazeGenerator(int width, int height,
                              MazeGeneratorAlgorithm algorithm) {
+  /**
+   * @brief Constructs a new MazeGenerator object.
+   * @param width The width of the maze.
+   * @param height The height of the maze.
+   * @param algorithm The algorithm to use to generate the maze.
+   * @return MazeGenerator object.
+   */
   this->width = width;
   this->height = height;
   this->algorithm = algorithm;

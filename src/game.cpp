@@ -7,6 +7,10 @@
 #include <thread>
 
 Game::Game() {
+  /**
+   * @brief Constructor for Game class.
+   * @return Game object.
+   */
   int maxWidth = GameSettings::maxWidth;
   int maxHeight = GameSettings::maxHeight;
   initscr();
@@ -16,10 +20,19 @@ Game::Game() {
   player = Player(map->getStart());
 }
 
-Game::~Game() {}
+Game::~Game() {
+  /**
+   * @brief Destructor for Game class.
+   * @return Nothing.
+   */
+}
 
 void Game::initalizeMonsters(int count) {
-
+  /**
+   * @brief Initalize monsters on the current map.
+   * @param count The number of monsters to initalize.
+   * @return Nothing.
+   */
   monsters.clear();
 
   // 1/2 goblins
@@ -36,6 +49,12 @@ void Game::initalizeMonsters(int count) {
   auto createMonster =
       [&](int count,
           const std::function<std::unique_ptr<Monster>(Point)> &builder) {
+        /**
+         * @brief Create a Monster object.
+         * @param count The number of monsters to create.
+         * @param builder The function pointer to the builder function.
+         * @return Nothing.
+         */
         for (int i = 0; i < count; i++) {
           Point position = map->randomFreePosition();
           monsters.push_back(builder(position));
@@ -57,6 +76,13 @@ void Game::initalizeMonsters(int count) {
 }
 
 void Game::updateEntityPosition(Entity &entity, int dx, int dy) {
+  /**
+   * @brief Update the position of an entity.
+   * @param entity The entity to update.
+   * @param dx The change in x-coordinate.
+   * @param dy The change in y-coordinate.
+   * @return Nothing.
+   */
 
   // handle special case: check if entity is an Orc
   if (dynamic_cast<Orc *>(&entity) != nullptr) {
@@ -97,6 +123,10 @@ void Game::updateEntityPosition(Entity &entity, int dx, int dy) {
 }
 
 void Game::run() {
+  /**
+   * @brief Run the game.
+   * @return Nothing.
+   */
   init();
   while (!isGameOver()) {
     handleInput();
@@ -109,8 +139,16 @@ void Game::run() {
 }
 
 void Game::init() {
+  /**
+   * @brief Initialize the game.
+   * @return Nothing.
+   */
 
   auto initColorPairs = []() {
+    /**
+     * @brief Initialize color pairs.
+     * @return Nothing.
+     */
     init_pair(Colors::player, COLOR_WHITE, COLOR_BLUE);
     init_pair(Colors::goblin, COLOR_WHITE, COLOR_RED);
     init_pair(Colors::orc, COLOR_WHITE, COLOR_GREEN);
@@ -128,6 +166,10 @@ void Game::init() {
 }
 
 void Game::updatePositions() {
+  /**
+   * @brief Update the positions of all entities.
+   * @return Nothing.
+   */
   for (auto &monster : monsters) {
     int dx = 1;
     int dy = 1;
@@ -154,6 +196,10 @@ void Game::updatePositions() {
 }
 
 void Game::render() {
+  /**
+   * @brief Render the game.
+   * @return Nothing.
+   */
   clear();
   map->draw(player);
   player.draw();
@@ -164,6 +210,11 @@ void Game::render() {
 }
 
 void Game::handleInput() {
+  /**
+   * @brief Handle user input.
+   * @return Nothing.
+   */
+
   int ch = getch();
   switch (ch) {
   case 'q':
@@ -199,6 +250,12 @@ void Game::handleInput() {
 }
 
 void Game::fight(Entity &attacker, Entity &defender) {
+  /**
+   * @brief Fight between two entities.
+   * @param attacker The attacking entity.
+   * @param defender The defending entity.
+   * @return Nothing.
+   */
 
   std::vector<std::string> fightInfo{attacker.toString() + " attacks " +
                                      defender.toString() + "!"};
@@ -242,12 +299,20 @@ void Game::fight(Entity &attacker, Entity &defender) {
 }
 
 void Game::loadLevel() {
+  /**
+   * @brief Load a new map level and initialize the monsters vector.
+   * @return Nothing.
+   */
   map->loadLevel();
   player.setPosition(map->getStart());
   initalizeMonsters(GameSettings::monsterCount + pow(2, level - 1));
 }
 
 void Game::gameOver() {
+  /**
+   * @brief Close the game and display the game over screen.
+   * @return Nothing.
+   */
   clear();
   map->clear();
   mvprintw(LINES / 2, COLS / 2, "Game Over");
@@ -256,14 +321,31 @@ void Game::gameOver() {
   raise(SIGQUIT);
 }
 
-auto Game::isGameOver() -> bool { return !player.isAlive(); }
+auto Game::isGameOver() -> bool {
+  /**
+   * @brief Check if the user is dead.
+   * @return True if the game is over, false otherwise.
+   */
+  return !player.isAlive();
+}
 
 auto Game::isLevelComplete() -> bool {
+  /**
+   * @brief Check if the user has completed the current level.
+   * @return True if the level is complete, false otherwise.
+   */
   return player.getPosition() == map->getEnd();
 }
 
 auto Game::areEntitiesInVicinity(const Entity &entity1, const Entity &entity2,
                                  int distance) const -> bool {
+  /**
+   * @brief Check if two entities are within a certain distance.
+   * @param entity1 The first entity.
+   * @param entity2 The second entity.
+   * @param distance The distance.
+   * @return True if the entities are within the distance, false otherwise.
+   */
   return entity1.getPosition().distance(entity2.getPosition()) <=
          static_cast<double>(distance);
 }

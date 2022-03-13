@@ -6,6 +6,9 @@
 #include <string>
 
 struct Point {
+  /**
+   * @brief Represents a point in a 2D plane.
+   */
   int x;
   int y;
   Point(int _x, int _y);

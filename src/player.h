@@ -4,6 +4,13 @@
 #include "entity.h"
 
 class Player : public Entity {
+  /**
+   * @brief Base class for all players used in the game.
+   * @details This class is used to represent all players in the game.
+   *          It contains crucial information about the player such as
+   *          the position, health, attack and representation of the
+   *          player, as well as the common functions.
+   */
 private:
   int level;
   int exp;

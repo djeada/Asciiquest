@@ -37,5 +37,6 @@ jobs:
       
     - name: C/C++ Lint Action
       uses: shenxianpeng/cpp-linter-action@v1.3.0
+      continue-on-error: true
 
       

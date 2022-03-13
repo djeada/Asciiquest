@@ -5,11 +5,14 @@
 // the map is not stored within the class, only a pointer to it
 // the path is a vector of points
 #include "map.h"
-#include "utils.h"
 #include <deque>
 #include <vector>
 
 class AStar {
+  /**
+   * @brief Find the best route between two given points on a map.
+   *
+   */
 private:
   std::deque<Point> bestPath;
   void solveAStar(const Map &map, const Point &start, const Point &end);

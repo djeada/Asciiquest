@@ -2,6 +2,9 @@
 #define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_GAME_SETTINGS_H
 
 struct Symbols {
+  /**
+   * @brief Symbols used to represent the entities in the game.
+   */
   static const char player = '@';
   static const char deadPlayer = 'x';
   static const char wall = '#';
@@ -14,6 +17,9 @@ struct Symbols {
 };
 
 struct Colors {
+  /**
+   * @brief Colors used to represent the entities in the game.
+   */
   static const int player = 1;
   static const int monster = 2;
   static const int goblin = 3;
@@ -24,6 +30,9 @@ struct Colors {
 };
 
 struct GameSettings {
+  /**
+   * @brief General game settings.
+   */
   static const int playerHealth = 1000;
   static const int playerDamage = 10;
   static const int monsterCount = 10;
@@ -43,6 +52,9 @@ struct GameSettings {
   static const int maxHeight = 24;
   static const int horizontalOffset = 25;
   static const int verticalOffset = 1;
+  static const int treasureHealth = 100;
+  static const int treasureAttack = 10;
+  static const int treasureExperience = 30;
 };
 
 #endif

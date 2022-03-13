@@ -19,7 +19,7 @@ Mysterious-dungeon is a roguelike dungeon game, where you play as a hero, trying
 
 In order to play the game, you need to install the following dependencies:
 
-    * C++11
+    * C++14
     * Ncurses
     * CMake 3.9 or higher
     
