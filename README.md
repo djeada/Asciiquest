@@ -1,6 +1,6 @@
-# Mysterious-dungeon
+# Mysterious Dungeon
 
-Mysterious-dungeon is a roguelike dungeon game, where you play as a hero, trying to find the exit. The enemies are randomly generated, and you can fight them, or try to sneak past them. With each level, the enemies are getting more difficult to defeat. You can also use the items in the dungeon to help you. The game is designed to be played in a terminal, but there are plans to make it work in a browser as well.
+Mysterious Dungeon is a roguelike dungeon game, where you play as a hero, trying to find the exit. The enemies are randomly generated, and you can fight them, or try to sneak past them. With each level, the enemies are getting more difficult to defeat. You can also use the items in the dungeon to help you. The game is designed to be played in a terminal, but there are plans to make it work in a browser as well.
 
 ## Screenshot
 
