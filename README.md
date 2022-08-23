@@ -4,7 +4,7 @@ Mysterious-dungeon is a roguelike dungeon game, where you play as a hero, trying
 
 ## Screenshot
 
-![alt text](https://github.com/djeada/Mysterious-dungeon/blob/master/resources/new_screenshot.png)
+![new_screenshot](https://user-images.githubusercontent.com/37275728/186153359-84890588-1989-40dd-8da3-a0665ca130d4.png)
 
 ## Features
 
@@ -45,7 +45,7 @@ The game is controlled only by the keyboard. The following keys are available:
 
 ## Game design
 
-![alt text](https://github.com/djeada/Mysterious-dungeon/blob/master/resources/game_design.jpg)
+![game_design](https://user-images.githubusercontent.com/37275728/186153392-92685d9b-f267-4779-9157-ed41e56867f6.jpg)
 
 ## Contributing
 It is an open source project, so feel free to contribute!
