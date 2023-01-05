@@ -1,6 +1,6 @@
 # Mysterious Dungeon
 
-Mysterious Dungeon is a roguelike dungeon game, where you play as a hero, trying to find the exit. The enemies are randomly generated, and you can fight them, or try to sneak past them. With each level, the enemies are getting more difficult to defeat. You can also use the items in the dungeon to help you. The game is designed to be played in a terminal, but there are plans to make it work in a browser as well.
+Mysterious Dungeon is a roguelike dungeon game in which you play as a hero trying to find the exit of a randomly generated dungeon. The game features enemy AI, pathfinding algorithms, multithreading, and the ability to play multiplayer. As you progress through the levels, the enemies will become more difficult to defeat. You can use items found in the dungeon to help you on your quest. The game is designed to be played in a terminal, but there are plans to make it work in a browser as well.
 
 ## Screenshot
 
@@ -8,47 +8,40 @@ Mysterious Dungeon is a roguelike dungeon game, where you play as a hero, trying
 
 ## Features
 
-* Maze generation
-* Multiplayer
-* Multithreaded 
-* Pathfinding graph algorithms
-* Enemy AI
-* Multilevel
+* Maze generation using advanced algorithms
+* Multiplayer support for cooperative play
+* Multithreaded design for faster gameplay
+* Pathfinding and AI algorithms for intelligent enemy behavior
+* Multilevel gameplay with progressively challenging enemies
 
-## Installation
+## System requirements
 
-In order to play the game, you need to install the following dependencies:
+To play Mysterious Dungeon, you will need to have C++14 and Ncursed installed, as well as CMake 3.9 or higher.
 
-    * C++14
-    * Ncurses
-    * CMake 3.9 or higher
-    
-To compile the game using CMake, run the following commands:
+## Building and running the game
 
-    git clone https://github.com/djeada/Mysterious-dungeon.git
-    cd Mysterious-dungeon
-    mkdir build && cd build
-    cmake ..
-    make
+To build and run Mysterious Dungeon, follow these steps:
 
-## Usage
+1. Clone the repository: `git clone https://github.com/djeada/Mysterious-dungeon.git`
+1. Navigate to the project directory: `cd Mysterious-dungeon`
+1. Create a build directory: `mkdir build`
+1. Navigate to the build directory: `cd build`
+1. Run CMake: `cmake ..`
+1. Build the game: `make`
+1. Run the game: `./mysterious-dungeon`
 
-After the game is compiled, you can play it by running the following command:
+## How to play
 
-    build/bin/mysterious-dungeon
-
-The game is controlled only by the keyboard. The following keys are available:
-
-    * To move, use the arrow keys or WASD
-    * To attack, press the spacebar 
-    * To quit, press q or ESC
+The game is controlled using the keyboard. Use the arrow keys or WASD to move the player. Press the spacebar to attack enemies. Press q or ESC to quit the game. As you explore the dungeon, you will encounter randomly generated enemies and items that can help you on your quest. The goal is to find the exit and advance to the next level.
 
 ## Game design
+
+Mysterious Dungeon features a unique game design that combines elements of classic roguelike games with advanced algorithms and AI techniques. The maze is generated using state-of-the-art algorithms, and the enemies use pathfinding and AI to navigate the dungeon and engage in combat with the player. The game is designed to be challenging and engaging, with progressively more difficult enemies and new gameplay elements introduced as you advance through the levels.
 
 ![game_design](https://user-images.githubusercontent.com/37275728/186153392-92685d9b-f267-4779-9157-ed41e56867f6.jpg)
 
 ## Contributing
-It is an open source project, so feel free to contribute!
+Mysterious Dungeon is an open source project, and we welcome contributions from the community! If you are interested in making a contribution, please open an issue or submit a pull request with your proposed changes. Contributions could include bug fixes, new features, or improvements to existing code.
 
 ## License
 This project is licensed under the <a href="https://github.com/djeada/Mysterious-dungeon/blob/master/LICENSE">MIT license</a>.
