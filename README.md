@@ -40,6 +40,8 @@ Mysterious Dungeon features a unique game design that combines elements of class
 
 ![game_design](https://user-images.githubusercontent.com/37275728/186153392-92685d9b-f267-4779-9157-ed41e56867f6.jpg)
 
+The AI entity sends a request for a path and then continues to perform other tasks while the pathfinding algorithm calculates the path in the background. Once the path is found, the AI entity is notified and can start following the calculated path. This approach helps to improve performance and avoid freezing the main thread while the path is being calculated.
+
 ## Contributing
 Mysterious Dungeon is an open source project, and we welcome contributions from the community! If you are interested in making a contribution, please open an issue or submit a pull request with your proposed changes. Contributions could include bug fixes, new features, or improvements to existing code.
 
