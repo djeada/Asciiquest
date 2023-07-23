@@ -57,14 +57,14 @@ Goblin::Goblin(const Point &_position)
    */
 }
 
-void Goblin::move(int dx, int dy) {
+void Goblin::move(Point point) {
   /**
    * @brief Move the monster.
    * @param dx offset in x direction.
    * @param dy offset in y direction.
    * @return Nothing.
    */
-  Entity::move(dx, dy);
+  Entity::move(point);
   randomizeVelocity();
 }
 
@@ -86,7 +86,7 @@ Orc::Orc(const Point &_position)
    */
 }
 
-void Orc::move(int /*dx*/, int /*dy*/) {
+void Orc::move(Point point) {
   /**
    * @brief Move the orc according to the path member variable.
    * @param dx unused.
@@ -135,14 +135,14 @@ Troll::Troll(const Point &_position)
   velocity = Point(1, 1);
 }
 
-void Troll::move(int dx, int dy) {
+void Troll::move(Point point) {
   /**
    * @brief Move the troll.
    * @param dx offset in x direction.
    * @param dy offset in y direction.
    * @return Nothing.
    */
-  Entity::move(dx, dy);
+  Entity::move(point);
   randomizeVelocity();
 }
 
@@ -153,6 +153,8 @@ auto Troll::toString() const -> std::string {
    */
   return "Troll";
 }
+
+Point Monster::nextMove() { return Point(); }
 
 Dragon::Dragon(const Point &_position)
     : Monster(_position, GameSettings::dragonHealth, GameSettings::dragonDamage,
@@ -165,7 +167,7 @@ Dragon::Dragon(const Point &_position)
   velocity = Point(0, 0);
 }
 
-void Dragon::move(int /*dx*/, int /*dy*/) {
+void Dragon::move(Point point) {
   /**
    * @brief Implemented out of necessity. Dragon does not move.
    * @param dx unused.

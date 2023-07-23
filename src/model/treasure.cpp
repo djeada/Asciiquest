@@ -1,5 +1,5 @@
 #include "treasure.h"
-#include "game_settings.h"
+#include "utils/game_settings.h"
 #include <random>
 
 Treasure::Treasure(const Point &_position, int multiplier)
@@ -24,13 +24,6 @@ Treasure::Treasure(const Point &_position, int multiplier)
     bonus.exp = GameSettings::treasureExperience * pow(1.25, multiplier);
     break;
   }
-}
-
-void Treasure::move(int /*dx*/, int /*dy*/) {
-  /**
-   * @brief Override the move method of the Entity class. Do nothing.
-   * @return Nothing.
-   */
 }
 
 auto Treasure::toString() const -> std::string {

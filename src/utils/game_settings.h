@@ -1,11 +1,13 @@
-#ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_GAME_SETTINGS_H
-#define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_GAME_SETTINGS_H
+#ifndef GAME_SETTINGS_H
+#define GAME_SETTINGS_H
+
+enum class CellType { EMPTY, WALL, PLAYER };
 
 struct Symbols {
   /**
    * @brief Symbols used to represent the entities in the game.
    */
-  static const char player = '@';
+  static const char player = 'X';
   static const char deadPlayer = 'x';
   static const char wall = '#';
   static const char emptySpace = ' ';

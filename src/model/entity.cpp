@@ -1,5 +1,5 @@
 #include "entity.h"
-#include "game_settings.h"
+#include "utils/game_settings.h"
 #include <algorithm>
 #include <ncurses.h>
 
@@ -119,15 +119,14 @@ void Entity::setAttack(int _attack) {
   strength = _attack;
 }
 
-void Entity::move(int dx, int dy) {
+void Entity::move(Point point) {
   /**
    * @brief Move the entity.
    * @param dx offset in x direction.
    * @param dy offset in y direction.
    * @return Nothing.
    */
-  position.x += dx * velocity.x;
-  position.y += dy * velocity.y;
+  position = point;
 }
 
 void Entity::draw() {
@@ -137,7 +136,8 @@ void Entity::draw() {
    */
   attron(COLOR_PAIR(representation.color));
   const char symbol = representation.symbol;
-  mvprintw(position.y, position.x, &symbol);
+  char str[2] = {symbol, '\0'};
+  mvprintw(position.y, position.x, str);
   attroff(COLOR_PAIR(representation.color));
 }
 

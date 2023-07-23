@@ -1,9 +1,9 @@
 #ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_MAP_H
 #define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_MAP_H
 
-#include "maze_generator.h"
+#include "algorithms/maze_generator.h"
 #include "player.h"
-#include "point.h"
+#include "utils/point.h"
 #include <string>
 #include <vector>
 

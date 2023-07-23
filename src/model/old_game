@@ -1,5 +1,5 @@
 #include "game.h"
-#include "a_star.h"
+#include "algorithms/a_star.h"
 #include "monster.h"
 #include <csignal>
 #include <cstdlib>
@@ -288,13 +288,22 @@ void Game::fight(Entity &attacker, Entity &defender) {
   player.setExp(player.getExp() + 10);
 
   // remove the dead entity from the monsters vector
+  
+  
+for (auto& monster : monsters) { 
+if (monster->isAlive())
+    continue;
+
+  fightInfo.push_back(monster->toString() + " is dead!");
+  
+}
   monsters.erase(
       std::remove_if(monsters.begin(), monsters.end(),
                      [](const auto &monster) { return !monster->isAlive(); }),
       monsters.end());
 
   // display fight info on the map
-  fightInfo.push_back(defender.toString() + " is dead!");
+
   map->setFightInfo(fightInfo);
 }
 

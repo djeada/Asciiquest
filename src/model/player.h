@@ -25,6 +25,7 @@ public:
   auto getExp() const -> int;
   auto expToNextLevel() const -> int;
   void setExp(int _exp);
+  Point nextMove();
   auto toString() const -> std::string override;
   // void exploreTreasure(const Treasure &treasure);
 };

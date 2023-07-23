@@ -1,5 +1,5 @@
 #include "player.h"
-#include "game_settings.h"
+#include "utils/game_settings.h"
 #include <cmath>
 
 Player::Player(const Point &_position, int _health, int _attack)
@@ -23,6 +23,7 @@ Player::Player(const Point &_position) : Player() {
    */
   position = Point(_position);
 }
+Point Player::nextMove() { return Point(); }
 
 Player::Player()
     : Entity(Point(), GameSettings::playerHealth, GameSettings::playerDamage,

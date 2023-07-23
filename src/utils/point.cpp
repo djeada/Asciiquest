@@ -1,5 +1,5 @@
 #include "point.h"
-#include "game_settings.h"
+#include "utils/game_settings.h"
 #include <algorithm>
 #include <cmath>
 

@@ -1,7 +1,7 @@
 #ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_ENTITY_H
 #define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_ENTITY_H
 
-#include "point.h"
+#include "utils/point.h"
 #include <string>
 
 struct Represetiation {
@@ -45,7 +45,7 @@ public:
   void setHealth(int _health);
   void setAttack(int _attack);
   virtual void draw();
-  virtual void move(int dx, int dy);
+  virtual void move(Point point);
   virtual void takeDamage(int damage);
   // give it a string representation of the entity
   virtual auto toString() const -> std::string = 0;

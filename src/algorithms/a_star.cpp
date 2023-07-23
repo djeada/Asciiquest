@@ -1,5 +1,5 @@
 #include "a_star.h"
-#include "game_settings.h"
+#include "utils/game_settings.h"
 #include <functional>
 #include <queue>
 #include <random>

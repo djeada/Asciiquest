@@ -27,7 +27,7 @@ class Treasure : public Entity {
 
 public:
   Treasure(const Point &_position, int multiplier);
-  void move(int dx, int dy) override;
+
   auto toString() const -> std::string override;
   auto getBonus() const -> Bonus;
 };

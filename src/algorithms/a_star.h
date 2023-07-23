@@ -4,7 +4,7 @@
 // map is represented by a vector of strings.
 // the map is not stored within the class, only a pointer to it
 // the path is a vector of points
-#include "map.h"
+#include "model/map.h"
 #include <deque>
 #include <vector>
 

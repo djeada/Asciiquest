@@ -1,5 +1,5 @@
 #include "map.h"
-#include "game_settings.h"
+#include "utils/game_settings.h"
 #include <fstream>
 #include <ncurses.h>
 #include <sstream>
