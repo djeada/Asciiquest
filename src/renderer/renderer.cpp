@@ -1,38 +1,39 @@
 #include "renderer.h"
-
-std::unordered_map<CellType, std::pair<char, int>> cellTypeToCharColor = {
-    {CellType::EMPTY, {' ', COLOR_BLACK}},
-    {CellType::WALL, {'#', COLOR_BLUE}},
-    {CellType::PLAYER, {'@', COLOR_RED}}
-
-};
+#include "game_board_renderer.h"
+#include "main_menu_renderer.h"
 
 Renderer::Renderer() {
-  initscr();
-  start_color();
-  curs_set(0);
-  noecho();
+  initscr();   // Initialize the ncurses library
+  noecho();    // Don't display key presses
+  curs_set(0); // Don't display the cursor
+  // Start color functionality
 
   init_pair(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
   init_pair(COLOR_BLUE, COLOR_BLUE, COLOR_WHITE);
   init_pair(COLOR_RED, COLOR_RED, COLOR_WHITE);
 }
 
-Renderer::~Renderer() { endwin(); }
-
-void Renderer::drawBoard(const std::vector<std::vector<CellType>> &grid) {
-  for (int y = 0; y < grid.size(); y++) {
-    for (int x = 0; x < grid[y].size(); x++) {
-      auto cell_type = grid[y][x];
-      const auto &[ch, color] = cellTypeToCharColor[cell_type];
-      attron(COLOR_PAIR(color));
-      mvaddch(y, x, ch);
-      attroff(COLOR_PAIR(color));
-    }
-  }
-  refresh();
+Renderer::Renderer(const Renderer &) {
+  currentStateRenderer = std::make_unique<MainMenuRenderer>();
 }
 
-void Renderer::drawFightInfo(const std::vector<std::string> &info) {}
-void Renderer::drawStats(
-    const std::unordered_map<std::string, std::string> &info) {}
+Renderer::~Renderer() { endwin(); }
+
+void Renderer::setState(GameState gameState) {
+  switch (gameState) {
+  case GameState::MAIN_MENU:
+    currentStateRenderer = std::make_unique<MainMenuRenderer>();
+    break;
+  case GameState::GAMEPLAY:
+    currentStateRenderer = std::make_unique<GameBoardRenderer>();
+    break;
+  // ... other cases to handle other game states
+  default:
+    break;
+  }
+}
+void Renderer::draw(const std::vector<std::vector<CellType>> &grid,
+                    const std::vector<std::string> &fightInfo,
+                    const std::unordered_map<std::string, std::string> &stats) {
+  currentStateRenderer->draw(grid, fightInfo, stats);
+}

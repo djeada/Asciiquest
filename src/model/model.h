@@ -1,7 +1,9 @@
-#include "utils/direction.h"
+#ifndef MODEL_H
+#define MODEL_H
 
 #include "monster.h"
 #include "player.h"
+#include "utils/direction.h"
 #include <unordered_map>
 #include <vector>
 
@@ -19,10 +21,9 @@ public:
   Model();
   void update();
   void fight(Monster &monster);
-  void movePlayer(Direction direction);
+  void movePlayer(Point point);
   void loadMap();
   bool isGameOver();
-
   std::unordered_map<std::string, std::string> getPlayerStats();
 
   std::vector<std::string> fightInfo;
@@ -35,3 +36,5 @@ private:
   bool isWall(Point point);
   bool isPlayer(Point point);
 };
+
+#endif // MODEL_H

@@ -1,9 +1,13 @@
 #include "controller/controller.h"
+#include "model/model.h"
+#include "renderer/renderer.h"
 
 int main() {
+  Model model;
+  Renderer renderer;
 
-  Controller controller;
+  Controller controller(model, renderer);
   controller.run();
 
-  return 1;
+  return 0;
 }

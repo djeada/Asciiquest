@@ -3,6 +3,8 @@
 
 enum class CellType { EMPTY, WALL, PLAYER };
 
+enum class GameState { MAIN_MENU, GAMEPLAY, PAUSE_MENU, GAME_OVER };
+
 struct Symbols {
   /**
    * @brief Symbols used to represent the entities in the game.

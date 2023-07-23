@@ -3,21 +3,22 @@
 
 class Controller {
 
-  // GameState Managment
-
 public:
-  Controller();
+  Controller(Model &m, Renderer &r);
 
   void run();
 
 private:
-  enum class GameState { MAINE_MENU, GAMEPLAY, PAUSE_MENU, GAME_OVER };
-
+  void handleGameState();
   void handleGamePlay();
   void handleGameOver();
   void handlePauseMenu();
   void handleMainMenu();
   void handleInput();
+  void handleGameplayInput(int ch);
+  void handleMainMenuInput(int ch);
+  void handlePauseMenuInput(int ch);
+
   Model model;
   Renderer renderer;
   bool isRunning;
