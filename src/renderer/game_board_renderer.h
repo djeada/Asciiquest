@@ -1,16 +1,34 @@
+#ifndef GAME_BOARD_RENDERER_H
+#define GAME_BOARD_RENDERER_H
+
+#include "renderer_data.h"
 #include "state_renderer.h"
 
 class GameBoardRenderer : public StateRenderer {
 public:
-  GameBoardRenderer();
-  ~GameBoardRenderer();
+  GameBoardRenderer(const RendererData &_data);
+  ~GameBoardRenderer() override;
 
-  void draw(const std::vector<std::vector<CellType>> &grid,
-            const std::vector<std::string> &fightInfo,
-            const std::unordered_map<std::string, std::string> &stats);
+  void draw() override;
 
 private:
-  void drawBoard(const std::vector<std::vector<CellType>> &grid);
-  void drawFightInfo(const std::vector<std::string> &info);
-  void drawStats(const std::unordered_map<std::string, std::string> &info);
+  const RendererData
+      &data; // Store a reference to the data needed for rendering
+
+  void drawBoard();
+  void drawFightInfo();
+  void drawStats();
+
+  // Terminal size
+  int termHeight;
+  int termWidth;
+
+  // Components' sizes
+  int boardWidth;
+  int boardHeight;
+  int fightInfoWidth;
+  int fightInfoHeight;
+  int statsHeight;
 };
+
+#endif // GAME_BOARD_RENDERER_H

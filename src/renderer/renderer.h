@@ -1,8 +1,11 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "state_renderer.h" // path to the StateRenderer class
+#include "renderer_data.h"
+#include "state_renderer.h"
 #include "utils/game_settings.h"
+#include <functional>
+#include <map>
 #include <memory> // for unique_ptr
 #include <ncurses.h>
 #include <string>
@@ -13,16 +16,16 @@ class Renderer {
 public:
   Renderer();
   Renderer(const Renderer &);
-
   ~Renderer();
 
+  void draw(const RendererData &data);
   void setState(GameState gameState);
-  void draw(const std::vector<std::vector<CellType>> &grid,
-            const std::vector<std::string> &fightInfo,
-            const std::unordered_map<std::string, std::string> &stats);
 
 private:
-  std::unique_ptr<StateRenderer> currentStateRenderer;
+  GameState currentGameState;
+  std::map<GameState,
+           std::function<std::unique_ptr<StateRenderer>(const RendererData &)>>
+      stateRendererMap;
 };
 
 #endif // RENDERER_H

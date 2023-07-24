@@ -1,7 +1,7 @@
 #include "model.h"
 
 Model::Model() {
-  map = std::make_shared<Map>(100, 20);
+  map = std::make_shared<Map>(100, 100);
   loadMap();
 }
 
@@ -51,8 +51,19 @@ bool Model::isPlayer(Point point) {
 }
 
 std::unordered_map<std::string, std::string> Model::getPlayerStats() {
-  // return player.getStats();
+
   std::unordered_map<std::string, std::string> result;
+
+  // Get the player's health, level and experience values
+  auto health = player.getHealth();
+  auto level = player.getLevel();
+  auto exp = player.getExp();
+
+  // Convert the integer values to string
+  result["Health"] = std::to_string(health);
+  result["Level"] = std::to_string(level);
+  result["Experience"] = std::to_string(exp);
+
   return result;
 }
 

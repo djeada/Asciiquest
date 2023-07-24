@@ -1,26 +1,29 @@
+#ifndef Controller_H
+#define Controller_H
+
+#include "game_state_handler.h"
 #include "model/model.h"
 #include "renderer/renderer.h"
 
-class Controller {
+class GameStateHandler;
 
+class Controller {
 public:
   Controller(Model &m, Renderer &r);
 
   void run();
 
-private:
   void handleGameState();
-  void handleGamePlay();
-  void handleGameOver();
-  void handlePauseMenu();
-  void handleMainMenu();
+  void stopRunning();
+  void setState(GameState gameState);
   void handleInput();
-  void handleGameplayInput(int ch);
-  void handleMainMenuInput(int ch);
-  void handlePauseMenuInput(int ch);
-
+  GameState currentGameState;
   Model model;
   Renderer renderer;
   bool isRunning;
-  GameState currentGameState;
+
+private:
+  std::map<GameState, std::unique_ptr<GameStateHandler>> gameStateHandlers;
 };
+
+#endif

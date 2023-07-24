@@ -4,18 +4,25 @@
 #include <cstdlib>
 
 Renderer::Renderer() {
-  initscr();   // Initialize the ncurses library
-  noecho();    // Don't display key presses
-  curs_set(0); // Don't display the cursor
-  // Start color functionality
+  initscr(); // Call initscr() to initialize the library
+  noecho();
+  curs_set(0);
 
-  init_pair(COLOR_BLACK, COLOR_BLACK, COLOR_WHITE);
-  init_pair(COLOR_BLUE, COLOR_BLUE, COLOR_WHITE);
-  init_pair(COLOR_RED, COLOR_RED, COLOR_WHITE);
+  stateRendererMap[GameState::MAIN_MENU] = [](const RendererData &) {
+    return std::make_unique<MainMenuRenderer>();
+  };
+  stateRendererMap[GameState::GAMEPLAY] = [](const RendererData &data) {
+    return std::make_unique<GameBoardRenderer>(data);
+  };
+  // ... other game states
 }
 
-Renderer::Renderer(const Renderer &) {
-  currentStateRenderer = std::make_unique<MainMenuRenderer>();
+Renderer::Renderer(const Renderer &other)
+    : currentGameState(other.currentGameState),
+      stateRendererMap(other.stateRendererMap) {
+  initscr();
+  noecho();
+  curs_set(0);
 }
 
 Renderer::~Renderer() {
@@ -24,21 +31,14 @@ Renderer::~Renderer() {
   exit(0);
 }
 
-void Renderer::setState(GameState gameState) {
-  switch (gameState) {
-  case GameState::MAIN_MENU:
-    currentStateRenderer = std::make_unique<MainMenuRenderer>();
-    break;
-  case GameState::GAMEPLAY:
-    currentStateRenderer = std::make_unique<GameBoardRenderer>();
-    break;
-  // ... other cases to handle other game states
-  default:
-    break;
+void Renderer::setState(GameState gameState) { currentGameState = gameState; }
+
+void Renderer::draw(const RendererData &data) {
+  if (!stateRendererMap.count(currentGameState)) {
+    return;
   }
-}
-void Renderer::draw(const std::vector<std::vector<CellType>> &grid,
-                    const std::vector<std::string> &fightInfo,
-                    const std::unordered_map<std::string, std::string> &stats) {
-  currentStateRenderer->draw(grid, fightInfo, stats);
+
+  std::unique_ptr<StateRenderer> currentStateRenderer =
+      stateRendererMap[currentGameState](data);
+  currentStateRenderer->draw();
 }

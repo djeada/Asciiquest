@@ -2,60 +2,80 @@
 #include <ncurses.h>
 
 std::unordered_map<CellType, std::pair<char, int>> cellTypeToCharColor = {
-    {CellType::EMPTY, {' ', COLOR_BLACK}},
-    {CellType::WALL, {'#', COLOR_BLUE}},
-    {CellType::PLAYER, {'@', COLOR_RED}}
+    {CellType::EMPTY, {' ', 1}},
+    {CellType::WALL, {'#', 2}},
+    {CellType::PLAYER, {'@', 3}}};
 
-};
+GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
+  start_color(); // Start color functionality
 
-GameBoardRenderer::GameBoardRenderer() {}
+  // Define color pairs
+  if (!has_colors()) {
+    return;
+  }
+
+  init_pair(1, COLOR_WHITE, COLOR_BLACK);
+  init_pair(2, COLOR_BLUE, COLOR_BLACK);
+  init_pair(3, COLOR_RED, COLOR_BLACK);
+
+  // Get terminal size
+  getmaxyx(stdscr, termHeight, termWidth);
+
+  // Calculate sizes
+  boardWidth = termWidth * 0.75;
+  fightInfoWidth = termWidth * 0.25;
+}
 
 GameBoardRenderer::~GameBoardRenderer() {}
 
-void GameBoardRenderer::draw(
-    const std::vector<std::vector<CellType>> &grid,
-    const std::vector<std::string> &fightInfo,
-    const std::unordered_map<std::string, std::string> &stats) {
+void GameBoardRenderer::draw() {
   clear();
-  drawBoard(grid);
-  drawFightInfo(fightInfo);
-  drawStats(stats);
+  drawBoard();
+  drawFightInfo();
+  drawStats();
+  refresh();
 }
 
-void GameBoardRenderer::drawBoard(
-    const std::vector<std::vector<CellType>> &grid) {
-  for (int y = 0; y < grid.size(); y++) {
-    for (int x = 0; x < grid[y].size(); x++) {
-      auto cell_type = grid[y][x];
+void GameBoardRenderer::drawBoard() {
+  const auto &grid = data.grid;
+  const auto &playerPosition = data.playerPosition; // assuming this exists
+  int boardHeight =
+      std::min(termHeight - 5,
+               static_cast<int>(grid.size())); // reserve 5 lines for stats
+  int boardWidth = std::min(this->boardWidth, static_cast<int>(grid[0].size()));
+
+  // calculate the top-left corner of the view
+  int viewTop =
+      std::max(0, std::min(static_cast<int>(grid.size()) - boardHeight,
+                           playerPosition.y - boardHeight / 2));
+  int viewLeft =
+      std::max(0, std::min(static_cast<int>(grid[0].size()) - boardWidth,
+                           playerPosition.x - boardWidth / 2));
+
+  for (int y = 0; y < boardHeight; y++) {
+    for (int x = 0; x < boardWidth; x++) {
+      const auto &cell_type = grid[viewTop + y][viewLeft + x];
       const auto &[ch, color] = cellTypeToCharColor[cell_type];
       attron(COLOR_PAIR(color));
       mvaddch(y, x, ch);
       attroff(COLOR_PAIR(color));
     }
   }
-  refresh();
 }
 
-void GameBoardRenderer::drawFightInfo(const std::vector<std::string> &info) {}
-void GameBoardRenderer::drawStats(
-    const std::unordered_map<std::string, std::string> &info) {}
+void GameBoardRenderer::drawFightInfo() {
+  // implementation for drawing fight information
+  // Here, ensure that the height is limited to termHeight
+  // and width is limited to fightInfoWidth
+  // The fight info should start from x-coordinate = boardWidth
+}
 
-/*
+void GameBoardRenderer::drawStats() {
+  int row = termHeight - 5; // start from the reserved space
 
-// Helper function to display a given vector of strings on the screen
-void Map::displayVector(int y, int x, const std::vector<std::string> &info) {
-  for (const auto &str : info) {
-    mvprintw(y++, x, str.c_str());
+  for (const auto &stat : data.stats) {
+    if (row < termHeight) { // Check if we have more space in terminal
+      mvprintw(row++, 0, "%s: %s", stat.first.c_str(), stat.second.c_str());
+    }
   }
 }
-
-// Helper function to display the player info at the bottom of the screen
-void Map::displayPlayerInfo(int y, int x, const Player &player) {
-  std::ostringstream message;
-  message << "Health: " << player.getHealth() << "/" << player.getMaxHealth()
-          << " Level: " << player.getLevel() << " Exp: " << player.getExp()
-          << "/" << player.getExp();
-
-  mvprintw(y, x, message.str().c_str());
-}
-*/
