@@ -6,6 +6,7 @@ Controller::Controller(Model &m, Renderer &r) : model(m), renderer(r) {
 }
 
 void Controller::run() {
+  keypad(stdscr, TRUE);
   isRunning = true;
 
   while (isRunning) {
@@ -37,7 +38,7 @@ void Controller::handleGamePlay() {
   model.update(); // Update the game state
   auto stat = model.getPlayerStats();
   renderer.setState(GameState::GAMEPLAY);
-  renderer.draw(model.grid, model.fightInfo, stat);
+  renderer.draw(model.map->grid, model.fightInfo, stat);
 
   // if (model.isGameOver()) {
   //   currentGameState = GameState::GAME_OVER;
@@ -92,18 +93,23 @@ void Controller::handleInput() {
 void Controller::handleGameplayInput(int ch) {
   switch (ch) {
   case 'q':
+    // case KEY_ESCAPE: // Escape key
     isRunning = false;
     break;
   case 'w':
+  case KEY_UP: // Up arrow key
     model.movePlayer(Direction::UP);
     break;
   case 'a':
+  case KEY_LEFT: // Left arrow key
     model.movePlayer(Direction::LEFT);
     break;
   case 's':
+  case KEY_DOWN: // Down arrow key
     model.movePlayer(Direction::DOWN);
     break;
   case 'd':
+  case KEY_RIGHT: // Right arrow key
     model.movePlayer(Direction::RIGHT);
     break;
   case 'p':

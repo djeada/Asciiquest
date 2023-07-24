@@ -32,7 +32,7 @@ class Goblin : public Monster {
    */
 public:
   explicit Goblin(const Point &_position);
-  void move(Point point) override;
+  void move(const Point &destination);
   auto toString() const -> std::string override;
 };
 
@@ -48,7 +48,7 @@ class Orc : public Monster {
 
 public:
   explicit Orc(const Point &_position);
-  void move(Point point) override;
+  void move(const Point &destination);
   auto toString() const -> std::string override;
   void setPath(const std::deque<Point> &_path);
   auto isPathEmpty() const -> bool;
@@ -64,7 +64,7 @@ class Troll : public Monster {
    */
 public:
   explicit Troll(const Point &_position);
-  void move(Point point) override;
+  void move(const Point &destination);
   auto toString() const -> std::string override;
 };
 
@@ -78,7 +78,7 @@ class Dragon : public Monster {
    */
 public:
   explicit Dragon(const Point &_position);
-  void move(Point point) override;
+  void move(const Point &destination);
   auto toString() const -> std::string override;
 };
 

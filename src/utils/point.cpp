@@ -3,81 +3,44 @@
 #include <algorithm>
 #include <cmath>
 
-Point::Point(int _x, int _y) : x(_x), y(_y) {
-  /**
-   * @brief Constructs a point with the given coordinates.
-   * @param _x The x coordinate.
-   * @param _y The y coordinate.
-   * @return A point with the given coordinates.
-   */
-}
-Point::Point() : x(0), y(0) {
-  /**
-   * @brief Constructs a point with 0, 0 coordinates.
-   * @return A point with 0, 0 coordinates.
-   */
-}
-Point::Point(const Point &other) : x(other.x), y(other.y) {
-  /**
-   * @brief Constructs a point with the same coordinates as the given point.
-   * @param other The point to copy.
-   * @return A point with the same coordinates as the given point.
-   */
+// Constructor
+Point::Point(int _x, int _y) : x(_x), y(_y) {}
+
+// Default constructor
+Point::Point() : x(0), y(0) {}
+
+// Copy constructor
+Point::Point(const Point &other) : x(other.x), y(other.y) {}
+
+// Equality comparison operator
+bool Point::operator==(const Point &p) const { return (x == p.x && y == p.y); }
+
+// Inequality comparison operator
+bool Point::operator!=(const Point &p) const { return !(*this == p); }
+
+// Addition assignment operator
+Point &Point::operator+=(const Point &other) {
+  this->x += other.x;
+  this->y += other.y;
+  return *this;
 }
 
-auto Point::operator==(const Point &p) const -> bool {
-  /**
-   * @brief Compares two points for equality.
-   * @param p The point to compare to.
-   * @return True if the points are equal, false otherwise.
-   */
-  return (x == p.x && y == p.y);
-}
-
-auto Point::operator!=(const Point &p) const -> bool {
-  /**
-   * @brief Compares two points for inequality.
-   * @param p The point to compare to.
-   * @return True if the points are not equal, false otherwise.
-   */
-  return !(*this == p);
-}
-
-auto Point::distance(const Point &p) const -> double {
-  /**
-   * @brief Calculates the distance between two points.
-   * @param p The point to calculate the distance to.
-   * @return The distance between the two points.
-   */
-  // use the Pythagorean theorem
+// Function to calculate the distance between two points
+double Point::distance(const Point &p) const {
   return std::sqrt(std::pow(x - p.x, 2) + std::pow(y - p.y, 2));
 }
 
-auto Point::toString() const -> std::string {
-  /**
-   * @brief Converts the point to a string.
-   * @return The point as a string.
-   */
+// Function to convert the point to a string
+std::string Point::toString() const {
   return "(" + std::to_string(x) + ", " + std::to_string(y) + ")";
 }
 
-auto hash_value(const Point &p) -> size_t {
-  /**
-   * @brief Maps a point to a unique and deterministic value.
-   * @param p The point to map.
-   * @return The unique and deterministic value of the point.
-   */
-  // use the Cantor pairing function
-  // https://en.wikipedia.org/wiki/Pairing_function#Cantor_pairing_function
+// Function to get the hash value of the point
+size_t hash_value(const Point &p) {
   return (p.x + p.y) * (p.x + p.y + 1) / 2 + p.y;
 }
+
+// Hash function for Point
 namespace std {
-auto hash<Point>::operator()(const Point &p) const -> size_t {
-  /**
-   * @brief Hash function for Point.
-   * @param p The point to hash.
-   * @return The hash value of the point.
-   */
-  return hash_value(p);
-}
+size_t hash<Point>::operator()(const Point &p) const { return hash_value(p); }
 } // namespace std

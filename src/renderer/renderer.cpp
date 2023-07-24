@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include "game_board_renderer.h"
 #include "main_menu_renderer.h"
+#include <cstdlib>
 
 Renderer::Renderer() {
   initscr();   // Initialize the ncurses library
@@ -17,7 +18,11 @@ Renderer::Renderer(const Renderer &) {
   currentStateRenderer = std::make_unique<MainMenuRenderer>();
 }
 
-Renderer::~Renderer() { endwin(); }
+Renderer::~Renderer() {
+  endwin();
+  std::system("clear");
+  exit(0);
+}
 
 void Renderer::setState(GameState gameState) {
   switch (gameState) {

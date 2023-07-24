@@ -57,14 +57,14 @@ Goblin::Goblin(const Point &_position)
    */
 }
 
-void Goblin::move(Point point) {
+void Goblin::move(const Point &destination) {
   /**
    * @brief Move the monster.
    * @param dx offset in x direction.
    * @param dy offset in y direction.
    * @return Nothing.
    */
-  Entity::move(point);
+  Entity::move(destination);
   randomizeVelocity();
 }
 
@@ -86,7 +86,7 @@ Orc::Orc(const Point &_position)
    */
 }
 
-void Orc::move(Point point) {
+void Orc::move(const Point &destination) {
   /**
    * @brief Move the orc according to the path member variable.
    * @param dx unused.
@@ -135,14 +135,14 @@ Troll::Troll(const Point &_position)
   velocity = Point(1, 1);
 }
 
-void Troll::move(Point point) {
+void Troll::move(const Point &destination) {
   /**
    * @brief Move the troll.
    * @param dx offset in x direction.
    * @param dy offset in y direction.
    * @return Nothing.
    */
-  Entity::move(point);
+  Entity::move(destination);
   randomizeVelocity();
 }
 
@@ -167,7 +167,7 @@ Dragon::Dragon(const Point &_position)
   velocity = Point(0, 0);
 }
 
-void Dragon::move(Point point) {
+void Dragon::move(const Point &destination) {
   /**
    * @brief Implemented out of necessity. Dragon does not move.
    * @param dx unused.

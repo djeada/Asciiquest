@@ -119,15 +119,9 @@ void Entity::setAttack(int _attack) {
   strength = _attack;
 }
 
-void Entity::move(Point point) {
-  /**
-   * @brief Move the entity.
-   * @param dx offset in x direction.
-   * @param dy offset in y direction.
-   * @return Nothing.
-   */
-  position = point;
-}
+void Entity::move(const Point &destination) { position = destination; }
+
+void Entity::moveBy(const Point &offset) { position += offset; }
 
 void Entity::draw() {
   /**

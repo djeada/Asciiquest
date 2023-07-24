@@ -22,7 +22,6 @@ class Entity {
    *          entity, as well as the common functions.
    */
 protected:
-  Point position;
   Point velocity;
   int health;
   int maxHealth;
@@ -34,7 +33,7 @@ public:
          Represetiation _representation);
   Entity();
   virtual ~Entity();
-
+  Point position;
   auto getPosition() const -> Point;
   auto getHealth() const -> int;
   auto getMaxHealth() const -> int;
@@ -45,7 +44,9 @@ public:
   void setHealth(int _health);
   void setAttack(int _attack);
   virtual void draw();
-  virtual void move(Point point);
+  void move(const Point &destination);
+  void moveBy(const Point &offset);
+
   virtual void takeDamage(int damage);
   // give it a string representation of the entity
   virtual auto toString() const -> std::string = 0;

@@ -39,3 +39,23 @@ void GameBoardRenderer::drawBoard(
 void GameBoardRenderer::drawFightInfo(const std::vector<std::string> &info) {}
 void GameBoardRenderer::drawStats(
     const std::unordered_map<std::string, std::string> &info) {}
+
+/*
+
+// Helper function to display a given vector of strings on the screen
+void Map::displayVector(int y, int x, const std::vector<std::string> &info) {
+  for (const auto &str : info) {
+    mvprintw(y++, x, str.c_str());
+  }
+}
+
+// Helper function to display the player info at the bottom of the screen
+void Map::displayPlayerInfo(int y, int x, const Player &player) {
+  std::ostringstream message;
+  message << "Health: " << player.getHealth() << "/" << player.getMaxHealth()
+          << " Level: " << player.getLevel() << " Exp: " << player.getExp()
+          << "/" << player.getExp();
+
+  mvprintw(y, x, message.str().c_str());
+}
+*/
