@@ -1,6 +1,6 @@
 # Mysterious Dungeon
 
-Mysterious Dungeon is a roguelike dungeon game in which you play as a hero trying to find the exit of a randomly generated dungeon. The game features enemy AI, pathfinding algorithms, multithreading, and the ability to play multiplayer. As you progress through the levels, the enemies will become more difficult to defeat. You can use items found in the dungeon to help you on your quest. The game is designed to be played in a terminal, but there are plans to make it work in a browser as well.
+Mysterious Dungeon is an ASCII-based roguelike game. As the hero `@`, you're tasked with navigating through a randomly generated dungeon, filled with fearsome enemies and treacherous traps. Along the journey, you'll uncover pieces of a secret story, shaping the destiny of your character. The game can be played in a terminal and features AI enemies, real-time combat, dynamic environment interactions, multiplayer capability, and a compelling narrative.
 
 ## Screenshot
 
@@ -8,15 +8,21 @@ Mysterious Dungeon is a roguelike dungeon game in which you play as a hero tryin
 
 ## Features
 
-* Maze generation using advanced algorithms
-* Multiplayer support for cooperative play
-* Multithreaded design for faster gameplay
-* Pathfinding and AI algorithms for intelligent enemy behavior
-* Multilevel gameplay with progressively challenging enemies
+* Procedural Dungeon Generation: Each game is a new challenge with levels generated on-the-fly.
+* Real-Time Gameplay: Keep moving, thinking, and fighting your way out of dangerous situations.
+* AI Enemies: Face off against a variety of enemies each with unique characteristics and behaviours.
+* Environment Interactions: Use your surroundings to your advantage, break walls, shoot arrows, set traps, and cast magic spells.
+* Multiplayer Support: Enjoy cooperative gameplay over LAN or Internet.
+* Hidden Story: Uncover a secret narrative as you progress through the levels, adding another layer of depth to your quest.
 
 ## System requirements
 
-To play Mysterious Dungeon, you will need to have C++14 and Ncursed installed, as well as CMake 3.9 or higher.
+To play Mysterious Dungeon, you need:
+
+* C++14 compiler
+* NCurses library
+* CMake 3.9 or higher
+* Knowledge of networking for multiplayer (LAN / Internet)
 
 ## Building and running the game
 
@@ -32,18 +38,20 @@ To build and run Mysterious Dungeon, follow these steps:
 
 ## How to play
 
-The game is controlled using the keyboard. Use the arrow keys or WASD to move the player. Press the spacebar to attack enemies. Press q or ESC to quit the game. As you explore the dungeon, you will encounter randomly generated enemies and items that can help you on your quest. The goal is to find the exit and advance to the next level.
+The game is controlled using the keyboard. Use the arrow keys or WASD to move the player. Press the spacebar to attack enemies. Press q or ESC to quit the game. Encounter enemies and items as you explore the dungeon. The goal is to find the exit and advance to the next level.
 
 ## Game design
 
-Mysterious Dungeon features a unique game design that combines elements of classic roguelike games with advanced algorithms and AI techniques. The maze is generated using state-of-the-art algorithms, and the enemies use pathfinding and AI to navigate the dungeon and engage in combat with the player. The game is designed to be challenging and engaging, with progressively more difficult enemies and new gameplay elements introduced as you advance through the levels.
+Mysterious Dungeon combines elements of classic roguelike games with modern algorithms and AI techniques. The dungeon maze, generated with advanced algorithms, creates a unique experience for every game. The enemies, imbued with AI and pathfinding, provide a dynamic challenge. Each level introduces new gameplay elements and tougher enemies, ensuring an engaging experience throughout the game.
 
 ![game_design](https://user-images.githubusercontent.com/37275728/186153392-92685d9b-f267-4779-9157-ed41e56867f6.jpg)
 
-The AI entity sends a request for a path and then continues to perform other tasks while the pathfinding algorithm calculates the path in the background. Once the path is found, the AI entity is notified and can start following the calculated path. This approach helps to improve performance and avoid freezing the main thread while the path is being calculated.
+Each AI entity independently requests a path and performs tasks while the path is being calculated. Once the path is ready, the entity is notified and can start following the path. This approach optimizes performance and avoids the main thread from being blocked.
 
 ## Contributing
-Mysterious Dungeon is an open source project, and we welcome contributions from the community! If you are interested in making a contribution, please open an issue or submit a pull request with your proposed changes. Contributions could include bug fixes, new features, or improvements to existing code.
+
+Mysterious Dungeon is an open-source project. We welcome contributions from the community! Whether it's bug fixes, new features, or improvements to existing code, your contributions are appreciated. Please open an issue or submit a pull request with your proposed changes.
 
 ## License
-This project is licensed under the <a href="https://github.com/djeada/Mysterious-dungeon/blob/master/LICENSE">MIT license</a>.
+
+This project is licensed under the [MIT license](https://github.com/djeada/Mysterious-dungeon/blob/master/LICENSE).
