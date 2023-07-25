@@ -56,11 +56,10 @@ void MainMenuStateHandler::handleInput(Controller &controller, int ch) {
 void GameplayStateHandler::handleState(Controller &controller) {
   auto &model = controller.model;
   auto &renderer = controller.renderer;
-  model.update(); // Update the game state
   auto stat = model.getPlayerStats();
   renderer.setState(GameState::GAMEPLAY);
-  renderer.draw(RendererData(model.map->grid, model.fightInfo, stat,
-                             model.player.position));
+  renderer.draw(
+      RendererData(model.map->grid, model.info, stat, model.player.position));
 
   if (model.isGameOver()) {
     controller.setState(GameState::GAME_OVER);

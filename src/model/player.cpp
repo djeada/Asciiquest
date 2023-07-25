@@ -3,8 +3,7 @@
 #include <cmath>
 
 Player::Player(const Point &_position, int _health, int _attack)
-    : Entity(_position, _health, _attack,
-             Represetiation(Symbols::player, Colors::player)) {
+    : Entity(_position, _health, _attack) {
   /**
    * @brief Constructor for Player class.
    * @param _position Position of the entity.
@@ -26,8 +25,7 @@ Player::Player(const Point &_position) : Player() {
 Point Player::nextMove() { return Point(); }
 
 Player::Player()
-    : Entity(Point(), GameSettings::playerHealth, GameSettings::playerDamage,
-             Represetiation(Symbols::player, Colors::player)) {
+    : Entity(Point(), GameSettings::playerHealth, GameSettings::playerDamage) {
   /**
    * @brief Default constructor for Player class.
    * @return Player object.

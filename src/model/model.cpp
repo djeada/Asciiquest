@@ -1,65 +1,141 @@
 #include "model.h"
+#include <chrono>
+#include <sstream>
+#include <thread>
 
-Model::Model() {
+Model::Model() : running(false) {
   map = std::make_shared<Map>(100, 100);
+
+  for (int i = 0; i < 100; ++i) {
+    auto goblin = std::make_shared<Goblin>(Point(i, i));
+    monsters.push_back(goblin);
+  }
+
   loadMap();
+  startUpdateLoop();
+}
+
+void Model::startUpdateLoop() {
+  running = true;
+
+  std::thread updateThread([this]() {
+    while (running) {
+      this->update();
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+  });
+
+  updateThread.detach();
+}
+
+void Model::stopUpdateLoop() {
+  running = false;
+  // if (updateThread.joinable()) {
+  //   updateThread.join();
+  //}
 }
 
 void Model::update() {
+
   for (auto &monster : monsters) {
-    auto wishedNewPos = monster.nextMove();
-
-    if (isWall(wishedNewPos) || isPlayer(wishedNewPos))
-      continue;
-
-    monster.move(wishedNewPos);
+    moveEntity(monster->velocity, *monster);
+    if (isPlayer(monster->getPosition())) {
+      fight(*monster);
+    }
   }
+
+  std::lock_guard<std::mutex> lock(fightMutex);
+  monsters.erase(std::remove_if(monsters.begin(), monsters.end(),
+                                [](const std::shared_ptr<Monster> &monster) {
+                                  return !monster->isAlive();
+                                }),
+                 monsters.end());
 }
 
 void Model::fight(Monster &monster) {
-  // auto fightOutcome = player.fight(monster);
-  // fightInfo.push_back(fightOutcome);
+
+  info.clear();
+  running = false;
+  if (!monster.isAlive()) {
+    return;
+  }
+  std::lock_guard<std::mutex> lock(fightMutex);
+  while (monster.isAlive() && player.isAlive()) {
+    int damageToPlayer = monster.getAttack();
+    int damageToMonster = player.getAttack();
+
+    player.setHealth(player.getHealth() - damageToPlayer);
+    monster.setHealth(monster.getHealth() - damageToMonster);
+
+    std::stringstream ss;
+    ss << "Player hit the monster: " << damageToMonster << ".";
+    info.push_back(ss.str());
+
+    ss.str(std::string());
+    ss << "Monster hit the player: " << damageToPlayer << ".";
+    info.push_back(ss.str());
+  }
+
+  running = true;
+
+  if (!monster.isAlive()) {
+    info.push_back("Monster was defeated!");
+    map->setCellType(monster.getPosition(), CellType::EMPTY);
+    map->setCellType(player.getPosition(), CellType::PLAYER);
+  } else {
+    info.push_back("Player was defeated!");
+  }
 }
 
 void Model::movePlayer(Point point) {
+  // Get the new position first to check if there's a monster there
+  auto newPos = player.getPosition() + point;
 
-  auto oldPos = player.getPosition();
-  player.moveBy(point);
-  auto newPos = player.getPosition();
+  // If there is a monster at the new position, initiate a fight
+  if (isMonster(newPos)) {
+    for (auto &monster : monsters) {
+      if (monster->getPosition() == newPos) {
+        fight(*monster);
+        break;
+      }
+    }
+  } else {
+    // If there is no monster, move the player normally
+    moveEntity(point, player);
+  }
+}
+
+void Model::moveEntity(Point point, Entity &entity) {
+  auto oldPos = entity.getPosition();
+  entity.moveBy(point);
+  auto newPos = entity.getPosition();
 
   if (isWall(newPos)) {
-    player.move(oldPos);
+    entity.move(oldPos);
     return;
   }
-  updateEntityPosition(oldPos, player.getPosition());
+
+  updateEntityPosition(oldPos, entity.getPosition());
 }
 
 bool Model::isWall(Point point) {
-  // Check if point is within the map boundaries
-  if (point.x < 0 || point.x >= map->grid[0].size() || point.y < 0 ||
-      point.y >= map->grid.size()) {
-    // Treat out-of-bounds as a wall
-    return true;
-  }
-
-  // Return true if cell type is a wall, false otherwise
-  return map->getChar(point) == CellType::WALL;
+  return map->getCellType(point) == CellType::WALL || !map->isValidPoint(point);
 }
 
 bool Model::isPlayer(Point point) {
-  return map->getChar(point) == CellType::PLAYER;
+  return map->getCellType(point) == CellType::PLAYER;
 }
 
+bool Model::isMonster(Point point) {
+  return map->getCellType(point) == CellType::GOBLIN;
+}
 std::unordered_map<std::string, std::string> Model::getPlayerStats() {
 
   std::unordered_map<std::string, std::string> result;
-
-  // Get the player's health, level and experience values
   auto health = player.getHealth();
   auto level = player.getLevel();
   auto exp = player.getExp();
 
-  // Convert the integer values to string
   result["Health"] = std::to_string(health);
   result["Level"] = std::to_string(level);
   result["Experience"] = std::to_string(exp);
@@ -69,14 +145,22 @@ std::unordered_map<std::string, std::string> Model::getPlayerStats() {
 
 void Model::loadMap() {
   map->loadLevel();
-  map->setChar(map->getStart(), CellType::PLAYER);
+
+  map->setCellType(map->getStart(), CellType::PLAYER);
   player.setPosition(map->getStart());
+
+  for (auto &monster : monsters) {
+    auto pos = map->randomFreePosition();
+    monster->setPosition(pos);
+    map->setCellType(pos, CellType::GOBLIN);
+  }
 }
 
 bool Model::isGameOver() { return !player.isAlive(); }
 
 void Model::updateEntityPosition(Point oldPos, Point newPos) {
-  // Assumes that there is a method in Map to set character at given point
-  map->setChar(oldPos, CellType::EMPTY);
-  map->setChar(newPos, CellType::PLAYER);
+  std::lock_guard<std::mutex> lock(mapMutex);
+  auto cellType = map->getCellType(oldPos);
+  map->setCellType(oldPos, CellType::EMPTY);
+  map->setCellType(newPos, cellType);
 }

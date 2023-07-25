@@ -1,46 +1,81 @@
 #include "point.h"
-#include "utils/game_settings.h"
 #include <algorithm>
 #include <cmath>
 
-// Constructor
 Point::Point(int _x, int _y) : x(_x), y(_y) {}
 
-// Default constructor
-Point::Point() : x(0), y(0) {}
-
-// Copy constructor
 Point::Point(const Point &other) : x(other.x), y(other.y) {}
 
-// Equality comparison operator
-bool Point::operator==(const Point &p) const { return (x == p.x && y == p.y); }
+bool Point::operator==(const Point &p) const { return x == p.x && y == p.y; }
 
-// Inequality comparison operator
 bool Point::operator!=(const Point &p) const { return !(*this == p); }
 
-// Addition assignment operator
-Point &Point::operator+=(const Point &other) {
-  this->x += other.x;
-  this->y += other.y;
+Point &Point::operator+=(const Point &p) {
+  x += p.x;
+  y += p.y;
   return *this;
 }
 
-// Function to calculate the distance between two points
-double Point::distance(const Point &p) const {
-  return std::sqrt(std::pow(x - p.x, 2) + std::pow(y - p.y, 2));
+Point Point::operator+(const Point &p) const {
+  Point result = *this;
+  result += p;
+  return result;
 }
 
-// Function to convert the point to a string
+Point &Point::operator-=(const Point &p) {
+  x -= p.x;
+  y -= p.y;
+  return *this;
+}
+
+Point Point::operator-(const Point &p) const {
+  Point result = *this;
+  result -= p;
+  return result;
+}
+
+Point &Point::operator*=(int scalar) {
+  x *= scalar;
+  y *= scalar;
+  return *this;
+}
+
+Point Point::operator*(int scalar) const {
+  Point result = *this;
+  result *= scalar;
+  return result;
+}
+
+Point &Point::operator/=(int scalar) {
+  if (scalar != 0) {
+    x /= scalar;
+    y /= scalar;
+  }
+  return *this;
+}
+
+Point Point::operator/(int scalar) const {
+  Point result = *this;
+  if (scalar != 0) {
+    result /= scalar;
+  }
+  return result;
+}
+
+double Point::distance(const Point &p) const {
+  int dx = x - p.x;
+  int dy = y - p.y;
+  return std::sqrt(dx * dx + dy * dy);
+}
+
 std::string Point::toString() const {
   return "(" + std::to_string(x) + ", " + std::to_string(y) + ")";
 }
 
-// Function to get the hash value of the point
-size_t hash_value(const Point &p) {
-  return (p.x + p.y) * (p.x + p.y + 1) / 2 + p.y;
-}
-
-// Hash function for Point
 namespace std {
-size_t hash<Point>::operator()(const Point &p) const { return hash_value(p); }
+size_t hash<Point>::operator()(const Point &p) const noexcept {
+  // This hash function is just a basic example and may not provide the best
+  // distribution
+  return hash<int>()(p.x) ^ hash<int>()(p.y);
+}
 } // namespace std

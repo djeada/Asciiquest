@@ -18,8 +18,8 @@ public:
   void setState(GameState gameState);
   void handleInput();
   GameState currentGameState;
-  Model model;
-  Renderer renderer;
+  Model &model;
+  Renderer &renderer;
   bool isRunning;
 
 private:

@@ -1,14 +1,9 @@
 #include "entity.h"
 #include "utils/game_settings.h"
 #include <algorithm>
-#include <ncurses.h>
 
-// TODO(adam): convert attack to strength
-
-Entity::Entity(const Point &_position, int _health, int _attack,
-               Represetiation _representation)
-    : position(_position), health(_health), strength(_attack),
-      representation(_representation) {
+Entity::Entity(const Point &_position, int _health, int _attack)
+    : position(_position), health(_health), strength(_attack) {
   /**
    * @brief Constructor for Entity class.
    * @param _position Position of the entity.
@@ -21,9 +16,7 @@ Entity::Entity(const Point &_position, int _health, int _attack,
   velocity = Point(1, 1);
 }
 
-Entity::Entity()
-    : position(Point(0, 0)), health(0), strength(0),
-      representation(Represetiation(Symbols::player, Colors::player)) {
+Entity::Entity() : position(Point(0, 0)), health(0), strength(0) {
   /**
    * @brief Constructor for Entity class.
    * @param _position Position of the entity.
@@ -75,14 +68,6 @@ auto Entity::getAttack() const -> int {
   return strength;
 }
 
-auto Entity::getSymbol() const -> char {
-  /**
-   * @brief Get the symbol of the entity.
-   * @return Symbol of the entity.
-   */
-  return representation.symbol;
-}
-
 auto Entity::isAlive() const -> bool {
   /**
    * @brief Check if the entity is alive.
@@ -122,18 +107,6 @@ void Entity::setAttack(int _attack) {
 void Entity::move(const Point &destination) { position = destination; }
 
 void Entity::moveBy(const Point &offset) { position += offset; }
-
-void Entity::draw() {
-  /**
-   * @brief Draw the entity using ncurses functions.
-   * @return Nothing.
-   */
-  attron(COLOR_PAIR(representation.color));
-  const char symbol = representation.symbol;
-  char str[2] = {symbol, '\0'};
-  mvprintw(position.y, position.x, str);
-  attroff(COLOR_PAIR(representation.color));
-}
 
 void Entity::takeDamage(int damage) {
   /**

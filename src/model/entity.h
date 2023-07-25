@@ -22,30 +22,26 @@ class Entity {
    *          entity, as well as the common functions.
    */
 protected:
-  Point velocity;
   int health;
   int maxHealth;
   int strength;
-  Represetiation representation;
 
 public:
-  Entity(const Point &_position, int _health, int _attack,
-         Represetiation _representation);
+  Entity(const Point &_position, int _health, int _attack);
   Entity();
   virtual ~Entity();
   Point position;
+  Point velocity;
   auto getPosition() const -> Point;
   auto getHealth() const -> int;
   auto getMaxHealth() const -> int;
   auto getAttack() const -> int;
-  auto getSymbol() const -> char;
   auto isAlive() const -> bool;
   void setPosition(const Point &_position);
   void setHealth(int _health);
   void setAttack(int _attack);
-  virtual void draw();
-  void move(const Point &destination);
-  void moveBy(const Point &offset);
+  virtual void move(const Point &destination);
+  virtual void moveBy(const Point &offset);
 
   virtual void takeDamage(int damage);
   // give it a string representation of the entity

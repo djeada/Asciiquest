@@ -1,185 +1,82 @@
 #include "monster.h"
+#include "utils/game_settings.h"
+#include <chrono>
+#include <random>
 
-Monster::Monster(const Point &_position, int _health, int _attack,
-                 Represetiation _representation)
-    : Entity(_position, _health, _attack, _representation) {
-  /**
-   * @brief Constructor for Monster class.
-   * @param _position Position of the entity.
-   * @param _health Health of the entity.
-   * @param _attack Attack of the entity.
-   * @param _representation Symbol and color used to represent the entity.
-   * @return Monster object.
-   */
+// Improved RNG seeding method
+std::mt19937 generateSeededRNG() {
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  return gen;
 }
+
+Monster::Monster(const Point &position, int health, int attack)
+    : Entity(position, health, attack) {}
 
 void Monster::randomizeVelocity() {
-  /**
-   * @brief Randomize the velocity of the monster.
-   * @return Nothing.
-   */
-  int dx = 0;
-  int dy = 0;
+  static std::mt19937 gen = generateSeededRNG();
+  std::uniform_int_distribution<> distrib(-1, 1);
 
-  while (dx == 0 && dy == 0) {
-    dx = rand() % 3 - 1;
-    dy = rand() % 3 - 1;
-  }
-
-  if (velocity.x * dx == 0 && velocity.y * dy == 0) {
-
-    if (velocity.y == 0 && velocity.x != 0)
-      velocity.y = velocity.x;
-    if (velocity.x == 0 && velocity.y != 0)
-      velocity.x = velocity.y;
-    return;
-  }
-
-  velocity.x *= dx;
-  velocity.y *= dy;
+  do {
+    velocity.x = distrib(gen);
+    velocity.y = distrib(gen);
+  } while (velocity.x == 0 && velocity.y == 0);
 }
 
-auto Monster::toString() const -> std::string {
-  /**
-   * @brief Get the string representation of the monster.
-   * @return String representation of the monster.
-   */
-  return "Monster";
-}
+std::string Monster::toString() const { return "Monster"; }
 
-Goblin::Goblin(const Point &_position)
-    : Monster(_position, GameSettings::goblinHealth, GameSettings::goblinDamage,
-              Represetiation(Symbols::goblin, Colors::goblin)) {
-  /**
-   * @brief Constructor for Goblin class.
-   * @param _position Position of the entity.
-   * @return Goblin object.
-   */
-}
+Goblin::Goblin(const Point &position)
+    : Monster(position, GameSettings::goblinHealth,
+              GameSettings::goblinDamage) {}
 
 void Goblin::move(const Point &destination) {
-  /**
-   * @brief Move the monster.
-   * @param dx offset in x direction.
-   * @param dy offset in y direction.
-   * @return Nothing.
-   */
   Entity::move(destination);
-  randomizeVelocity();
+  Monster::randomizeVelocity();
 }
 
-auto Goblin::toString() const -> std::string {
-  /**
-   * @brief Get the string representation of the goblin.
-   * @return String representation of the goblin.
-   */
-  return "Goblin";
+void Goblin::moveBy(const Point &offset) {
+  Entity::moveBy(offset);
+  Monster::randomizeVelocity();
 }
 
-Orc::Orc(const Point &_position)
-    : Monster(_position, GameSettings::orcHealth, GameSettings::orcDamage,
-              Represetiation(Symbols::orc, Colors::orc)) {
-  /**
-   * @brief Constructor for Orc class.
-   * @param _position Position of the entity.
-   * @return Orc object.
-   */
-}
+std::string Goblin::toString() const { return "Goblin"; }
+
+Orc::Orc(const Point &position)
+    : Monster(position, GameSettings::orcHealth, GameSettings::orcDamage) {}
 
 void Orc::move(const Point &destination) {
-  /**
-   * @brief Move the orc according to the path member variable.
-   * @param dx unused.
-   * @param dy unused.
-   * @return Nothing.
-   */
   if (!path.empty()) {
     position = path.front();
     path.pop_front();
   }
 }
 
-auto Orc::toString() const -> std::string {
-  /**
-   * @brief Get the string representation of the orc.
-   * @return String representation of the orc.
-   */
-  return "Orc";
-}
+std::string Orc::toString() const { return "Orc"; }
 
-void Orc::setPath(const std::deque<Point> &_path) {
-  /**
-   * @brief Set the path the orc will follow.
-   * @param _path Path of the orc.
-   * @return Nothing.
-   */
-  path = _path;
-}
+void Orc::setPath(const std::deque<Point> &path) { this->path = path; }
 
-auto Orc::isPathEmpty() const -> bool {
-  /**
-   * @brief Check if the orc has a path.
-   * @return True if the orc has a path, false otherwise.
-   */
-  return path.empty();
-}
+bool Orc::isPathEmpty() const { return path.empty(); }
 
-Troll::Troll(const Point &_position)
-    : Monster(_position, GameSettings::trollHealth, GameSettings::trollDamage,
-              Represetiation(Symbols::troll, Colors::troll)) {
-  /**
-   * @brief Constructor for Troll class.
-   * @param _position Position of the entity.
-   * @return Troll object.
-   */
+Troll::Troll(const Point &position)
+    : Monster(position, GameSettings::trollHealth, GameSettings::trollDamage) {
   velocity = Point(1, 1);
 }
 
 void Troll::move(const Point &destination) {
-  /**
-   * @brief Move the troll.
-   * @param dx offset in x direction.
-   * @param dy offset in y direction.
-   * @return Nothing.
-   */
   Entity::move(destination);
   randomizeVelocity();
 }
 
-auto Troll::toString() const -> std::string {
-  /**
-   * @brief Get the string representation of the troll.
-   * @return String representation of the troll.
-   */
-  return "Troll";
-}
+std::string Troll::toString() const { return "Troll"; }
 
-Point Monster::nextMove() { return Point(); }
-
-Dragon::Dragon(const Point &_position)
-    : Monster(_position, GameSettings::dragonHealth, GameSettings::dragonDamage,
-              Represetiation(Symbols::dragon, Colors::dragon)) {
-  /**
-   * @brief Constructor for Dragon class.
-   * @param _position Position of the entity.
-   * @return Dragon object.
-   */
+Dragon::Dragon(const Point &position)
+    : Monster(position, GameSettings::dragonHealth,
+              GameSettings::dragonDamage) {
   velocity = Point(0, 0);
 }
 
 void Dragon::move(const Point &destination) {
-  /**
-   * @brief Implemented out of necessity. Dragon does not move.
-   * @param dx unused.
-   * @param dy unused.
-   * @return Nothing.
-   */
+  // Dragon does not move.
 }
 
-auto Dragon::toString() const -> std::string {
-  /**
-   * @brief Get the string representation of the dragon.
-   * @return String representation of the dragon.
-   */
-  return "Dragon";
-}
+std::string Dragon::toString() const { return "Dragon"; }

@@ -3,8 +3,7 @@
 #include <random>
 
 Treasure::Treasure(const Point &_position, int multiplier)
-    : Entity(_position, 0, 0,
-             Represetiation(Symbols::treasure, Colors::treasure)) {
+    : Entity(_position, 0, 0) {
   /**
    * @brief Constructor for Treasure class.
    * @param _position Position of the entity.

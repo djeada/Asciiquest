@@ -40,9 +40,9 @@ void AStar::solveAStar(const Map &map, const Point &start, const Point &end) {
   auto heuristic = [&end](const Point &p) { return p.distance(end); };
 
   // check if the start and end points are in the map
-  if (start.x < 0 || start.x >= map.screenWidth() || start.y < 0 ||
-      start.y >= map.screenHeight() || end.x < 0 ||
-      end.x >= map.screenWidth() || end.y < 0 || end.y >= map.screenHeight()) {
+  if (start.x < 0 || start.x >= map.getWidth() || start.y < 0 ||
+      start.y >= map.getHeight() || end.x < 0 || end.x >= map.getWidth() ||
+      end.y < 0 || end.y >= map.getHeight()) {
     throw std::runtime_error("start or end point is not in the map");
   }
 
@@ -61,8 +61,8 @@ void AStar::solveAStar(const Map &map, const Point &start, const Point &end) {
 
   // iterate over all nodes in the map and set the distances to infity and
   // visited to false
-  for (int y = 0; y < map.screenHeight(); y++) {
-    for (int x = 0; x < map.screenWidth(); x++) {
+  for (int y = 0; y < map.getHeight(); y++) {
+    for (int x = 0; x < map.getWidth(); x++) {
       distanceFromStart[Point(x, y)] = std::numeric_limits<int>::max();
       distanceToEnd[Point(x, y)] = std::numeric_limits<int>::max();
       visited[Point(x, y)] = false;
