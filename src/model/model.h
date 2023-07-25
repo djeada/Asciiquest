@@ -6,36 +6,37 @@
 #include "player.h"
 #include "utils/direction.h"
 #include <atomic>
-#include <memory> // for std::shared_ptr
+#include <memory>
 #include <mutex>
 #include <unordered_map>
 #include <vector>
+
 class Model {
 
 public:
   Model();
   void update();
   void fight(Monster &monster);
-  void movePlayer(Point point);
+  void queuePlayerMove(const Point &point);
   void loadMap();
   bool isGameOver();
   std::unordered_map<std::string, std::string> getPlayerStats();
-  void stopUpdateLoop();
-  std::vector<std::string> info;
-  std::shared_ptr<Map> map;
+
   Player player;
+  std::shared_ptr<Map> map;
+  std::vector<std::string> info;
   std::vector<std::shared_ptr<Monster>> monsters;
 
 private:
-  void moveEntity(Point point, Entity &entity);
-  void updateEntityPosition(Point oldPos, Point newPos);
-  bool isWall(Point point);
-  bool isPlayer(Point point);
-  bool isMonster(Point point);
-  void startUpdateLoop();
+  void attemptPlayerMove(Player &player, const Point &direction);
+  void attemptMonsterMove(Monster &monster, const Point &direction);
+  void attemptEntityMove(Entity &entity, const Point &point);
+  void updateEntityPosition(Entity &entity, const Point &oldPos,
+                            const Point &newPos);
+  bool isWall(const Point &point);
+  bool isPlayer(const Point &point);
+  bool isMonster(const Point &point);
   std::atomic_bool running;
-  std::mutex mapMutex;
-  std::mutex fightMutex;
 };
 
 #endif // MODEL_H

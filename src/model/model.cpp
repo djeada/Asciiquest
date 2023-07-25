@@ -1,134 +1,138 @@
 #include "model.h"
 #include <chrono>
-#include <sstream>
-#include <thread>
+#include <queue>
+
+std::queue<Point> playerMoves;
+std::chrono::steady_clock::time_point lastUpdate =
+    std::chrono::steady_clock::now();
 
 Model::Model() : running(false) {
   map = std::make_shared<Map>(100, 100);
 
   for (int i = 0; i < 100; ++i) {
-    auto goblin = std::make_shared<Goblin>(Point(i, i));
-    monsters.push_back(goblin);
+    monsters.push_back(std::make_shared<Goblin>(Point(i, i)));
   }
 
   loadMap();
-  startUpdateLoop();
 }
 
-void Model::startUpdateLoop() {
-  running = true;
+void Model::loadMap() {
+  map->loadLevel();
+  map->setCellType(map->getStart(), CellType::PLAYER);
+  player.setPosition(map->getStart());
 
-  std::thread updateThread([this]() {
-    while (running) {
-      this->update();
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-  });
-
-  updateThread.detach();
-}
-
-void Model::stopUpdateLoop() {
-  running = false;
-  // if (updateThread.joinable()) {
-  //   updateThread.join();
-  //}
+  for (const auto &monster : monsters) {
+    auto pos = map->randomFreePosition();
+    monster->setPosition(pos);
+    map->setCellType(pos, CellType::GOBLIN);
+  }
 }
 
 void Model::update() {
+  auto now = std::chrono::steady_clock::now();
+  auto elapsed =
+      std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdate);
 
-  for (auto &monster : monsters) {
-    moveEntity(monster->velocity, *monster);
-    if (isPlayer(monster->getPosition())) {
-      fight(*monster);
-    }
+  while (!playerMoves.empty()) {
+    auto offset = playerMoves.front();
+    playerMoves.pop();
+    attemptEntityMove(player, offset);
   }
 
-  std::lock_guard<std::mutex> lock(fightMutex);
+  if (elapsed.count() < 360) {
+    return;
+  }
+
+  for (const auto &monster : monsters) {
+    attemptMonsterMove(*monster, monster->velocity);
+  }
+
   monsters.erase(std::remove_if(monsters.begin(), monsters.end(),
                                 [](const std::shared_ptr<Monster> &monster) {
                                   return !monster->isAlive();
                                 }),
                  monsters.end());
+  lastUpdate = now;
 }
 
 void Model::fight(Monster &monster) {
-
   info.clear();
-  running = false;
+
   if (!monster.isAlive()) {
     return;
   }
-  std::lock_guard<std::mutex> lock(fightMutex);
-  while (monster.isAlive() && player.isAlive()) {
-    int damageToPlayer = monster.getAttack();
-    int damageToMonster = player.getAttack();
 
-    player.setHealth(player.getHealth() - damageToPlayer);
-    monster.setHealth(monster.getHealth() - damageToMonster);
+  auto damageToPlayer = monster.getAttack();
+  auto damageToMonster = player.getAttack();
 
-    std::stringstream ss;
-    ss << "Player hit the monster: " << damageToMonster << ".";
-    info.push_back(ss.str());
+  player.setHealth(player.getHealth() - damageToPlayer);
+  monster.setHealth(monster.getHealth() - damageToMonster);
 
-    ss.str(std::string());
-    ss << "Monster hit the player: " << damageToPlayer << ".";
-    info.push_back(ss.str());
-  }
-
-  running = true;
+  info.push_back("Player hit the monster: " + std::to_string(damageToMonster) +
+                 ".");
+  info.push_back("Monster hit the player: " + std::to_string(damageToPlayer) +
+                 ".");
 
   if (!monster.isAlive()) {
     info.push_back("Monster was defeated!");
     map->setCellType(monster.getPosition(), CellType::EMPTY);
-    map->setCellType(player.getPosition(), CellType::PLAYER);
-  } else {
+  } else if (!player.isAlive()) {
     info.push_back("Player was defeated!");
   }
 }
 
-void Model::movePlayer(Point point) {
-  // Get the new position first to check if there's a monster there
-  auto newPos = player.getPosition() + point;
+void Model::queuePlayerMove(const Point &point) { playerMoves.push(point); }
 
-  // If there is a monster at the new position, initiate a fight
-  if (isMonster(newPos)) {
-    for (auto &monster : monsters) {
+void Model::attemptPlayerMove(Player &player, const Point &direction) {
+  auto currentPos = player.getPosition();
+  auto newPos = currentPos + direction;
+
+  if (isWall(newPos) || isMonster(newPos)) {
+    for (const auto &monster : monsters) {
       if (monster->getPosition() == newPos) {
         fight(*monster);
+        monsters.erase(std::remove(monsters.begin(), monsters.end(), monster),
+                       monsters.end());
         break;
       }
     }
-  } else {
-    // If there is no monster, move the player normally
-    moveEntity(point, player);
+    return;
   }
+  updateEntityPosition(player, currentPos, newPos);
 }
 
-void Model::moveEntity(Point point, Entity &entity) {
-  auto oldPos = entity.getPosition();
-  entity.moveBy(point);
-  auto newPos = entity.getPosition();
+void Model::attemptMonsterMove(Monster &monster, const Point &direction) {
+  auto currentPos = monster.getPosition();
+  auto newPos = currentPos + direction;
 
-  if (isWall(newPos)) {
-    entity.move(oldPos);
+  if (isWall(newPos) || isMonster(newPos)) {
+    monster.randomizeVelocity();
+    return;
+  } else if (isPlayer(newPos)) {
+    fight(monster);
+    map->setCellType(newPos, CellType::PLAYER);
     return;
   }
 
-  updateEntityPosition(oldPos, entity.getPosition());
+  updateEntityPosition(monster, currentPos, newPos);
 }
 
-bool Model::isWall(Point point) {
-  return map->getCellType(point) == CellType::WALL || !map->isValidPoint(point);
+void Model::attemptEntityMove(Entity &entity, const Point &direction) {
+  if (Player *player = dynamic_cast<Player *>(&entity)) {
+    attemptPlayerMove(*player, direction);
+  } else if (Monster *monster = dynamic_cast<Monster *>(&entity)) {
+    attemptMonsterMove(*monster, direction);
+  }
 }
 
-bool Model::isPlayer(Point point) {
-  return map->getCellType(point) == CellType::PLAYER;
+void Model::updateEntityPosition(Entity &entity, const Point &oldPos,
+                                 const Point &newPos) {
+  auto cellType = map->getCellType(oldPos);
+  map->setCellType(oldPos, CellType::EMPTY);
+  map->setCellType(newPos, cellType);
+  entity.move(newPos);
 }
 
-bool Model::isMonster(Point point) {
-  return map->getCellType(point) == CellType::GOBLIN;
-}
 std::unordered_map<std::string, std::string> Model::getPlayerStats() {
 
   std::unordered_map<std::string, std::string> result;
@@ -143,24 +147,16 @@ std::unordered_map<std::string, std::string> Model::getPlayerStats() {
   return result;
 }
 
-void Model::loadMap() {
-  map->loadLevel();
-
-  map->setCellType(map->getStart(), CellType::PLAYER);
-  player.setPosition(map->getStart());
-
-  for (auto &monster : monsters) {
-    auto pos = map->randomFreePosition();
-    monster->setPosition(pos);
-    map->setCellType(pos, CellType::GOBLIN);
-  }
-}
-
 bool Model::isGameOver() { return !player.isAlive(); }
 
-void Model::updateEntityPosition(Point oldPos, Point newPos) {
-  std::lock_guard<std::mutex> lock(mapMutex);
-  auto cellType = map->getCellType(oldPos);
-  map->setCellType(oldPos, CellType::EMPTY);
-  map->setCellType(newPos, cellType);
+bool Model::isWall(const Point &point) {
+  return map->getCellType(point) == CellType::WALL || !map->isValidPoint(point);
+}
+
+bool Model::isPlayer(const Point &point) {
+  return map->getCellType(point) == CellType::PLAYER;
+}
+
+bool Model::isMonster(const Point &point) {
+  return map->getCellType(point) == CellType::GOBLIN;
 }

@@ -55,6 +55,7 @@ void MainMenuStateHandler::handleInput(Controller &controller, int ch) {
 
 void GameplayStateHandler::handleState(Controller &controller) {
   auto &model = controller.model;
+  model.update();
   auto &renderer = controller.renderer;
   auto stat = model.getPlayerStats();
   renderer.setState(GameState::GAMEPLAY);
@@ -77,19 +78,19 @@ void GameplayStateHandler::handleInput(Controller &controller, int ch) {
     break;
   case GameplayControls::UP:
   case GameplayControls::ARROW_UP:
-    model.movePlayer(Direction::UP);
+    model.queuePlayerMove(Direction::UP);
     break;
   case GameplayControls::LEFT:
   case GameplayControls::ARROW_LEFT:
-    model.movePlayer(Direction::LEFT);
+    model.queuePlayerMove(Direction::LEFT);
     break;
   case GameplayControls::DOWN:
   case GameplayControls::ARROW_DOWN:
-    model.movePlayer(Direction::DOWN);
+    model.queuePlayerMove(Direction::DOWN);
     break;
   case GameplayControls::RIGHT:
   case GameplayControls::ARROW_RIGHT:
-    model.movePlayer(Direction::RIGHT);
+    model.queuePlayerMove(Direction::RIGHT);
     break;
   case GameplayControls::PAUSE:
     controller.setState(GameState::PAUSE_MENU);
