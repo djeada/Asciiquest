@@ -29,9 +29,9 @@ void MainMenuStateHandler::handleState(Controller &controller) {
       {MainMenuOptions::OPTIONS, "2. Options"},
       {MainMenuOptions::QUIT, "3. Quit"}};
 
-  std::vector<std::string> menuOptions;
+  InfoDeque menuOptions(mainMenuOptions.size());
   for (const auto &option : mainMenuOptions) {
-    menuOptions.push_back(option.second);
+    menuOptions.addMessage(option.second);
   }
 
   renderer.draw(RendererData(emptyGrid, menuOptions, emptyStats, emptyPos));
@@ -60,7 +60,7 @@ void GameplayStateHandler::handleState(Controller &controller) {
   auto stat = model.getPlayerStats();
   renderer.setState(GameState::GAMEPLAY);
   renderer.draw(
-      RendererData(model.map->grid, model.info, stat, model.player.position));
+      RendererData(model.map->grid, *model.info, stat, model.player.position));
 
   if (model.isGameOver()) {
     controller.setState(GameState::GAME_OVER);
@@ -101,11 +101,16 @@ void GameplayStateHandler::handleInput(Controller &controller, int ch) {
 }
 
 void PauseStateHandler::handleState(Controller &controller) {
-  controller.setState(GameState::PAUSE_MENU);
+  auto &renderer = controller.renderer;
+  renderer.setState(GameState::PAUSE_MENU);
 }
 
 void PauseStateHandler::handleInput(Controller &controller, int ch) {
   switch (static_cast<GameplayControls>(tolower(ch))) {
+  case GameplayControls::QUIT:
+  case GameplayControls::ESC:
+    controller.stopRunning();
+    break;
   case GameplayControls::PAUSE:
     controller.setState(GameState::GAMEPLAY);
     break;

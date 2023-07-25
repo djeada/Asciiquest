@@ -8,6 +8,7 @@ std::chrono::steady_clock::time_point lastUpdate =
 
 Model::Model() : running(false) {
   map = std::make_shared<Map>(100, 100);
+  info = std::make_shared<InfoDeque>(20);
 
   for (int i = 0; i < 100; ++i) {
     monsters.push_back(std::make_shared<Goblin>(Point(i, i)));
@@ -56,7 +57,6 @@ void Model::update() {
 }
 
 void Model::fight(Monster &monster) {
-  info.clear();
 
   if (!monster.isAlive()) {
     return;
@@ -68,16 +68,16 @@ void Model::fight(Monster &monster) {
   player.setHealth(player.getHealth() - damageToPlayer);
   monster.setHealth(monster.getHealth() - damageToMonster);
 
-  info.push_back("Player hit the monster: " + std::to_string(damageToMonster) +
-                 ".");
-  info.push_back("Monster hit the player: " + std::to_string(damageToPlayer) +
-                 ".");
+  info->addMessage(
+      "Player hit the monster: " + std::to_string(damageToMonster) + ".");
+  info->addMessage("Monster hit the player: " + std::to_string(damageToPlayer) +
+                   ".");
 
   if (!monster.isAlive()) {
-    info.push_back("Monster was defeated!");
+    info->addMessage("Monster was defeated!");
     map->setCellType(monster.getPosition(), CellType::EMPTY);
   } else if (!player.isAlive()) {
-    info.push_back("Player was defeated!");
+    info->addMessage("Player was defeated!");
   }
 }
 

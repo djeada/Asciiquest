@@ -9,6 +9,8 @@ Controller::Controller(Model &m, Renderer &r)
                             std::make_unique<MainMenuStateHandler>());
   gameStateHandlers.emplace(GameState::GAMEPLAY,
                             std::make_unique<GameplayStateHandler>());
+  gameStateHandlers.emplace(GameState::PAUSE_MENU,
+                            std::make_unique<PauseStateHandler>());
   // Other game states...
 }
 

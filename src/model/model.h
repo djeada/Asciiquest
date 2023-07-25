@@ -1,6 +1,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include "info_deque.h"
 #include "map.h"
 #include "monster.h"
 #include "player.h"
@@ -23,8 +24,8 @@ public:
   std::unordered_map<std::string, std::string> getPlayerStats();
 
   Player player;
+  std::shared_ptr<InfoDeque> info;
   std::shared_ptr<Map> map;
-  std::vector<std::string> info;
   std::vector<std::shared_ptr<Monster>> monsters;
 
 private:
