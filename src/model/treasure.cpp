@@ -14,13 +14,13 @@ Treasure::Treasure(const Point &_position, int multiplier)
   auto val = rand() % 3;
   switch (val) {
   case 0:
-    bonus.health = GameSettings::treasureHealth * pow(1.25, multiplier);
+    bonus.health = 1 * pow(1.25, multiplier);
     break;
   case 1:
-    bonus.attack = GameSettings::treasureAttack * pow(1.25, multiplier);
+    bonus.attack = 1 * pow(1.25, multiplier);
     break;
   case 2:
-    bonus.exp = GameSettings::treasureExperience * pow(1.25, multiplier);
+    bonus.exp = 1 * pow(1.25, multiplier);
     break;
   }
 }

@@ -1,5 +1,5 @@
 #include "monster.h"
-#include "utils/game_settings.h"
+#include "utils/global_config.h"
 #include <chrono>
 #include <random>
 
@@ -26,8 +26,9 @@ void Monster::randomizeVelocity() {
 std::string Monster::toString() const { return "Monster"; }
 
 Goblin::Goblin(const Point &position)
-    : Monster(position, GameSettings::goblinHealth,
-              GameSettings::goblinDamage) {}
+    : Monster(position,
+              GlobalConfig::getInstance().getConfig<int>("GoblinHealth"),
+              GlobalConfig::getInstance().getConfig<int>("GoblinDamage")) {}
 
 void Goblin::move(const Point &destination) {
   Entity::move(destination);
@@ -42,7 +43,8 @@ void Goblin::moveBy(const Point &offset) {
 std::string Goblin::toString() const { return "Goblin"; }
 
 Orc::Orc(const Point &position)
-    : Monster(position, GameSettings::orcHealth, GameSettings::orcDamage) {}
+    : Monster(position, GlobalConfig::getInstance().getConfig<int>("OrcHealth"),
+              GlobalConfig::getInstance().getConfig<int>("OrcDamage")) {}
 
 void Orc::move(const Point &destination) {
   if (!path.empty()) {
@@ -58,7 +60,9 @@ void Orc::setPath(const std::deque<Point> &path) { this->path = path; }
 bool Orc::isPathEmpty() const { return path.empty(); }
 
 Troll::Troll(const Point &position)
-    : Monster(position, GameSettings::trollHealth, GameSettings::trollDamage) {
+    : Monster(position,
+              GlobalConfig::getInstance().getConfig<int>("TrollHealth"),
+              GlobalConfig::getInstance().getConfig<int>("TrollDamage")) {
   velocity = Point(1, 1);
 }
 
@@ -70,8 +74,9 @@ void Troll::move(const Point &destination) {
 std::string Troll::toString() const { return "Troll"; }
 
 Dragon::Dragon(const Point &position)
-    : Monster(position, GameSettings::dragonHealth,
-              GameSettings::dragonDamage) {
+    : Monster(position,
+              GlobalConfig::getInstance().getConfig<int>("DragonHealth"),
+              GlobalConfig::getInstance().getConfig<int>("DragonDamage")) {
   velocity = Point(0, 0);
 }
 

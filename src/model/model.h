@@ -1,11 +1,11 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include "info_deque.h"
 #include "map.h"
 #include "monster.h"
 #include "player.h"
 #include "utils/direction.h"
+#include "utils/info_deque.h"
 #include <atomic>
 #include <memory>
 #include <mutex>

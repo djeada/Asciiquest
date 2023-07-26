@@ -68,17 +68,21 @@ void Model::fight(Monster &monster) {
   player.setHealth(player.getHealth() - damageToPlayer);
   monster.setHealth(monster.getHealth() - damageToMonster);
 
-  info->addMessage(
+  std::vector<std::string> fightMessage;
+
+  fightMessage.push_back(
       "Player hit the monster: " + std::to_string(damageToMonster) + ".");
-  info->addMessage("Monster hit the player: " + std::to_string(damageToPlayer) +
-                   ".");
+  fightMessage.push_back(
+      "Monster hit the player: " + std::to_string(damageToPlayer) + ".");
 
   if (!monster.isAlive()) {
-    info->addMessage("Monster was defeated!");
+    fightMessage.push_back("Monster was defeated!");
     map->setCellType(monster.getPosition(), CellType::EMPTY);
   } else if (!player.isAlive()) {
-    info->addMessage("Player was defeated!");
+    fightMessage.push_back("Player was defeated!");
   }
+
+  info->addMessage(fightMessage);
 }
 
 void Model::queuePlayerMove(const Point &point) { playerMoves.push(point); }

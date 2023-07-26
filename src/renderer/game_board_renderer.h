@@ -4,6 +4,17 @@
 #include "renderer_data.h"
 #include "state_renderer.h"
 
+// Helper struct to hold the coordinates
+struct Rect {
+  double top;
+  double right;
+  double bottom;
+  double left;
+  Rect() : top(0), right(0), bottom(0), left(0) {}
+  Rect(double top, double right, double bottom, double left)
+      : top(top), right(right), bottom(bottom), left(left) {}
+};
+
 class GameBoardRenderer : public StateRenderer {
 public:
   GameBoardRenderer(const RendererData &_data);
@@ -15,20 +26,18 @@ private:
   const RendererData
       &data; // Store a reference to the data needed for rendering
 
-  void drawBoard();
-  void drawFightInfo();
-  void drawStats();
+  // Components' sizes
+  Rect boardRect;
+  Rect messageDisplayRect;
+  Rect statsRect;
 
   // Terminal size
   int termHeight;
   int termWidth;
 
-  // Components' sizes
-  int boardWidth;
-  int boardHeight;
-  int fightInfoWidth;
-  int fightInfoHeight;
-  int statsHeight;
+  void drawBoard();
+  void drawMessageDisplay();
+  void drawStats();
 };
 
 #endif // GAME_BOARD_RENDERER_H

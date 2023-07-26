@@ -1,8 +1,8 @@
 #ifndef _RENDERER_DATA_H
 #define _RENDERER_DATA_H
 
-#include "model/info_deque.h"
 #include "utils/game_settings.h"
+#include "utils/info_deque.h"
 #include "utils/point.h"
 #include <string>
 #include <unordered_map>

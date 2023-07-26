@@ -31,7 +31,7 @@ void MainMenuStateHandler::handleState(Controller &controller) {
 
   InfoDeque menuOptions(mainMenuOptions.size());
   for (const auto &option : mainMenuOptions) {
-    menuOptions.addMessage(option.second);
+    menuOptions.addMessage({option.second}); // put the option into a vector
   }
 
   renderer.draw(RendererData(emptyGrid, menuOptions, emptyStats, emptyPos));

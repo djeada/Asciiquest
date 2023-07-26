@@ -1,5 +1,5 @@
 #include "player.h"
-#include "utils/game_settings.h"
+#include "utils/global_config.h"
 #include <cmath>
 
 Player::Player(const Point &_position, int _health, int _attack)
@@ -25,7 +25,9 @@ Player::Player(const Point &_position) : Player() {
 Point Player::nextMove() { return Point(); }
 
 Player::Player()
-    : Entity(Point(), GameSettings::playerHealth, GameSettings::playerDamage) {
+    : Entity(Point(),
+             GlobalConfig::getInstance().getConfig<int>("PlayerHealth"),
+             GlobalConfig::getInstance().getConfig<int>("PlayerDamage")) {
   /**
    * @brief Default constructor for Player class.
    * @return Player object.
