@@ -4,6 +4,10 @@
 #include "renderer_data.h"
 #include "state_renderer.h"
 
+enum class ColorPair { EMPTY = 1, WALL, PLAYER, GOBLIN, ORC, DRAGON, TROLL };
+extern std::unordered_map<CellType, std::pair<char, ColorPair>>
+    cellTypeToCharColor;
+
 // Helper struct to hold the coordinates
 struct Rect {
   double top;

@@ -17,23 +17,26 @@ class Model {
 public:
   Model();
   void update();
-  void fight(Monster &monster);
+
   void queuePlayerMove(const Point &point);
-  void loadMap();
+  void restart();
   bool isGameOver();
   std::unordered_map<std::string, std::string> getPlayerStats();
 
-  Player player;
+  std::shared_ptr<Player> player;
   std::shared_ptr<InfoDeque> info;
   std::shared_ptr<Map> map;
   std::vector<std::shared_ptr<Monster>> monsters;
 
 private:
-  void attemptPlayerMove(Player &player, const Point &direction);
-  void attemptMonsterMove(Monster &monster, const Point &direction);
-  void attemptEntityMove(Entity &entity, const Point &point);
-  void updateEntityPosition(Entity &entity, const Point &oldPos,
-                            const Point &newPos);
+  void fight(const std::shared_ptr<Monster> &monster);
+  void loadMap();
+  void attemptPlayerMove(const std::shared_ptr<Player> &player,
+                         const Point &direction);
+  void attemptMonsterMove(const std::shared_ptr<Monster> &monster,
+                          const Point &direction);
+  void updateEntityPosition(const std::shared_ptr<Entity> &entity,
+                            const Point &oldPos, const Point &newPos);
   bool isWall(const Point &point);
   bool isPlayer(const Point &point);
   bool isMonster(const Point &point);

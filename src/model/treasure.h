@@ -1,35 +1,20 @@
-#ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_TREASURE_H
-#define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_TREASURE_H
+#ifndef _TREASURE_H
+#define _TREASURE_H
 
 #include "entity.h"
 
-union Bonus {
-  /**
-   * @brief Union for Bonus.
-   * @details This union is used to represent the bonus of the treasure.
-   *          It contains the information about the bonus such as
-   *          the type of the bonus.
-   */
-  int health;
-  int attack;
-  int exp;
-};
-
 class Treasure : public Entity {
-  /**
-   * @brief Base class for all treasures used in the game.
-   * @details This class is used to represent all treasures in the game.
-   *          It contains crucial information about the treasure such as
-   *          the position, health, attack and representation of the
-   *          treasure, as well as the common functions.
-   */
-  Bonus bonus;
+private:
+  int value;
 
 public:
-  Treasure(const Point &_position, int multiplier);
+  Treasure();
+  explicit Treasure(const Point &_position, int _value);
 
-  auto toString() const -> std::string override;
-  auto getBonus() const -> Bonus;
+  int getValue() const;
+  void setValue(int _value);
+
+  std::string toString() const override;
 };
 
 #endif

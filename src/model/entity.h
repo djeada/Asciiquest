@@ -1,52 +1,24 @@
-#ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_ENTITY_H
-#define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_ENTITY_H
+#ifndef _ENTITY_H
+#define _ENTITY_H
 
+#include "utils/game_settings.h"
 #include "utils/point.h"
 #include <string>
 
-struct Represetiation {
-  /**
-   * @brief Symbol and color used to represent the entity.
-   */
-  char symbol;
-  int color;
-  Represetiation(char _symbol, int _color) : symbol(_symbol), color(_color) {}
-};
-
 class Entity {
-  /**
-   * @brief Base class for all entities used in the game.
-   * @details This class is used to represent all entities in the game.
-   *          It contains crucial information about the entity such as
-   *          the position, health, attack and representation of the
-   *          entity, as well as the common functions.
-   */
-protected:
-  int health;
-  int maxHealth;
-  int strength;
 
 public:
-  Entity(const Point &_position, int _health, int _attack);
+  explicit Entity(const Point &position, CellType cellType = CellType::EMPTY);
   Entity();
   virtual ~Entity();
-  Point position;
-  Point velocity;
-  auto getPosition() const -> Point;
-  auto getHealth() const -> int;
-  auto getMaxHealth() const -> int;
-  auto getAttack() const -> int;
-  auto isAlive() const -> bool;
-  void setPosition(const Point &_position);
-  void setHealth(int _health);
-  void setAttack(int _attack);
-  virtual void move(const Point &destination);
-  virtual void moveBy(const Point &offset);
 
-  virtual void takeDamage(int damage);
-  // give it a string representation of the entity
-  virtual auto toString() const -> std::string = 0;
-  friend void attack(Entity &attacker, Entity &defender);
+  // Other member functions
+  virtual void move(const Point &destination) = 0;
+  virtual std::string toString() const = 0;
+
+  // data
+  Point position;
+  CellType cellType;
 };
 
 #endif

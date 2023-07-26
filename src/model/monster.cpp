@@ -3,15 +3,14 @@
 #include <chrono>
 #include <random>
 
-// Improved RNG seeding method
 std::mt19937 generateSeededRNG() {
   std::random_device rd;
   std::mt19937 gen(rd());
   return gen;
 }
 
-Monster::Monster(const Point &position, int health, int attack)
-    : Entity(position, health, attack) {}
+Monster::Monster(CellType cellType, int _health, int _attack)
+    : MovableEntity(cellType, _health, _attack) {}
 
 void Monster::randomizeVelocity() {
   static std::mt19937 gen = generateSeededRNG();
@@ -23,27 +22,21 @@ void Monster::randomizeVelocity() {
   } while (velocity.x == 0 && velocity.y == 0);
 }
 
-std::string Monster::toString() const { return "Monster"; }
-
-Goblin::Goblin(const Point &position)
-    : Monster(position,
+Goblin::Goblin()
+    : Monster(CellType::GOBLIN,
               GlobalConfig::getInstance().getConfig<int>("GoblinHealth"),
               GlobalConfig::getInstance().getConfig<int>("GoblinDamage")) {}
 
 void Goblin::move(const Point &destination) {
-  Entity::move(destination);
-  Monster::randomizeVelocity();
-}
-
-void Goblin::moveBy(const Point &offset) {
-  Entity::moveBy(offset);
+  MovableEntity::move(destination);
   Monster::randomizeVelocity();
 }
 
 std::string Goblin::toString() const { return "Goblin"; }
 
-Orc::Orc(const Point &position)
-    : Monster(position, GlobalConfig::getInstance().getConfig<int>("OrcHealth"),
+Orc::Orc()
+    : Monster(CellType::ORC,
+              GlobalConfig::getInstance().getConfig<int>("OrcHealth"),
               GlobalConfig::getInstance().getConfig<int>("OrcDamage")) {}
 
 void Orc::move(const Point &destination) {
@@ -59,28 +52,32 @@ void Orc::setPath(const std::deque<Point> &path) { this->path = path; }
 
 bool Orc::isPathEmpty() const { return path.empty(); }
 
-Troll::Troll(const Point &position)
-    : Monster(position,
+Troll::Troll()
+    : Monster(CellType::TROLL,
               GlobalConfig::getInstance().getConfig<int>("TrollHealth"),
               GlobalConfig::getInstance().getConfig<int>("TrollDamage")) {
   velocity = Point(1, 1);
 }
 
 void Troll::move(const Point &destination) {
-  Entity::move(destination);
+  MovableEntity::move(destination);
   randomizeVelocity();
 }
 
 std::string Troll::toString() const { return "Troll"; }
 
-Dragon::Dragon(const Point &position)
-    : Monster(position,
+Dragon::Dragon()
+    : Monster(CellType::DRAGON,
               GlobalConfig::getInstance().getConfig<int>("DragonHealth"),
               GlobalConfig::getInstance().getConfig<int>("DragonDamage")) {
   velocity = Point(0, 0);
 }
 
 void Dragon::move(const Point &destination) {
+  // Dragon does not move.
+}
+
+void Dragon::randomizeVelocity() {
   // Dragon does not move.
 }
 

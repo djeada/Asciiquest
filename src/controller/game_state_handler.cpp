@@ -12,7 +12,9 @@ enum class GameplayControls {
   ARROW_UP = KEY_UP,
   ARROW_LEFT = KEY_LEFT,
   ARROW_DOWN = KEY_DOWN,
-  ARROW_RIGHT = KEY_RIGHT
+  ARROW_RIGHT = KEY_RIGHT,
+  ENTER = '\n', // or '\r' depending on the system
+  SPACE = ' '
 };
 
 enum class MainMenuOptions { START_GAME = '1', OPTIONS = '2', QUIT = '3' };
@@ -39,9 +41,12 @@ void MainMenuStateHandler::handleState(Controller &controller) {
 
 void MainMenuStateHandler::handleInput(Controller &controller, int ch) {
   switch (static_cast<MainMenuOptions>(tolower(ch))) {
-  case MainMenuOptions::START_GAME:
+  case MainMenuOptions::START_GAME: {
     controller.setState(GameState::GAMEPLAY);
+    auto &model = controller.model;
+    model.restart();
     break;
+  }
   case MainMenuOptions::OPTIONS:
     // controller.setCurrentGameState(GameState::OPTIONS);
     break;
@@ -60,7 +65,7 @@ void GameplayStateHandler::handleState(Controller &controller) {
   auto stat = model.getPlayerStats();
   renderer.setState(GameState::GAMEPLAY);
   renderer.draw(
-      RendererData(model.map->grid, *model.info, stat, model.player.position));
+      RendererData(model.map->grid, *model.info, stat, model.player->position));
 
   if (model.isGameOver()) {
     controller.setState(GameState::GAME_OVER);
@@ -113,6 +118,30 @@ void PauseStateHandler::handleInput(Controller &controller, int ch) {
     break;
   case GameplayControls::PAUSE:
     controller.setState(GameState::GAMEPLAY);
+    break;
+  default:
+    break;
+  }
+}
+
+void GameOverStateHandler::handleState(Controller &controller) {
+  auto &model = controller.model;
+  auto stat = model.getPlayerStats();
+  Renderer &renderer = controller.renderer;
+  renderer.setState(GameState::GAME_OVER);
+  renderer.draw(
+      RendererData(model.map->grid, *model.info, stat, model.player->position));
+}
+
+void GameOverStateHandler::handleInput(Controller &controller, int ch) {
+  switch (static_cast<GameplayControls>(tolower(ch))) {
+  case GameplayControls::ENTER:
+  case GameplayControls::SPACE:
+    controller.setState(GameState::MAIN_MENU);
+    break;
+  case GameplayControls::QUIT:
+  case GameplayControls::ESC:
+    controller.stopRunning();
     break;
   default:
     break;

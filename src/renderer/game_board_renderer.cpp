@@ -1,14 +1,14 @@
 #include "game_board_renderer.h"
 #include "utils/global_config.h"
 #include <ncurses.h>
-
-enum class ColorPair { EMPTY = 1, WALL, PLAYER, GOBLIN };
-
 std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::EMPTY, {' ', ColorPair::EMPTY}},
     {CellType::WALL, {'#', ColorPair::WALL}},
     {CellType::PLAYER, {'@', ColorPair::PLAYER}},
     {CellType::GOBLIN, {'g', ColorPair::GOBLIN}},
+    {CellType::ORC, {'o', ColorPair::ORC}},
+    {CellType::DRAGON, {'D', ColorPair::DRAGON}},
+    {CellType::TROLL, {'T', ColorPair::TROLL}},
 };
 
 GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
@@ -19,6 +19,9 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
   init_pair(static_cast<int>(ColorPair::WALL), COLOR_BLUE, COLOR_BLACK);
   init_pair(static_cast<int>(ColorPair::PLAYER), COLOR_RED, COLOR_BLACK);
   init_pair(static_cast<int>(ColorPair::GOBLIN), COLOR_GREEN, COLOR_BLACK);
+  init_pair(static_cast<int>(ColorPair::ORC), COLOR_CYAN, COLOR_BLACK);
+  init_pair(static_cast<int>(ColorPair::DRAGON), COLOR_YELLOW, COLOR_BLACK);
+  init_pair(static_cast<int>(ColorPair::TROLL), COLOR_MAGENTA, COLOR_BLACK);
 
   // Rectangels holding ratios
   auto getConfigRect = [](const std::string &leftKey, const std::string &topKey,
@@ -73,8 +76,8 @@ void GameBoardRenderer::drawBoard() {
   for (int y = 0; y < boardHeight; ++y) {
     for (int x = 0; x < boardWidth; ++x) {
       // Fetch the character and color representation of the cell type
-      const auto cell_type = data.grid[viewTop + y][viewLeft + x];
-      const auto &[ch, color] = cellTypeToCharColor[cell_type];
+      const auto cellType = data.grid[viewTop + y][viewLeft + x];
+      const auto &[ch, color] = cellTypeToCharColor[cellType];
 
       // Set color attribute, print the character and unset color attribute
       attron(COLOR_PAIR(static_cast<int>(color)));
@@ -123,7 +126,7 @@ void GameBoardRenderer::drawMessageDisplay() {
   int infoHeight =
       std::min(static_cast<int>(messageDisplayRect.bottom * termHeight), LINES);
 
-  for (const auto &messgaes : data.fightInfo) {
+  for (const auto &messgaes : data.fightInfo.reverse()) {
     for (const auto &info : messgaes) {
       // Prevent overflow if there are more fight info lines than screen rows
       if (y >= infoHeight) {

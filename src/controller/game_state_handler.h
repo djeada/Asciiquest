@@ -29,6 +29,12 @@ public:
   void handleState(Controller &controller) override;
 };
 
+class GameOverStateHandler : public GameStateHandler {
+public:
+  void handleInput(Controller &controller, int input) override;
+  void handleState(Controller &controller) override;
+};
+
 // Other state handlers...
 
 #endif

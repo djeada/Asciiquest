@@ -1,5 +1,5 @@
 #include "renderer.h"
-#include "game_board_renderer.h"
+#include "game_over_renderer.h"
 #include "main_menu_renderer.h"
 #include <cstdlib>
 
@@ -13,6 +13,9 @@ Renderer::Renderer() {
   };
   stateRendererMap[GameState::GAMEPLAY] = [](const RendererData &data) {
     return std::make_unique<GameBoardRenderer>(data);
+  };
+  stateRendererMap[GameState::GAME_OVER] = [](const RendererData &data) {
+    return std::make_unique<GameOverRenderer>(data);
   };
   // ... other game states
 }
