@@ -3,30 +3,56 @@
 #include <ncurses.h>
 
 std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
-    {CellType::EMPTY, {' ', ColorPair::EMPTY}},
-    {CellType::WALL, {'#', ColorPair::WALL}},
-    {CellType::PLAYER, {'@', ColorPair::PLAYER}},
-    {CellType::GOBLIN, {'g', ColorPair::GOBLIN}},
-    {CellType::ORC, {'o', ColorPair::ORC}},
-    {CellType::DRAGON, {'D', ColorPair::DRAGON}},
-    {CellType::TROLL, {'T', ColorPair::TROLL}},
-    {CellType::START, {'S', ColorPair::START}},
-    {CellType::END, {'E', ColorPair::END}},
+    {CellType::EMPTY,
+     {GlobalConfig::getInstance().getConfig<int>("EmptySymbol"),
+      ColorPair::EMPTY}},
+    {CellType::WALL,
+     {GlobalConfig::getInstance().getConfig<char>("WallSymbol"),
+      ColorPair::WALL}},
+    {CellType::PLAYER,
+     {GlobalConfig::getInstance().getConfig<char>("PlayerSymbol"),
+      ColorPair::PLAYER}},
+    {CellType::GOBLIN,
+     {GlobalConfig::getInstance().getConfig<char>("GoblinSymbol"),
+      ColorPair::GOBLIN}},
+    {CellType::ORC,
+     {GlobalConfig::getInstance().getConfig<char>("OrcSymbol"),
+      ColorPair::ORC}},
+    {CellType::DRAGON,
+     {GlobalConfig::getInstance().getConfig<char>("DragonSymbol"),
+      ColorPair::DRAGON}},
+    {CellType::TROLL,
+     {GlobalConfig::getInstance().getConfig<char>("TrollSymbol"),
+      ColorPair::TROLL}},
+    {CellType::START,
+     {GlobalConfig::getInstance().getConfig<char>("StartSymbol"),
+      ColorPair::START}},
+    {CellType::END,
+     {GlobalConfig::getInstance().getConfig<char>("EndSymbol"),
+      ColorPair::END}},
 };
 
 GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
   start_color(); // Start color functionality
 
   // Define color pairs
-  init_pair(static_cast<int>(ColorPair::EMPTY), COLOR_WHITE, COLOR_BLACK);
-  init_pair(static_cast<int>(ColorPair::WALL), COLOR_BLUE, COLOR_BLACK);
-  init_pair(static_cast<int>(ColorPair::PLAYER), COLOR_RED, COLOR_BLACK);
-  init_pair(static_cast<int>(ColorPair::GOBLIN), COLOR_GREEN, COLOR_BLACK);
-  init_pair(static_cast<int>(ColorPair::ORC), COLOR_CYAN, COLOR_BLACK);
-  init_pair(static_cast<int>(ColorPair::DRAGON), COLOR_YELLOW, COLOR_BLACK);
-  init_pair(static_cast<int>(ColorPair::TROLL), COLOR_MAGENTA, COLOR_BLACK);
-  init_pair(static_cast<int>(ColorPair::START), COLOR_GREEN, COLOR_WHITE);
-  init_pair(static_cast<int>(ColorPair::END), COLOR_RED, COLOR_WHITE);
+  std::unordered_map<ColorPair, std::pair<int, int>> colorDefinitions = {
+      {ColorPair::EMPTY, {COLOR_WHITE, COLOR_BLACK}},
+      {ColorPair::WALL, {COLOR_BLUE, COLOR_BLACK}},
+      {ColorPair::PLAYER, {COLOR_RED, COLOR_BLACK}},
+      {ColorPair::GOBLIN, {COLOR_GREEN, COLOR_BLACK}},
+      {ColorPair::ORC, {COLOR_CYAN, COLOR_BLACK}},
+      {ColorPair::DRAGON, {COLOR_YELLOW, COLOR_BLACK}},
+      {ColorPair::TROLL, {COLOR_MAGENTA, COLOR_BLACK}},
+      {ColorPair::START, {COLOR_GREEN, COLOR_WHITE}},
+      {ColorPair::END, {COLOR_RED, COLOR_WHITE}},
+  };
+
+  // Initialize color pairs
+  for (const auto &pair : colorDefinitions) {
+    init_pair(static_cast<int>(pair.first), pair.second.first,
+              pair.second.second);
+  }
 
   // Rectangels holding ratios
   auto getConfigRect = [](const std::string &leftKey, const std::string &topKey,

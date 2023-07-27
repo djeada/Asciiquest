@@ -40,6 +40,12 @@ public:
     }
     info.push_back(message);
   }
+  void addMessage(std::string &&message) {
+    if (info.size() >= maxSize) {
+      info.pop_front();
+    }
+    info.push_back(std::vector<std::string>{std::move(message)});
+  }
 
   std::vector<std::string> front() { return info.front(); }
 

@@ -11,14 +11,12 @@ Player::Player()
 Player::~Player() {}
 
 void Player::levelUp() {
-  if (!isLevelUp()) {
-    return;
-  }
-
   level++;
   exp = 0;
-  health = 1000 * pow(1.1, level - 1);
+  health = GlobalConfig::getInstance().getConfig<int>("PlayerHealth") *
+           pow(1.1, level - 1);
 
+  // we may need to level up multiple times if the exp was so great
   if (isLevelUp()) {
     levelUp();
   }
@@ -30,12 +28,11 @@ auto Player::expToNextLevel() const -> int {
 
 auto Player::isLevelUp() const -> bool { return exp >= expToNextLevel(); }
 
-void Player::setExp(int _exp) {
-  exp = _exp;
-  if (isLevelUp()) {
+void Player::addExperience(int _exp) {
+  exp += _exp;
+  while (isLevelUp()) {
     levelUp();
   }
 }
-auto Player::getExp() const -> int { return exp; }
 
 auto Player::toString() const -> std::string { return "Player"; }

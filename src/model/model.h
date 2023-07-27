@@ -42,6 +42,8 @@ private:
   bool isExit(const Point &point);
   bool isMonster(const Point &point);
   std::atomic_bool running;
+  std::queue<Point> playerMoves;
+  std::chrono::steady_clock::time_point lastUpdate;
 };
 
 #endif // MODEL_H

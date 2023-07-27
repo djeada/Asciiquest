@@ -7,14 +7,13 @@ MovableEntity::MovableEntity(CellType _cellType, int _health, int _strength,
 
 MovableEntity::~MovableEntity() {}
 
-int MovableEntity::getHealth() const { return health; }
-
-int MovableEntity::getAttack() const { return strength; }
-
-Point MovableEntity::getVelocity() const { return velocity; }
-
 bool MovableEntity::isAlive() const { return health > 0; }
 
-void MovableEntity::takeDamage(int damage) { health -= damage; }
+void MovableEntity::takeDamage(int damage) {
+  health -= damage;
+  if (health < 0) {
+    health = 0;
+  }
+}
 
 void MovableEntity::move(const Point &destination) { position = destination; }

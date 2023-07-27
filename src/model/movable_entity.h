@@ -12,11 +12,6 @@ public:
                          const Point &velocity = Point(0, 0));
   virtual ~MovableEntity();
 
-  // Getters
-  int getHealth() const;
-  int getAttack() const;
-  Point getVelocity() const;
-
   // Other member functions
   bool isAlive() const;
   void takeDamage(int damage);

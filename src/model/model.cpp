@@ -3,19 +3,20 @@
 #include <chrono>
 #include <queue>
 
-std::queue<Point> playerMoves;
-std::chrono::steady_clock::time_point lastUpdate =
-    std::chrono::steady_clock::now();
-
-Model::Model() : running(false) {}
+const int monsterUpdateSpeed =
+    GlobalConfig::getInstance().getConfig<int>("MonsterUpdateSpeed");
+Model::Model() : running(false), lastUpdate(std::chrono::steady_clock::now()) {}
 
 void Model::restart() {
 
   if (!player || !player->isAlive()) {
     player = std::make_shared<Player>();
   }
-  map = std::make_shared<Map>(100, 100);
-  info = std::make_shared<InfoDeque>(20);
+  map = std::make_shared<Map>(
+      GlobalConfig::getInstance().getConfig<int>("MapWidth"),
+      GlobalConfig::getInstance().getConfig<int>("MapHeight"));
+  info = std::make_shared<InfoDeque>(
+      GlobalConfig::getInstance().getConfig<int>("MessageQueueSize"));
 
   auto addMonsters = [this](const std::string &type, auto monsterMaker) {
     const int monsterCount = GlobalConfig::getInstance().getConfig<int>(type);
@@ -45,6 +46,7 @@ void Model::loadMap() {
     map->setCellType(pos, monster->cellType);
   }
   map->setCellType(map->getEnd(), CellType::END);
+  info->addMessage("Welcome on the new level!");
 }
 
 void Model::update() {
@@ -58,7 +60,7 @@ void Model::update() {
     attemptPlayerMove(player, offset);
   }
 
-  if (elapsed.count() < 360) {
+  if (elapsed.count() < monsterUpdateSpeed) {
     return;
   }
 
@@ -77,33 +79,62 @@ void Model::update() {
 
 void Model::fight(const std::shared_ptr<Monster> &monster) {
 
-  while (monster->isAlive() && player->isAlive()) {
-
-    auto damageToPlayer = monster->getAttack();
-    auto damageToMonster = player->getAttack();
-
-    player->takeDamage(damageToPlayer);
-    monster->takeDamage(damageToMonster);
-
-    std::vector<std::string> fightMessage;
-
-    fightMessage.push_back("Player hit the " + monster->toString() + ": " +
-                           std::to_string(damageToMonster) + ".");
-    fightMessage.push_back(monster->toString() + " hit the player: " +
-                           std::to_string(damageToPlayer) + ".");
-
-    if (!monster->isAlive()) {
-      fightMessage.push_back(monster->toString() + " was defeated!");
-      map->setCellType(monster->position, CellType::EMPTY);
-      map->setCellType(player->position, player->cellType);
-    } else if (!player->isAlive()) {
-      fightMessage.push_back("Player was defeated!");
-      map->setCellType(monster->position, monster->cellType);
-      map->setCellType(player->position, CellType::EMPTY);
+  auto attack = [&](const auto &attacker, const auto &defender,
+                    auto &messages) {
+    double successRate = (rand() % 100) / 100.0; // random value between 0 and 1
+    if (successRate > 0.85) {                    // 15% chance of attack missing
+      messages.push_back(attacker->toString() + " misses " +
+                         defender->toString() + ".");
+      return;
     }
 
-    info->addMessage(fightMessage);
+    int damage = attacker->strength * successRate; // add randomness to damage
+    if (successRate < 0.1) { // 10% chance of attack being blocked
+      damage = 0;
+      messages.push_back(defender->toString() + " blocks " +
+                         attacker->toString() + "'s attack.");
+    } else {
+      defender->takeDamage(damage);
+      messages.push_back(attacker->toString() + " hits " +
+                         defender->toString() + " for " +
+                         std::to_string(damage) + " damage.");
+    }
+
+    if (!monster->isAlive()) {
+      messages.push_back(monster->toString() + " was defeated!");
+      player->addExperience(monsterExpMap[monster->cellType]);
+
+    } else if (!player->isAlive()) {
+      messages.push_back("Player was defeated!");
+    }
+  };
+
+  auto updateMapAfterFight = [&](const auto &defeatedMonster) {
+    if (!defeatedMonster->isAlive()) {
+      map->setCellType(defeatedMonster->position, CellType::EMPTY);
+    }
+
+    if (!player->isAlive()) {
+      map->setCellType(player->position, CellType::EMPTY);
+    } else {
+      map->setCellType(player->position, player->cellType);
+    }
+  };
+
+  info->addMessage("New fight starts!");
+
+  while (player->isAlive() && monster->isAlive()) {
+    std::vector<std::string> roundMessages;
+
+    attack(player, monster, roundMessages);
+    if (monster->isAlive()) {
+      attack(monster, player, roundMessages);
+    }
+
+    info->addMessage(roundMessages);
   }
+
+  updateMapAfterFight(monster);
 }
 
 void Model::queuePlayerMove(const Point &point) { playerMoves.push(point); }
@@ -157,13 +188,10 @@ void Model::updateEntityPosition(const std::shared_ptr<Entity> &entity,
 std::unordered_map<std::string, std::string> Model::getPlayerStats() {
 
   std::unordered_map<std::string, std::string> result;
-  auto health = player->getHealth();
-  auto level = player->level;
-  auto exp = player->getExp();
 
-  result["Health"] = std::to_string(health);
-  result["Level"] = std::to_string(level);
-  result["Experience"] = std::to_string(exp);
+  result["Health"] = std::to_string(player->health);
+  result["Level"] = std::to_string(player->level);
+  result["Experience"] = std::to_string(player->exp);
 
   return result;
 }

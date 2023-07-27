@@ -13,8 +13,7 @@ public:
 
   void levelUp();
   int expToNextLevel() const;
-  int getExp() const;
-  void setExp(int _exp);
+  void addExperience(int _exp);
   std::string toString() const override;
   // void exploreTreasure(const Treasure &treasure);
 

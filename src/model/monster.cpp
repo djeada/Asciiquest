@@ -3,6 +3,11 @@
 #include <chrono>
 #include <random>
 
+std::unordered_map<CellType, int> monsterExpMap = {{CellType::GOBLIN, 100},
+                                                   {CellType::ORC, 200},
+                                                   {CellType::DRAGON, 300},
+                                                   {CellType::TROLL, 400}};
+
 std::mt19937 generateSeededRNG() {
   std::random_device rd;
   std::mt19937 gen(rd());

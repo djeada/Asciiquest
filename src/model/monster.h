@@ -3,6 +3,9 @@
 
 #include "movable_entity.h"
 #include <deque>
+#include <unordered_map>
+
+extern std::unordered_map<CellType, int> monsterExpMap;
 
 class Monster : public MovableEntity {
 
