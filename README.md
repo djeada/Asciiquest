@@ -4,7 +4,7 @@ Mysterious Dungeon is an ASCII-based roguelike game. As the hero `@`, you're tas
 
 ## Screenshot
 
-![new_screenshot](https://user-images.githubusercontent.com/37275728/186153359-84890588-1989-40dd-8da3-a0665ca130d4.png)
+![Peek 2023-07-27 21-44](https://github.com/djeada/Mysterious-Dungeon/assets/37275728/dc95b1cd-aaa8-4c7e-bec0-6b32f086d44c)
 
 ## Features
 
@@ -19,9 +19,9 @@ Mysterious Dungeon is an ASCII-based roguelike game. As the hero `@`, you're tas
 
 To play Mysterious Dungeon, you need:
 
-* C++14 compiler
+* C++17 compiler
 * NCurses library
-* CMake 3.9 or higher
+* CMake 3.15 or higher
 * Knowledge of networking for multiplayer (LAN / Internet)
 
 ## Building and running the game
