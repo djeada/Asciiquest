@@ -11,7 +11,9 @@ Model::Model() : running(false) {}
 
 void Model::restart() {
 
-  player = std::make_shared<Player>();
+  if (!player || !player->isAlive()) {
+    player = std::make_shared<Player>();
+  }
   map = std::make_shared<Map>(100, 100);
   info = std::make_shared<InfoDeque>(20);
 
@@ -42,6 +44,7 @@ void Model::loadMap() {
     monster->position = pos;
     map->setCellType(pos, monster->cellType);
   }
+  map->setCellType(map->getEnd(), CellType::END);
 }
 
 void Model::update() {
@@ -120,6 +123,9 @@ void Model::attemptPlayerMove(const std::shared_ptr<Player> &player,
       }
     }
     return;
+  } else if (isExit(newPos)) {
+    restart();
+    return;
   }
   updateEntityPosition(player, currentPos, newPos);
 }
@@ -129,7 +135,7 @@ void Model::attemptMonsterMove(const std::shared_ptr<Monster> &monster,
   auto currentPos = monster->position;
   auto newPos = currentPos + direction;
 
-  if (isWall(newPos) || isMonster(newPos)) {
+  if (isWall(newPos) || isMonster(newPos) || isExit(newPos)) {
     monster->randomizeVelocity();
     return;
   } else if (isPlayer(newPos)) {
@@ -170,6 +176,10 @@ bool Model::isWall(const Point &point) {
 
 bool Model::isPlayer(const Point &point) {
   return map->getCellType(point) == CellType::PLAYER;
+}
+
+bool Model::isExit(const Point &point) {
+  return map->getCellType(point) == CellType::END;
 }
 
 bool Model::isMonster(const Point &point) {

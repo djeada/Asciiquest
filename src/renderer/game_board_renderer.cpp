@@ -1,6 +1,7 @@
 #include "game_board_renderer.h"
 #include "utils/global_config.h"
 #include <ncurses.h>
+
 std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::EMPTY, {' ', ColorPair::EMPTY}},
     {CellType::WALL, {'#', ColorPair::WALL}},
@@ -9,6 +10,8 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::ORC, {'o', ColorPair::ORC}},
     {CellType::DRAGON, {'D', ColorPair::DRAGON}},
     {CellType::TROLL, {'T', ColorPair::TROLL}},
+    {CellType::START, {'S', ColorPair::START}},
+    {CellType::END, {'E', ColorPair::END}},
 };
 
 GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
@@ -22,6 +25,8 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
   init_pair(static_cast<int>(ColorPair::ORC), COLOR_CYAN, COLOR_BLACK);
   init_pair(static_cast<int>(ColorPair::DRAGON), COLOR_YELLOW, COLOR_BLACK);
   init_pair(static_cast<int>(ColorPair::TROLL), COLOR_MAGENTA, COLOR_BLACK);
+  init_pair(static_cast<int>(ColorPair::START), COLOR_GREEN, COLOR_WHITE);
+  init_pair(static_cast<int>(ColorPair::END), COLOR_RED, COLOR_WHITE);
 
   // Rectangels holding ratios
   auto getConfigRect = [](const std::string &leftKey, const std::string &topKey,

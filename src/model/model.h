@@ -39,6 +39,7 @@ private:
                             const Point &oldPos, const Point &newPos);
   bool isWall(const Point &point);
   bool isPlayer(const Point &point);
+  bool isExit(const Point &point);
   bool isMonster(const Point &point);
   std::atomic_bool running;
 };
