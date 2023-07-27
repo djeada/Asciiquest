@@ -4,7 +4,7 @@ Mysterious Dungeon is an ASCII-based roguelike game. As the hero `@`, you're tas
 
 ## Screenshot
 
-![Peek 2023-07-27 21-44](https://github.com/djeada/Mysterious-Dungeon/assets/37275728/dc95b1cd-aaa8-4c7e-bec0-6b32f086d44c)
+![Peek 2023-07-27 21-58](https://github.com/djeada/Mysterious-Dungeon/assets/37275728/14089291-aaea-4272-a368-27fb6dfd8908)
 
 ## Features
 
