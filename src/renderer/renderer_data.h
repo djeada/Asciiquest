@@ -14,16 +14,17 @@ RendererData holds references to the original objects, so changes to the objects
 in RendererData will affect the original objects, and vice versa.
 */
   std::vector<std::vector<CellType>> &grid;
-  InfoDeque &fightInfo;
+  InfoDeque &messageQueue;
   std::unordered_map<std::string, std::string> &stats;
   Point &playerPosition;
 
-  RendererData(std::vector<std::vector<CellType>> &_grid, InfoDeque &_fightInfo,
+  RendererData(std::vector<std::vector<CellType>> &_grid,
+               InfoDeque &_messageQueue,
                std::unordered_map<std::string, std::string> &_stats,
                Point &_playerPosition
 
                )
-      : grid(_grid), fightInfo(_fightInfo), stats(_stats),
+      : grid(_grid), messageQueue(_messageQueue), stats(_stats),
         playerPosition(_playerPosition) {}
 };
 

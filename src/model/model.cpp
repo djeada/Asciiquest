@@ -1,4 +1,5 @@
 #include "model.h"
+#include "utils/global_config.h"
 #include <chrono>
 #include <queue>
 
@@ -9,21 +10,24 @@ std::chrono::steady_clock::time_point lastUpdate =
 Model::Model() : running(false) {}
 
 void Model::restart() {
+
   player = std::make_shared<Player>();
   map = std::make_shared<Map>(100, 100);
   info = std::make_shared<InfoDeque>(20);
 
-  for (int i = 0; i < 1; ++i) {
-    monsters.push_back(std::make_shared<Goblin>());
-  }
+  auto addMonsters = [this](const std::string &type, auto monsterMaker) {
+    const int monsterCount = GlobalConfig::getInstance().getConfig<int>(type);
+    monsters.reserve(monsters.size() + monsterCount);
 
-  for (int i = 0; i < 2; ++i) {
-    monsters.push_back(std::make_shared<Troll>());
-  }
+    for (int i = 0; i < monsterCount; i++) {
+      monsters.push_back(
+          std::make_shared<decltype(monsterMaker)>(monsterMaker));
+    }
+  };
 
-  for (int i = 0; i < 115; ++i) {
-    monsters.push_back(std::make_shared<Dragon>());
-  }
+  addMonsters("GoblinsCount", Goblin());
+  addMonsters("TrollsCount", Troll());
+  addMonsters("DragonsCount", Dragon());
 
   loadMap();
 }

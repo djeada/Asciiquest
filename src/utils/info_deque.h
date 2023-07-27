@@ -1,19 +1,25 @@
 #ifndef _INFO_DEQUE_H
 #define _INFO_DEQUE_H
 
+#include <algorithm>
 #include <deque>
 #include <string>
 #include <vector>
 
 class ReverseWrapper {
   std::deque<std::vector<std::string>> &info;
+  int startIndex;
 
 public:
-  ReverseWrapper(std::deque<std::vector<std::string>> &info) : info(info) {}
+  ReverseWrapper(std::deque<std::vector<std::string>> &info, int startIndex)
+      : info(info), startIndex(startIndex) {}
 
   std::deque<std::vector<std::string>>::reverse_iterator begin() {
-    return info.rbegin();
+    auto it = info.rbegin();
+    std::advance(it, startIndex);
+    return it;
   }
+
   std::deque<std::vector<std::string>>::reverse_iterator end() {
     return info.rend();
   }
@@ -23,6 +29,7 @@ class InfoDeque {
 private:
   std::deque<std::vector<std::string>> info;
   size_t maxSize;
+  int startIndex = 0;
 
 public:
   InfoDeque(size_t maxSize) : maxSize(maxSize) {}
@@ -56,7 +63,19 @@ public:
     return info.end();
   }
 
-  ReverseWrapper reverse() { return ReverseWrapper(info); }
+  void increaseStartIndex() {
+    if (startIndex < info.size() - 1) {
+      startIndex++;
+    }
+  }
+
+  void decreaseStartIndex() {
+    if (startIndex > 0) {
+      startIndex--;
+    }
+  }
+
+  ReverseWrapper reverse() { return ReverseWrapper(info, startIndex); }
 };
 
 #endif

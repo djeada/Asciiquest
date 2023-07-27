@@ -126,7 +126,7 @@ void GameBoardRenderer::drawMessageDisplay() {
   int infoHeight =
       std::min(static_cast<int>(messageDisplayRect.bottom * termHeight), LINES);
 
-  for (const auto &messgaes : data.fightInfo.reverse()) {
+  for (const auto &messgaes : data.messageQueue.reverse()) {
     for (const auto &info : messgaes) {
       // Prevent overflow if there are more fight info lines than screen rows
       if (y >= infoHeight) {

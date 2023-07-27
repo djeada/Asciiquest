@@ -14,7 +14,9 @@ enum class GameplayControls {
   ARROW_DOWN = KEY_DOWN,
   ARROW_RIGHT = KEY_RIGHT,
   ENTER = '\n', // or '\r' depending on the system
-  SPACE = ' '
+  SPACE = '\0',
+  INC_MSG_INDEX = 'k',
+  DEC_MSG_INDEX = 'i'
 };
 
 enum class MainMenuOptions { START_GAME = '1', OPTIONS = '2', QUIT = '3' };
@@ -99,6 +101,14 @@ void GameplayStateHandler::handleInput(Controller &controller, int ch) {
     break;
   case GameplayControls::PAUSE:
     controller.setState(GameState::PAUSE_MENU);
+    break;
+  case GameplayControls::INC_MSG_INDEX:
+
+    model.info->increaseStartIndex();
+
+    break;
+  case GameplayControls::DEC_MSG_INDEX:
+    model.info->decreaseStartIndex();
     break;
   default:
     break;
