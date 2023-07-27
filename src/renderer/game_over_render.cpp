@@ -1,4 +1,5 @@
 #include "game_over_renderer.h"
+#include "utils/global_config.h"
 #include <ncurses.h>
 #include <string>
 
@@ -18,8 +19,13 @@ void GameOverRenderer::drawGameOver() {
   std::string gameOver = "Game Over";
 
   // Calculate the position to center "Game Over" in the terminal window
-  int xPos = (termWidth - gameOver.length()) / 2;
-  int yPos = termHeight / 2;
+  int xPos = (termWidth * GlobalConfig::getInstance().getConfig<double>(
+                              "BoardRectRight") -
+              gameOver.length()) /
+             2;
+  int yPos = (termHeight * GlobalConfig::getInstance().getConfig<double>(
+                               "BoardRectBottom")) /
+             2;
 
   // Use bold and red color for "Game Over"
   attron(A_BOLD | COLOR_PAIR(static_cast<int>(ColorPair::PLAYER)));

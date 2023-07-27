@@ -192,6 +192,8 @@ std::unordered_map<std::string, std::string> Model::getPlayerStats() {
   result["Health"] = std::to_string(player->health);
   result["Level"] = std::to_string(player->level);
   result["Experience"] = std::to_string(player->exp);
+  result["MaxHealth"] = std::to_string(player->getMaxHealth());
+  result["MaxExp"] = std::to_string(player->expToNextLevel());
 
   return result;
 }

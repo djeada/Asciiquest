@@ -44,7 +44,7 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
       {ColorPair::ORC, {COLOR_CYAN, COLOR_BLACK}},
       {ColorPair::DRAGON, {COLOR_YELLOW, COLOR_BLACK}},
       {ColorPair::TROLL, {COLOR_MAGENTA, COLOR_BLACK}},
-      {ColorPair::START, {COLOR_GREEN, COLOR_WHITE}},
+      {ColorPair::START, {COLOR_GREEN, COLOR_BLACK}},
       {ColorPair::END, {COLOR_RED, COLOR_WHITE}},
   };
 
@@ -164,7 +164,7 @@ void GameBoardRenderer::drawMessageDisplay() {
         break;
       }
       auto lines = splitStringToLines(
-          info, COLS - x - 1); // Subtract 1 to account for the empty space
+          info, COLS - x - 3); // Subtract 2 to account for the empty space
       for (const auto &line : lines) {
         mvprintw(y++, x + 1, " %s",
                  line.c_str()); // line + empty space
@@ -178,12 +178,50 @@ void GameBoardRenderer::drawMessageDisplay() {
 }
 
 void GameBoardRenderer::drawStats() {
-
   getmaxyx(stdscr, termHeight, termWidth);
-  int y = static_cast<int>(statsRect.top * termHeight);
-  for (const auto &stat : data.stats) {
-    if (y < termHeight) {
-      mvprintw(y++, 0, "%s: %s", stat.first.c_str(), stat.second.c_str());
+
+  // calculate positions based on statsRect
+  int yLevel = static_cast<int>(statsRect.top * termHeight) + 1;
+  int yHealth = yLevel + 1;
+  int yExp = yHealth + 1;
+
+  // initialize colors
+  start_color();
+  init_pair(1, COLOR_GREEN, COLOR_BLACK);
+  init_pair(2, COLOR_BLUE, COLOR_BLACK);
+
+  int maxBarWidth = termWidth / 2;
+  int labelWidth = 8;
+
+  auto drawProgressBar = [&](int y, const std::string &label, float percentage,
+                             int color) {
+    // draw label
+    mvprintw(y, 0, "%-*s", labelWidth,
+             (label + ": ")
+                 .c_str()); // Left justify the label to a width of labelWidth
+
+    // draw the progress bar
+    int progressBarWidth = maxBarWidth - labelWidth - 2; // Adjust as needed
+    int progress = static_cast<int>(progressBarWidth * percentage);
+
+    // set color and draw progress
+    attron(COLOR_PAIR(color));
+    for (int i = 0; i < progress; i++) {
+      mvprintw(y, labelWidth + i, "=");
     }
-  }
+    attroff(COLOR_PAIR(color));
+  };
+
+  // Print Level
+  mvprintw(yLevel, 0, " Level: %s", data.stats["Level"].c_str());
+
+  // Render Health
+  float healthPercentage =
+      stof(data.stats["Health"]) / stof(data.stats["MaxHealth"]);
+  drawProgressBar(yHealth, " Health", healthPercentage, 1); // 1 = COLOR_GREEN
+
+  // Render Experience
+  float expPercentage =
+      stof(data.stats["Experience"]) / stof(data.stats["MaxExp"]);
+  drawProgressBar(yExp, " Exp", expPercentage, 2); // 2 = COLOR_BLUE
 }

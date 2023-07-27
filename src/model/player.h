@@ -12,6 +12,7 @@ public:
   ~Player();
 
   void levelUp();
+  int getMaxHealth() const;
   int expToNextLevel() const;
   void addExperience(int _exp);
   std::string toString() const override;

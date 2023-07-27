@@ -13,13 +13,17 @@ Player::~Player() {}
 void Player::levelUp() {
   level++;
   exp = 0;
-  health = GlobalConfig::getInstance().getConfig<int>("PlayerHealth") *
-           pow(1.1, level - 1);
+  health = getMaxHealth();
 
   // we may need to level up multiple times if the exp was so great
   if (isLevelUp()) {
     levelUp();
   }
+}
+
+auto Player::getMaxHealth() const -> int {
+  return GlobalConfig::getInstance().getConfig<int>("PlayerHealth") *
+         pow(1.1, level - 1);
 }
 
 auto Player::expToNextLevel() const -> int {
