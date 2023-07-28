@@ -1,8 +1,12 @@
 #ifndef _MONSTER_H
 #define _MONSTER_H
 
+#include "map.h"
 #include "movable_entity.h"
+#include "player.h"
 #include <deque>
+#include <memory>
+#include <mutex>
 #include <unordered_map>
 
 extern std::unordered_map<CellType, int> monsterExpMap;
@@ -24,14 +28,17 @@ public:
 
 class Orc : public Monster {
 
+  std::shared_ptr<Map> map;
+  std::shared_ptr<Player> player;
   std::deque<Point> path;
+  std::mutex mutex;
 
 public:
-  explicit Orc();
+  explicit Orc(std::shared_ptr<Map> _map, std::shared_ptr<Player> player);
   void move(const Point &destination);
   auto toString() const -> std::string override;
-  void setPath(const std::deque<Point> &_path);
-  auto isPathEmpty() const -> bool;
+  void randomizeVelocity() override;
+  Point getVelocity() override;
 };
 
 class Troll : public Monster {

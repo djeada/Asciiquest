@@ -32,6 +32,13 @@ void Model::restart() {
   addMonsters("TrollsCount", Troll());
   addMonsters("DragonsCount", Dragon());
 
+  // Adding Orcs separately as they have different parameters
+  auto orcsCount = GlobalConfig::getInstance().getConfig<int>("OrcsCount");
+  monsters.reserve(monsters.size() + orcsCount);
+  for (auto i = 0; i < orcsCount; i++) {
+    monsters.push_back(std::make_shared<Orc>(map, player));
+  }
+
   loadMap();
 }
 
@@ -65,7 +72,7 @@ void Model::update() {
   }
 
   for (const auto &monster : monsters) {
-    attemptMonsterMove(monster, monster->velocity);
+    attemptMonsterMove(monster, monster->getVelocity());
   }
 
   monsters.erase(std::remove_if(monsters.begin(), monsters.end(),
@@ -189,10 +196,10 @@ std::unordered_map<std::string, std::string> Model::getPlayerStats() {
 
   std::unordered_map<std::string, std::string> result;
 
-  result["Health"] = std::to_string(player->health);
   result["Level"] = std::to_string(player->level);
-  result["Experience"] = std::to_string(player->exp);
+  result["Health"] = std::to_string(player->health);
   result["MaxHealth"] = std::to_string(player->getMaxHealth());
+  result["Experience"] = std::to_string(player->exp);
   result["MaxExp"] = std::to_string(player->expToNextLevel());
 
   return result;

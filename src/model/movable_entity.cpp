@@ -17,3 +17,5 @@ void MovableEntity::takeDamage(int damage) {
 }
 
 void MovableEntity::move(const Point &destination) { position = destination; }
+
+Point MovableEntity::getVelocity() { return velocity; }

@@ -5,6 +5,8 @@
 #include <string>
 
 class MovableEntity : public Entity {
+protected:
+  Point velocity;
 
 public:
   explicit MovableEntity(CellType cellType = CellType::EMPTY, int health = 100,
@@ -13,14 +15,15 @@ public:
   virtual ~MovableEntity();
 
   // Other member functions
+
   bool isAlive() const;
   void takeDamage(int damage);
+  virtual Point getVelocity();
   virtual void move(const Point &destination);
 
   // data
   int health;
   int strength;
-  Point velocity;
 };
 
 #endif

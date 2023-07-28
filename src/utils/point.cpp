@@ -63,8 +63,8 @@ Point Point::operator/(int scalar) const {
 }
 
 double Point::distance(const Point &p) const {
-  int dx = x - p.x;
-  int dy = y - p.y;
+  double dx = x - p.x;
+  double dy = y - p.y;
   return std::sqrt(dx * dx + dy * dy);
 }
 

@@ -1,14 +1,14 @@
 #ifndef A_STAR_H
 #define A_STAR_H
 
+#include "utils/point.h"
 #include <cmath>
 #include <deque>
 #include <limits>
+#include <queue>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include <queue>
-#include "utils/point.h"
 
 template <typename T> class AStar {
 public:
@@ -20,14 +20,16 @@ public:
 
     Node() = default;
     Node(Point p, Point cf, int g, int f)
-        : point(std::move(p)), cameFrom(std::move(cf)), costFromStart(g), totalEstimatedCost(f) {}
+        : point(std::move(p)), cameFrom(std::move(cf)), costFromStart(g),
+          totalEstimatedCost(f) {}
   };
 
 private:
   std::deque<Point> bestPath;
   std::function<bool(T)> isNavigable;
 
-  std::vector<Point> getNeighbors(const Point &p, const std::vector<std::vector<T>> &grid) {
+  std::vector<Point> getNeighbors(const Point &p,
+                                  const std::vector<std::vector<T>> &grid) {
     std::vector<Point> neighbors;
     const auto px = p.x;
     const auto py = p.y;
@@ -53,9 +55,9 @@ private:
 
 public:
   AStar(
-      const std::vector<std::vector<T>> &grid, Point start,
-      Point end,
-      std::function<bool(T)> isNavigableFunc = [](T value) { return static_cast<bool>(value); })
+      const std::vector<std::vector<T>> &grid, Point start, Point end,
+      std::function<bool(T)> isNavigableFunc =
+          [](T value) { return static_cast<bool>(value); })
       : isNavigable(std::move(isNavigableFunc)) {
     solve(grid, std::move(start), std::move(end));
   }
@@ -63,8 +65,9 @@ public:
   void solve(const std::vector<std::vector<T>> &grid, Point start, Point end) {
     std::unordered_map<Point, Node> nodes;
     std::unordered_set<Point> visited;
-    std::priority_queue<Point, std::vector<Point>, std::function<bool(Point, Point)>> queue(
-        [&nodes](Point a, Point b) {
+    std::priority_queue<Point, std::vector<Point>,
+                        std::function<bool(Point, Point)>>
+        queue([&nodes](Point a, Point b) {
           return nodes[a].totalEstimatedCost > nodes[b].totalEstimatedCost;
         });
 
@@ -95,10 +98,14 @@ public:
         if (visited.count(neighbor))
           continue; // Ignore if neighbor was already visited
 
-        int tentativeCostFromStart = nodes[current].costFromStart + 1; // Assuming all moves cost 1
+        int tentativeCostFromStart =
+            nodes[current].costFromStart + 1; // Assuming all moves cost 1
 
-        if (!nodes.count(neighbor) || tentativeCostFromStart < nodes[neighbor].costFromStart) {
-          nodes[neighbor] = Node(neighbor, current, tentativeCostFromStart, tentativeCostFromStart + heuristic(neighbor, end));
+        if (!nodes.count(neighbor) ||
+            tentativeCostFromStart < nodes[neighbor].costFromStart) {
+          nodes[neighbor] =
+              Node(neighbor, current, tentativeCostFromStart,
+                   tentativeCostFromStart + heuristic(neighbor, end));
           queue.push(neighbor);
         }
       }
@@ -109,4 +116,3 @@ public:
 };
 
 #endif // A_STAR_H
-

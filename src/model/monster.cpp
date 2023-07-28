@@ -1,6 +1,8 @@
 #include "monster.h"
+#include "algorithms/a_star.h"
 #include "utils/global_config.h"
 #include <chrono>
+#include <future>
 #include <random>
 
 std::unordered_map<CellType, int> monsterExpMap = {{CellType::GOBLIN, 100},
@@ -38,24 +40,59 @@ void Goblin::move(const Point &destination) {
 }
 
 std::string Goblin::toString() const { return "Goblin"; }
-
-Orc::Orc()
+Orc::Orc(std::shared_ptr<Map> _map, std::shared_ptr<Player> _player)
     : Monster(CellType::ORC,
               GlobalConfig::getInstance().getConfig<int>("OrcHealth"),
-              GlobalConfig::getInstance().getConfig<int>("OrcDamage")) {}
+              GlobalConfig::getInstance().getConfig<int>("OrcDamage")),
+      map(std::move(_map)), player(std::move(_player)) {}
 
 void Orc::move(const Point &destination) {
-  if (!path.empty()) {
-    position = path.front();
-    path.pop_front();
+  std::lock_guard<std::mutex> lock(mutex);
+  MovableEntity::move(destination);
+
+  if (position.distance(player->position) < 5) {
+    randomizeVelocity();
   }
+}
+
+Point Orc::getVelocity() {
+  std::lock_guard<std::mutex> lock(mutex);
+  if (!path.empty()) {
+    auto newPos = path.front();
+    path.pop_front();
+    return newPos - position;
+  }
+  randomizeVelocity();
+  return velocity;
 }
 
 std::string Orc::toString() const { return "Orc"; }
 
-void Orc::setPath(const std::deque<Point> &path) { this->path = path; }
+void Orc::randomizeVelocity() {
+  if (position.distance(player->position) > 10) {
+    return;
+  }
 
-bool Orc::isPathEmpty() const { return path.empty(); }
+  auto isNavigable = [](const CellType &cell) {
+    return cell == CellType::EMPTY || cell == CellType::PLAYER;
+  };
+
+  auto futurePath =
+      std::async(std::launch::async, [&, playerPosition = player->position]() {
+        AStar<CellType> aStar(map->grid, position, playerPosition, isNavigable);
+        return aStar.getPath();
+      });
+
+  try {
+    path = futurePath.get();
+    if (!path.empty()) {
+      path.pop_front();
+    }
+  } catch (const std::system_error &e) {
+    // Handle the error
+    std::cerr << "Error occurred: " << e.what() << '\n';
+  }
+}
 
 Troll::Troll()
     : Monster(CellType::TROLL,

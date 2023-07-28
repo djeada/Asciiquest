@@ -38,9 +38,9 @@ TEST(AStarTest, FindsPathInCellTypeEnumGrid) {
   Point start(0, 0);
   Point end(4, 2);
 
-auto isNavigable = [](const CellType &cell) {
-  return cell != CellType::WALL;
-};
+  auto isNavigable = [](const CellType &cell) {
+    return cell != CellType::WALL;
+  };
 
   AStar<CellType> aStar(grid, start, end, isNavigable);
 
