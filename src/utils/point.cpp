@@ -72,6 +72,11 @@ std::string Point::toString() const {
   return "(" + std::to_string(x) + ", " + std::to_string(y) + ")";
 }
 
+std::ostream &operator<<(std::ostream &os, const Point &p) {
+  os << "Point(" << p.x << ", " << p.y << ")";
+  return os;
+}
+
 namespace std {
 size_t hash<Point>::operator()(const Point &p) const noexcept {
   // This hash function is just a basic example and may not provide the best

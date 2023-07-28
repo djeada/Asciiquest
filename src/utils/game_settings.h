@@ -2,15 +2,16 @@
 #define GAME_SETTINGS_H
 
 enum class CellType {
-  START,
-  END,
-  EMPTY,
+  EMPTY = 0,
   WALL,
   PLAYER,
   GOBLIN,
   ORC,
   TROLL,
-  DRAGON
+  DRAGON,
+  START,
+  END
+
 };
 
 enum class GameState { MAIN_MENU, GAMEPLAY, PAUSE_MENU, GAME_OVER };

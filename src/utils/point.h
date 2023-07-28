@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <functional>
+#include <iostream>
 #include <string>
 
 struct Point {
@@ -37,6 +38,8 @@ struct Point {
   distance(const Point &p) const; // calculates the distance between two points
   std::string toString() const;   // converts the point to a string
 };
+
+std::ostream &operator<<(std::ostream &os, const Point &p);
 
 namespace std {
 template <> struct hash<Point> {
