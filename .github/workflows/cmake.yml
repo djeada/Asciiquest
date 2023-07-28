@@ -12,7 +12,7 @@ jobs:
     - name: Create Build Environment
       run: |
         sudo apt-get update -y
-        sudo apt-get install -y cmake build-essential
+        sudo apt-get install -y cmake build-essential libncurses5-dev libncursesw5-dev
 
     - name: Configure CMake
       run: |
