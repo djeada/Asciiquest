@@ -30,6 +30,10 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::END,
      {GlobalConfig::getInstance().getConfig<char>("EndSymbol"),
       ColorPair::END}},
+
+{CellType::TREASURE,
+     {GlobalConfig::getInstance().getConfig<char>("TreasureSymbol"),
+      ColorPair::TREASURE}},
 };
 
 GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
@@ -46,7 +50,9 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
       {ColorPair::TROLL, {COLOR_MAGENTA, COLOR_BLACK}},
       {ColorPair::START, {COLOR_GREEN, COLOR_BLACK}},
       {ColorPair::END, {COLOR_RED, COLOR_WHITE}},
-  };
+  {ColorPair::TREASURE, {COLOR_CYAN, COLOR_BLACK}},  
+};
+  
 
   // Initialize color pairs
   for (const auto &pair : colorDefinitions) {

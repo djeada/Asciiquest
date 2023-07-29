@@ -11,10 +11,14 @@ public:
   Player();
   ~Player();
 
+  void addExperience(int _exp);
+  void heal(int _health);
+  void increaseStrength(int _strength);
+
   void levelUp();
   int getMaxHealth() const;
   int expToNextLevel() const;
-  void addExperience(int _exp);
+
   std::string toString() const override;
   // void exploreTreasure(const Treasure &treasure);
 

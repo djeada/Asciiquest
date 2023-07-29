@@ -39,6 +39,7 @@ void Model::restart() {
     monsters.push_back(std::make_shared<Orc>(map, player));
   }
 
+
   loadMap();
 }
 
@@ -48,10 +49,21 @@ void Model::loadMap() {
   player->move(map->getStart());
 
   for (const auto &monster : monsters) {
-    auto pos = map->randomFreePosition();
-    monster->position = pos;
-    map->setCellType(pos, monster->cellType);
+    auto position = map->randomFreePosition();
+    monster->position = position;
+    map->setCellType(position, monster->cellType);
   }
+
+  for (int i = 0; i < 10; ++i) {  
+
+  auto treasurePtr = std::make_shared<Treasure>();
+  auto position = map->randomFreePosition();
+  treasurePtr->move(position);
+  treasures.emplace(position, std::move(treasurePtr));
+    map->setCellType(position,  CellType::TREASURE);
+}
+
+
   map->setCellType(map->getEnd(), CellType::END);
   info->addMessage("Welcome on the new level!");
 }
@@ -144,6 +156,65 @@ void Model::fight(const std::shared_ptr<Monster> &monster) {
   updateMapAfterFight(monster);
 }
 
+
+void Model::exploreTreasure(const std::shared_ptr<Treasure> &treasure) {
+
+  // Initialize success rate (you might want to tweak the numbers depending on your game balance)
+  double successRate = (rand() % 100) / 100.0; // random value between 0 and 1
+
+  // Define the mechanism of exploring treasure
+  auto explore = [&](const auto &explorer, const auto &treasure, auto &messages) {
+
+    if (successRate > 0.85) { // 15% chance of exploration failure
+      messages.push_back(explorer->toString() + " fails to explore " + treasure->toString() + ".");
+      return;
+    }
+
+    // Get treasure's bonus value
+    int bonus = treasure->getValue() * successRate; // add randomness to bonus
+
+    // Depending on the type of the bonus, apply it to the player
+    switch (treasure->getBonusType()) {
+      case BonusType::Experience:
+        explorer->addExperience(bonus);
+        break;
+      case BonusType::Health:
+        explorer->heal(bonus);
+        break;
+      case BonusType::Strength:
+        explorer->increaseStrength(bonus);
+        break;
+    }
+
+    // Display a message for successful exploration
+    messages.push_back(explorer->toString() + " successfully explores " + treasure->toString() + 
+      " for a bonus of " + std::to_string(bonus) + ".");
+  };
+
+  // Define what happens on the map after treasure exploration
+  auto updateMapAfterExploration = [&](const auto &explorer, const auto &exploredTreasure) {
+      map->setCellType(exploredTreasure->position, CellType::EMPTY);
+      treasures.erase(exploredTreasure->position);
+  };
+
+  // Display a message for starting treasure exploration
+  info->addMessage("Treasure exploration starts!");
+
+  std::vector<std::string> explorationMessages;
+
+  // Explore the treasure
+  explore(player, treasure, explorationMessages);
+
+  // Update the map after exploration
+  updateMapAfterExploration(player, treasure);
+
+  // Display exploration messages
+  info->addMessage(explorationMessages);
+
+}
+
+
+
 void Model::queuePlayerMove(const Point &point) { playerMoves.push(point); }
 
 void Model::attemptPlayerMove(const std::shared_ptr<Player> &player,
@@ -161,7 +232,11 @@ void Model::attemptPlayerMove(const std::shared_ptr<Player> &player,
       }
     }
     return;
-  } else if (isExit(newPos)) {
+  } else if (isTreasure(newPos)) {
+        exploreTreasure(treasures[newPos]);
+    }
+
+else if (isExit(newPos)) {
     restart();
     return;
   }
@@ -217,6 +292,10 @@ bool Model::isPlayer(const Point &point) {
 
 bool Model::isExit(const Point &point) {
   return map->getCellType(point) == CellType::END;
+}
+
+bool Model::isTreasure(const Point &point) {
+  return map->getCellType(point) == CellType::TREASURE;
 }
 
 bool Model::isMonster(const Point &point) {

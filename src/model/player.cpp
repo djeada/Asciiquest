@@ -39,4 +39,15 @@ void Player::addExperience(int _exp) {
   }
 }
 
+void Player::heal(int _health) {
+  health += _health;
+  if (health > getMaxHealth()) { // health should not exceed max health
+    health = getMaxHealth();
+  }
+}
+
+void Player::increaseStrength(int _strength) {
+  strength += _strength;
+}
+
 auto Player::toString() const -> std::string { return "Player"; }
