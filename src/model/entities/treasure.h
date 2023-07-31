@@ -4,11 +4,7 @@
 #include "entity.h"
 #include "utils/global_config.h"
 
-enum class BonusType {
-  Experience,
-  Health,
-  Strength
-};
+enum class BonusType { Experience, Health, Strength };
 
 class Treasure : public Entity {
 private:
@@ -18,7 +14,8 @@ private:
 
 public:
   Treasure();
-  explicit Treasure(const Point &_position, int _value, BonusType _bonusType, int _expirationCounter);
+  explicit Treasure(const Point &_position, int _value, BonusType _bonusType,
+                    int _expirationCounter);
 
   int getValue() const;
   void setValue(int _value);
@@ -26,12 +23,11 @@ public:
   BonusType getBonusType() const;
   void setBonusType(BonusType _bonusType);
 
-  bool isExpired()  const;
+  bool isExpired() const;
   void decrementExpirationCounter();
 
-  void move(const Point &destination) override ;
+  void move(const Point &destination) override;
   std::string toString() const override;
 };
 
-#endif 
-
+#endif

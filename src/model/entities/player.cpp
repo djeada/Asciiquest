@@ -46,8 +46,6 @@ void Player::heal(int _health) {
   }
 }
 
-void Player::increaseStrength(int _strength) {
-  strength += _strength;
-}
+void Player::increaseStrength(int _strength) { strength += _strength; }
 
 auto Player::toString() const -> std::string { return "Player"; }

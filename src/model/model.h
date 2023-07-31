@@ -1,10 +1,10 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include "entities/monster.h"
+#include "entities/player.h"
+#include "entities/treasure.h"
 #include "map.h"
-#include "monster.h"
-#include "player.h"
-#include "treasure.h"
 #include "utils/direction.h"
 #include "utils/info_deque.h"
 #include <atomic>
@@ -28,12 +28,12 @@ public:
   std::shared_ptr<InfoDeque> info;
   std::shared_ptr<Map> map;
   std::vector<std::shared_ptr<Monster>> monsters;
-    std::unordered_map<Point, std::shared_ptr<Treasure>> treasures;
+  std::unordered_map<Point, std::shared_ptr<Treasure>> treasures;
 
 private:
   void loadMap();
   void fight(const std::shared_ptr<Monster> &monster);
-void exploreTreasure(const std::shared_ptr<Treasure> &treasure);
+  void exploreTreasure(const std::shared_ptr<Treasure> &treasure);
 
   void attemptPlayerMove(const std::shared_ptr<Player> &player,
                          const Point &direction);

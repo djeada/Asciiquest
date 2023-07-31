@@ -5,6 +5,7 @@
 
 const int monsterUpdateSpeed =
     GlobalConfig::getInstance().getConfig<int>("MonsterUpdateSpeed");
+
 Model::Model() : running(false), lastUpdate(std::chrono::steady_clock::now()) {}
 
 void Model::restart() {
@@ -39,7 +40,6 @@ void Model::restart() {
     monsters.push_back(std::make_shared<Orc>(map, player));
   }
 
-
   loadMap();
 }
 
@@ -54,15 +54,15 @@ void Model::loadMap() {
     map->setCellType(position, monster->cellType);
   }
 
-  for (int i = 0; i < 10; ++i) {  
-
-  auto treasurePtr = std::make_shared<Treasure>();
-  auto position = map->randomFreePosition();
-  treasurePtr->move(position);
-  treasures.emplace(position, std::move(treasurePtr));
-    map->setCellType(position,  CellType::TREASURE);
-}
-
+  auto treasuerCount =
+      GlobalConfig::getInstance().getConfig<int>("TreasureCount");
+  for (int i = 0; i < treasuerCount; ++i) {
+    auto treasurePtr = std::make_shared<Treasure>();
+    auto position = map->randomFreePosition();
+    treasurePtr->move(position);
+    treasures.emplace(position, std::move(treasurePtr));
+    map->setCellType(position, CellType::TREASURE);
+  }
 
   map->setCellType(map->getEnd(), CellType::END);
   info->addMessage("Welcome on the new level!");
@@ -156,17 +156,18 @@ void Model::fight(const std::shared_ptr<Monster> &monster) {
   updateMapAfterFight(monster);
 }
 
-
 void Model::exploreTreasure(const std::shared_ptr<Treasure> &treasure) {
 
-  // Initialize success rate (you might want to tweak the numbers depending on your game balance)
+  // Initialize success rate (you might want to tweak the numbers depending on
+  // your game balance)
   double successRate = (rand() % 100) / 100.0; // random value between 0 and 1
 
   // Define the mechanism of exploring treasure
-  auto explore = [&](const auto &explorer, const auto &treasure, auto &messages) {
-
+  auto explore = [&](const auto &explorer, const auto &treasure,
+                     auto &messages) {
     if (successRate > 0.85) { // 15% chance of exploration failure
-      messages.push_back(explorer->toString() + " fails to explore " + treasure->toString() + ".");
+      messages.push_back(explorer->toString() + " fails to explore " +
+                         treasure->toString() + ".");
       return;
     }
 
@@ -175,26 +176,28 @@ void Model::exploreTreasure(const std::shared_ptr<Treasure> &treasure) {
 
     // Depending on the type of the bonus, apply it to the player
     switch (treasure->getBonusType()) {
-      case BonusType::Experience:
-        explorer->addExperience(bonus);
-        break;
-      case BonusType::Health:
-        explorer->heal(bonus);
-        break;
-      case BonusType::Strength:
-        explorer->increaseStrength(bonus);
-        break;
+    case BonusType::Experience:
+      explorer->addExperience(bonus);
+      break;
+    case BonusType::Health:
+      explorer->heal(bonus);
+      break;
+    case BonusType::Strength:
+      explorer->increaseStrength(bonus);
+      break;
     }
 
     // Display a message for successful exploration
-    messages.push_back(explorer->toString() + " successfully explores " + treasure->toString() + 
-      " for a bonus of " + std::to_string(bonus) + ".");
+    messages.push_back(explorer->toString() + " successfully explores " +
+                       treasure->toString() + " for a bonus of " +
+                       std::to_string(bonus) + ".");
   };
 
   // Define what happens on the map after treasure exploration
-  auto updateMapAfterExploration = [&](const auto &explorer, const auto &exploredTreasure) {
-      map->setCellType(exploredTreasure->position, CellType::EMPTY);
-      treasures.erase(exploredTreasure->position);
+  auto updateMapAfterExploration = [&](const auto &explorer,
+                                       const auto &exploredTreasure) {
+    map->setCellType(exploredTreasure->position, CellType::EMPTY);
+    treasures.erase(exploredTreasure->position);
   };
 
   // Display a message for starting treasure exploration
@@ -210,10 +213,7 @@ void Model::exploreTreasure(const std::shared_ptr<Treasure> &treasure) {
 
   // Display exploration messages
   info->addMessage(explorationMessages);
-
 }
-
-
 
 void Model::queuePlayerMove(const Point &point) { playerMoves.push(point); }
 
@@ -233,10 +233,10 @@ void Model::attemptPlayerMove(const std::shared_ptr<Player> &player,
     }
     return;
   } else if (isTreasure(newPos)) {
-        exploreTreasure(treasures[newPos]);
-    }
+    exploreTreasure(treasures[newPos]);
+  }
 
-else if (isExit(newPos)) {
+  else if (isExit(newPos)) {
     restart();
     return;
   }

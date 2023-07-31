@@ -1,7 +1,7 @@
 #ifndef _MONSTER_H
 #define _MONSTER_H
 
-#include "map.h"
+#include "model/map.h"
 #include "movable_entity.h"
 #include "player.h"
 #include <deque>
