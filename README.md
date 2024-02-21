@@ -1,6 +1,6 @@
-# Mysterious Dungeon
+# Asciiquest
 
-Mysterious Dungeon is an ASCII-based roguelike game. As the hero `@`, you're tasked with navigating through a randomly generated dungeon, filled with fearsome enemies and treacherous traps. Along the journey, you'll uncover pieces of a secret story, shaping the destiny of your character. The game can be played in a terminal and features AI enemies, real-time combat, dynamic environment interactions, multiplayer capability, and a compelling narrative.
+Asciiquest is an ASCII-based roguelike game. As the hero `@`, you're tasked with navigating through a randomly generated dungeon, filled with fearsome enemies and treacherous traps. Along the journey, you'll uncover pieces of a secret story, shaping the destiny of your character. The game can be played in a terminal and features AI enemies, real-time combat, dynamic environment interactions, multiplayer capability, and a compelling narrative.
 
 ## Screenshot
 
@@ -28,13 +28,13 @@ To play Mysterious Dungeon, you need:
 
 To build and run Mysterious Dungeon, follow these steps:
 
-1. Clone the repository: `git clone https://github.com/djeada/Mysterious-dungeon.git`
-1. Navigate to the project directory: `cd Mysterious-dungeon`
+1. Clone the repository: `git clone https://github.com/djeada/Asciiquest.git`
+1. Navigate to the project directory: `cd Asciiquest`
 1. Create a build directory: `mkdir build`
 1. Navigate to the build directory: `cd build`
 1. Run CMake: `cmake ..`
 1. Build the game: `make`
-1. Run the game: `./mysterious-dungeon`
+1. Run the game: `./exe`
 
 ## How to play
 
