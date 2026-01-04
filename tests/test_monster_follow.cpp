@@ -26,7 +26,8 @@ TEST_F(MonsterFollowTest, GoblinFollowsPlayerWithinRange) {
   Point velocity = goblin->getVelocity();
 
   // Assert - velocity should point towards player (positive x direction)
-  EXPECT_TRUE(velocity.x > 0 || velocity.y != 0); // Should move towards player
+  // Since goblin is at (20,25) and player at (25,25), should move in +x direction
+  EXPECT_GT(velocity.x, 0);
 }
 
 TEST_F(MonsterFollowTest, GoblinRandomMovementOutOfRange) {
@@ -52,7 +53,8 @@ TEST_F(MonsterFollowTest, TrollFollowsPlayerWithinRange) {
   Point velocity = troll->getVelocity();
 
   // Assert - velocity should point towards player (positive x direction)
-  EXPECT_TRUE(velocity.x > 0 || velocity.y != 0);
+  // Since troll is at (15,25) and player at (25,25), should move in +x direction
+  EXPECT_GT(velocity.x, 0);
 }
 
 TEST_F(MonsterFollowTest, TrollRandomMovementOutOfRange) {

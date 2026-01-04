@@ -177,13 +177,16 @@ Skeleton::Skeleton(std::shared_ptr<Map> _map, std::shared_ptr<Player> _player)
 }
 
 void Skeleton::randomizeVelocity() {
+  static std::mt19937 gen = generateSeededRNG();
+  std::uniform_int_distribution<> followChance(0, 99);
+  
   // Check if player is within follow range
   if (position.distance(player->position) <= followRange) {
     // Move towards player with some randomness (erratic movement)
     Point diff = player->position - position;
     
     // 70% chance to move towards player, 30% random
-    if (rand() % 100 < 70) {
+    if (followChance(gen) < 70) {
       velocity.x = (diff.x > 0) ? 1 : (diff.x < 0) ? -1 : 0;
       velocity.y = (diff.y > 0) ? 1 : (diff.y < 0) ? -1 : 0;
       
@@ -201,9 +204,12 @@ void Skeleton::randomizeVelocity() {
 }
 
 void Skeleton::move(const Point &destination) {
+  static std::mt19937 gen = generateSeededRNG();
+  std::uniform_int_distribution<> changeChance(0, 1);
+  
   MovableEntity::move(destination);
   // Skeletons have a 50% chance to change direction after each move
-  if (rand() % 2 == 0) {
+  if (changeChance(gen) == 0) {
     randomizeVelocity();
   }
 }
