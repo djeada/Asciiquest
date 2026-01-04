@@ -66,7 +66,8 @@ Orc::Orc(std::shared_ptr<Map> _map, std::shared_ptr<Player> _player)
               GlobalConfig::getInstance().getConfig<int>("OrcHealth"),
               GlobalConfig::getInstance().getConfig<int>("OrcDamage")),
       map(std::move(_map)), player(std::move(_player)),
-      followRange(GlobalConfig::getInstance().getConfig<int>("OrcFollowRange")) {}
+      followRange(GlobalConfig::getInstance().getConfig<int>("OrcFollowRange")),
+      pathCalculating(false) {}
 
 void Orc::move(const Point &destination) {
   std::lock_guard<std::mutex> lock(mutex);
@@ -79,6 +80,24 @@ void Orc::move(const Point &destination) {
 
 Point Orc::getVelocity() {
   std::lock_guard<std::mutex> lock(mutex);
+  
+  // Check if pathfinding is complete
+  if (pathCalculating && pathFuture.valid()) {
+    // Non-blocking check if pathfinding is done
+    if (pathFuture.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
+      try {
+        path = pathFuture.get();
+        if (!path.empty()) {
+          path.pop_front();
+        }
+        pathCalculating = false;
+      } catch (const std::system_error &e) {
+        std::cerr << "Error occurred: " << e.what() << '\n';
+        pathCalculating = false;
+      }
+    }
+  }
+  
   if (!path.empty()) {
     auto newPos = path.front();
     path.pop_front();
@@ -91,6 +110,11 @@ Point Orc::getVelocity() {
 std::string Orc::toString() const { return "Orc"; }
 
 void Orc::randomizeVelocity() {
+  // Don't start a new pathfinding if one is already in progress
+  if (pathCalculating) {
+    return;
+  }
+  
   if (position.distance(player->position) > followRange) {
     return;
   }
@@ -99,21 +123,12 @@ void Orc::randomizeVelocity() {
     return cell == CellType::EMPTY || cell == CellType::PLAYER;
   };
 
-  auto futurePath =
-      std::async(std::launch::async, [&, playerPosition = player->position]() {
-        AStar<CellType> aStar(map->grid, position, playerPosition, isNavigable);
-        return aStar.getPath();
-      });
-
-  try {
-    path = futurePath.get();
-    if (!path.empty()) {
-      path.pop_front();
-    }
-  } catch (const std::system_error &e) {
-    // Handle the error
-    std::cerr << "Error occurred: " << e.what() << '\n';
-  }
+  // Start pathfinding asynchronously without blocking
+  pathCalculating = true;
+  pathFuture = std::async(std::launch::async, [this, isNavigable, playerPosition = player->position]() {
+    AStar<CellType> aStar(map->grid, position, playerPosition, isNavigable);
+    return aStar.getPath();
+  });
 }
 
 Troll::Troll(std::shared_ptr<Map> _map, std::shared_ptr<Player> _player)

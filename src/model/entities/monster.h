@@ -5,6 +5,7 @@
 #include "movable_entity.h"
 #include "player.h"
 #include <deque>
+#include <future>
 #include <memory>
 #include <mutex>
 #include <unordered_map>
@@ -38,6 +39,8 @@ class Orc : public Monster {
   std::deque<Point> path;
   std::mutex mutex;
   int followRange;
+  std::future<std::deque<Point>> pathFuture;
+  bool pathCalculating;
 
 public:
   explicit Orc(std::shared_ptr<Map> _map, std::shared_ptr<Player> player);
