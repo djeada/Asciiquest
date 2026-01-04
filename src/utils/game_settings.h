@@ -9,7 +9,9 @@ enum class CellType {
   ORC,
   TROLL,
   DRAGON,
+  SKELETON,
   TREASURE,
+  POTION,
   START,
   END
 

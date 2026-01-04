@@ -1,44 +1,83 @@
 #include "model.h"
 #include "utils/global_config.h"
 #include <chrono>
+#include <cmath>
 #include <queue>
 
 const int monsterUpdateSpeed =
     GlobalConfig::getInstance().getConfig<int>("MonsterUpdateSpeed");
 
-Model::Model() : running(false), lastUpdate(std::chrono::steady_clock::now()) {}
+Model::Model()
+    : running(false), lastUpdate(std::chrono::steady_clock::now()),
+      currentLevel(0), monstersKilled(0), totalScore(0) {}
 
-void Model::restart() {
+int Model::getDifficultyMultiplier() const {
+  // Difficulty increases by 10% per level
+  return static_cast<int>(100 * std::pow(1.1, currentLevel - 1));
+}
 
-  if (!player || !player->isAlive()) {
-    player = std::make_shared<Player>();
-  }
-  map = std::make_shared<Map>(
-      GlobalConfig::getInstance().getConfig<int>("MapWidth"),
-      GlobalConfig::getInstance().getConfig<int>("MapHeight"));
-  info = std::make_shared<InfoDeque>(
-      GlobalConfig::getInstance().getConfig<int>("MessageQueueSize"));
+void Model::spawnMonsters() {
+  monsters.clear();
 
   auto addMonsters = [this](const std::string &type, auto monsterMaker) {
-    const int monsterCount = GlobalConfig::getInstance().getConfig<int>(type);
+    int monsterCount = GlobalConfig::getInstance().getConfig<int>(type);
+    // Scale monster count with level (up to 50% more monsters at higher levels)
+    monsterCount = monsterCount + (monsterCount * (currentLevel - 1) / 10);
     monsters.reserve(monsters.size() + monsterCount);
 
     for (int i = 0; i < monsterCount; i++) {
-      monsters.push_back(
-          std::make_shared<decltype(monsterMaker)>(monsterMaker));
+      auto monster =
+          std::make_shared<decltype(monsterMaker)>(monsterMaker);
+      // Scale monster health and damage with difficulty
+      int diffMult = getDifficultyMultiplier();
+      monster->health = (monster->health * diffMult) / 100;
+      monster->strength = (monster->strength * diffMult) / 100;
+      monsters.push_back(monster);
     }
   };
 
   addMonsters("GoblinsCount", Goblin());
   addMonsters("TrollsCount", Troll());
   addMonsters("DragonsCount", Dragon());
+  addMonsters("SkeletonsCount", Skeleton());
 
   // Adding Orcs separately as they have different parameters
-  auto orcsCount = GlobalConfig::getInstance().getConfig<int>("OrcsCount");
+  int orcsCount = GlobalConfig::getInstance().getConfig<int>("OrcsCount");
+  orcsCount = orcsCount + (orcsCount * (currentLevel - 1) / 10);
   monsters.reserve(monsters.size() + orcsCount);
-  for (auto i = 0; i < orcsCount; i++) {
-    monsters.push_back(std::make_shared<Orc>(map, player));
+  for (int i = 0; i < orcsCount; i++) {
+    auto orc = std::make_shared<Orc>(map, player);
+    int diffMult = getDifficultyMultiplier();
+    orc->health = (orc->health * diffMult) / 100;
+    orc->strength = (orc->strength * diffMult) / 100;
+    monsters.push_back(orc);
   }
+}
+
+void Model::restart() {
+  // Track level progression
+  if (!player || !player->isAlive()) {
+    player = std::make_shared<Player>();
+    currentLevel = 1;
+    monstersKilled = 0;
+    totalScore = 0;
+  } else {
+    // Advancing to next level
+    currentLevel++;
+    // Bonus score for completing level
+    totalScore += currentLevel * 1000;
+    // Heal player slightly when advancing
+    player->heal(player->getMaxHealth() / 4);
+  }
+
+  map = std::make_shared<Map>(
+      GlobalConfig::getInstance().getConfig<int>("MapWidth"),
+      GlobalConfig::getInstance().getConfig<int>("MapHeight"));
+  info = std::make_shared<InfoDeque>(
+      GlobalConfig::getInstance().getConfig<int>("MessageQueueSize"));
+
+  // Use new spawn system with difficulty scaling
+  spawnMonsters();
 
   loadMap();
 }
@@ -54,8 +93,11 @@ void Model::loadMap() {
     map->setCellType(position, monster->cellType);
   }
 
-  auto treasureCount =
+  // Scale treasure count with level
+  int treasureCount =
       GlobalConfig::getInstance().getConfig<int>("TreasureCount");
+  treasureCount = treasureCount + (currentLevel * 2); // More treasures at higher levels
+  treasures.clear();
   for (int i = 0; i < treasureCount; ++i) {
     auto treasurePtr = std::make_shared<Treasure>();
     auto position = map->randomFreePosition();
@@ -65,7 +107,15 @@ void Model::loadMap() {
   }
 
   map->setCellType(map->getEnd(), CellType::END);
-  info->addMessage("Welcome on the new level!");
+
+  // Show level info
+  info->addMessage("=== DUNGEON LEVEL " + std::to_string(currentLevel) + " ===");
+  info->addMessage("Monsters: " + std::to_string(monsters.size()) +
+                   " | Treasures: " + std::to_string(treasureCount));
+  if (currentLevel > 1) {
+    info->addMessage("Difficulty increased! Monsters are stronger.");
+  }
+  info->addMessage("Find the exit to advance!");
 }
 
 void Model::update() {
@@ -101,31 +151,35 @@ void Model::fight(const std::shared_ptr<Monster> &monster) {
   auto attack = [&](const auto &attacker, const auto &defender,
                     auto &messages) {
     double successRate = (rand() % 100) / 100.0; // random value between 0 and 1
-    if (successRate > 0.85) {                    // 15% chance of attack missing
+
+    // 15% chance of attack missing
+    if (successRate > 0.85) {
       messages.push_back(attacker->toString() + " misses " +
-                         defender->toString() + ".");
+                         defender->toString() + "!");
       return;
     }
 
-    int damage = attacker->strength * successRate; // add randomness to damage
-    if (successRate < 0.1) { // 10% chance of attack being blocked
-      damage = 0;
+    // 10% chance of attack being blocked
+    if (successRate < 0.1) {
       messages.push_back(defender->toString() + " blocks " +
-                         attacker->toString() + "'s attack.");
-    } else {
-      defender->takeDamage(damage);
-      messages.push_back(attacker->toString() + " hits " +
-                         defender->toString() + " for " +
-                         std::to_string(damage) + " damage.");
+                         attacker->toString() + "'s attack!");
+      return;
     }
 
-    if (!monster->isAlive()) {
-      messages.push_back(monster->toString() + " was defeated!");
-      player->addExperience(monsterExpMap[monster->cellType]);
+    // Calculate base damage with randomness
+    int damage = static_cast<int>(attacker->strength * successRate);
 
-    } else if (!player->isAlive()) {
-      messages.push_back("Player was defeated!");
+    // Critical hit system (10% chance for 2x damage)
+    bool isCritical = (rand() % 100) < 10;
+    if (isCritical) {
+      damage *= 2;
+      messages.push_back("*** CRITICAL HIT! ***");
     }
+
+    defender->takeDamage(damage);
+    messages.push_back(attacker->toString() + " hits " +
+                       defender->toString() + " for " +
+                       std::to_string(damage) + " damage.");
   };
 
   auto updateMapAfterFight = [&](const auto &defeatedMonster) {
@@ -140,10 +194,14 @@ void Model::fight(const std::shared_ptr<Monster> &monster) {
     }
   };
 
-  info->addMessage("New fight starts!");
+  info->addMessage("=== BATTLE: " + player->toString() + " vs " +
+                   monster->toString() + " ===");
 
+  int round = 0;
   while (player->isAlive() && monster->isAlive()) {
+    round++;
     std::vector<std::string> roundMessages;
+    roundMessages.push_back("Round " + std::to_string(round) + ":");
 
     attack(player, monster, roundMessages);
     if (monster->isAlive()) {
@@ -151,6 +209,22 @@ void Model::fight(const std::shared_ptr<Monster> &monster) {
     }
 
     info->addMessage(roundMessages);
+  }
+
+  // Handle fight outcome
+  if (!monster->isAlive()) {
+    monstersKilled++;
+    int expGain = monsterExpMap[monster->cellType];
+    int scoreGain = expGain * currentLevel;
+    totalScore += scoreGain;
+    player->addExperience(expGain);
+    info->addMessage("Victory! +" + std::to_string(expGain) + " EXP, +" +
+                     std::to_string(scoreGain) + " Score");
+  } else if (!player->isAlive()) {
+    info->addMessage("=== GAME OVER ===");
+    info->addMessage("Final Score: " + std::to_string(totalScore));
+    info->addMessage("Monsters Killed: " + std::to_string(monstersKilled));
+    info->addMessage("Dungeon Level Reached: " + std::to_string(currentLevel));
   }
 
   updateMapAfterFight(monster);
@@ -271,11 +345,19 @@ std::unordered_map<std::string, std::string> Model::getPlayerStats() {
 
   std::unordered_map<std::string, std::string> result;
 
+  // Character stats
   result["Level"] = std::to_string(player->level);
   result["Health"] = std::to_string(player->health);
   result["MaxHealth"] = std::to_string(player->getMaxHealth());
   result["Experience"] = std::to_string(player->exp);
   result["MaxExp"] = std::to_string(player->expToNextLevel());
+  result["Strength"] = std::to_string(player->strength);
+
+  // Game progression stats
+  result["DungeonLevel"] = std::to_string(currentLevel);
+  result["MonstersKilled"] = std::to_string(monstersKilled);
+  result["Score"] = std::to_string(totalScore);
+  result["MonstersRemaining"] = std::to_string(monsters.size());
 
   return result;
 }
@@ -299,8 +381,10 @@ bool Model::isTreasure(const Point &point) {
 }
 
 bool Model::isMonster(const Point &point) {
-  return map->getCellType(point) == CellType::GOBLIN ||
-         map->getCellType(point) == CellType::ORC ||
-         map->getCellType(point) == CellType::TROLL ||
-         map->getCellType(point) == CellType::DRAGON;
+  CellType cell = map->getCellType(point);
+  return cell == CellType::GOBLIN ||
+         cell == CellType::ORC ||
+         cell == CellType::TROLL ||
+         cell == CellType::DRAGON ||
+         cell == CellType::SKELETON;
 }

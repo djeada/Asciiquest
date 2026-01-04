@@ -8,7 +8,8 @@
 std::unordered_map<CellType, int> monsterExpMap = {{CellType::GOBLIN, 100},
                                                    {CellType::ORC, 200},
                                                    {CellType::DRAGON, 300},
-                                                   {CellType::TROLL, 400}};
+                                                   {CellType::TROLL, 400},
+                                                   {CellType::SKELETON, 150}};
 
 std::mt19937 generateSeededRNG() {
   std::random_device rd;
@@ -124,3 +125,20 @@ void Dragon::randomizeVelocity() {
 }
 
 std::string Dragon::toString() const { return "Dragon"; }
+
+Skeleton::Skeleton()
+    : Monster(CellType::SKELETON,
+              GlobalConfig::getInstance().getConfig<int>("SkeletonHealth"),
+              GlobalConfig::getInstance().getConfig<int>("SkeletonDamage")) {
+  randomizeVelocity();
+}
+
+void Skeleton::move(const Point &destination) {
+  MovableEntity::move(destination);
+  // Skeletons have a 50% chance to change direction after each move
+  if (rand() % 2 == 0) {
+    randomizeVelocity();
+  }
+}
+
+std::string Skeleton::toString() const { return "Skeleton"; }

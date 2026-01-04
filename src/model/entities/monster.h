@@ -58,4 +58,12 @@ public:
   std::string toString() const override;
 };
 
+class Skeleton : public Monster {
+
+public:
+  explicit Skeleton();
+  void move(const Point &destination) override;
+  std::string toString() const override;
+};
+
 #endif // MONSTER_H
