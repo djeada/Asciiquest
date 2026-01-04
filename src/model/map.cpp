@@ -108,8 +108,7 @@ Map::transformToGrid(const std::vector<std::string> &maze) const {
   std::vector<std::vector<CellType>> grid;
   grid.reserve(maze.size());
 
-  // Random number generator for terrain placement
-  std::mt19937 terrainRng(std::random_device{}());
+  // Use existing rng for terrain placement
   std::uniform_int_distribution<int> terrainDist(0, 100);
   
   for (const auto &row : maze) {
@@ -118,7 +117,7 @@ Map::transformToGrid(const std::vector<std::string> &maze) const {
     for (const auto &cell : row) {
       if (cell == '#') {
         // For walls, randomly place mountains or keep as walls
-        int chance = terrainDist(terrainRng);
+        int chance = terrainDist(rng);
         if (chance < 30) {
           gridRow.push_back(CellType::MOUNTAIN);
         } else {
@@ -126,7 +125,7 @@ Map::transformToGrid(const std::vector<std::string> &maze) const {
         }
       } else {
         // For empty spaces, randomly place various terrain types
-        int chance = terrainDist(terrainRng);
+        int chance = terrainDist(rng);
         if (chance < 15) {
           gridRow.push_back(CellType::GRASS);
         } else if (chance < 25) {
