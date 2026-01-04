@@ -33,15 +33,15 @@ int Model::getDifficultyMultiplier() const {
 void Model::spawnMonsters() {
   monsters.clear();
 
-  auto addMonsters = [this](const std::string &type, auto monsterMaker) {
+  auto addMonstersWithMapAndPlayer = [this](const std::string &type, 
+                                             std::function<std::shared_ptr<Monster>()> monsterMaker) {
     int monsterCount = GlobalConfig::getInstance().getConfig<int>(type);
     // Scale monster count with level (up to 50% more monsters at higher levels)
     monsterCount = monsterCount + (monsterCount * (currentLevel - 1) / 10);
     monsters.reserve(monsters.size() + monsterCount);
 
     for (int i = 0; i < monsterCount; i++) {
-      auto monster =
-          std::make_shared<decltype(monsterMaker)>(monsterMaker);
+      auto monster = monsterMaker();
       // Scale monster health and damage with difficulty
       int diffMult = getDifficultyMultiplier();
       monster->health = (monster->health * diffMult) / 100;
@@ -50,21 +50,29 @@ void Model::spawnMonsters() {
     }
   };
 
-  addMonsters("GoblinsCount", Goblin());
-  addMonsters("TrollsCount", Troll());
-  addMonsters("DragonsCount", Dragon());
-  addMonsters("SkeletonsCount", Skeleton());
+  addMonstersWithMapAndPlayer("GoblinsCount", [this]() { 
+    return std::make_shared<Goblin>(map, player); 
+  });
+  addMonstersWithMapAndPlayer("TrollsCount", [this]() { 
+    return std::make_shared<Troll>(map, player); 
+  });
+  addMonstersWithMapAndPlayer("SkeletonsCount", [this]() { 
+    return std::make_shared<Skeleton>(map, player); 
+  });
+  addMonstersWithMapAndPlayer("OrcsCount", [this]() { 
+    return std::make_shared<Orc>(map, player); 
+  });
 
-  // Adding Orcs separately as they have different parameters
-  int orcsCount = GlobalConfig::getInstance().getConfig<int>("OrcsCount");
-  orcsCount = orcsCount + (orcsCount * (currentLevel - 1) / 10);
-  monsters.reserve(monsters.size() + orcsCount);
-  for (int i = 0; i < orcsCount; i++) {
-    auto orc = std::make_shared<Orc>(map, player);
+  // Adding Dragons separately as they don't need map and player
+  int dragonsCount = GlobalConfig::getInstance().getConfig<int>("DragonsCount");
+  dragonsCount = dragonsCount + (dragonsCount * (currentLevel - 1) / 10);
+  monsters.reserve(monsters.size() + dragonsCount);
+  for (int i = 0; i < dragonsCount; i++) {
+    auto dragon = std::make_shared<Dragon>();
     int diffMult = getDifficultyMultiplier();
-    orc->health = (orc->health * diffMult) / 100;
-    orc->strength = (orc->strength * diffMult) / 100;
-    monsters.push_back(orc);
+    dragon->health = (dragon->health * diffMult) / 100;
+    dragon->strength = (dragon->strength * diffMult) / 100;
+    monsters.push_back(dragon);
   }
 }
 

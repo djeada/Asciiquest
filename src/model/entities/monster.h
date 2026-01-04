@@ -20,9 +20,14 @@ public:
 
 class Goblin : public Monster {
 
+  std::shared_ptr<Map> map;
+  std::shared_ptr<Player> player;
+  int followRange;
+
 public:
-  explicit Goblin();
+  explicit Goblin(std::shared_ptr<Map> _map, std::shared_ptr<Player> _player);
   void move(const Point &destination) override;
+  void randomizeVelocity() override;
   std::string toString() const override;
 };
 
@@ -32,6 +37,7 @@ class Orc : public Monster {
   std::shared_ptr<Player> player;
   std::deque<Point> path;
   std::mutex mutex;
+  int followRange;
 
 public:
   explicit Orc(std::shared_ptr<Map> _map, std::shared_ptr<Player> player);
@@ -43,9 +49,14 @@ public:
 
 class Troll : public Monster {
 
+  std::shared_ptr<Map> map;
+  std::shared_ptr<Player> player;
+  int followRange;
+
 public:
-  explicit Troll();
+  explicit Troll(std::shared_ptr<Map> _map, std::shared_ptr<Player> _player);
   void move(const Point &destination) override;
+  void randomizeVelocity() override;
   std::string toString() const override;
 };
 
@@ -60,9 +71,14 @@ public:
 
 class Skeleton : public Monster {
 
+  std::shared_ptr<Map> map;
+  std::shared_ptr<Player> player;
+  int followRange;
+
 public:
-  explicit Skeleton();
+  explicit Skeleton(std::shared_ptr<Map> _map, std::shared_ptr<Player> _player);
   void move(const Point &destination) override;
+  void randomizeVelocity() override;
   std::string toString() const override;
 };
 
