@@ -20,13 +20,25 @@ void Map::loadLevel() {
 }
 
 void Map::clear() {
-  for (auto &row : grid) {
-    std::fill(row.begin(), row.end(), CellType::EMPTY);
+  // Initialize grid if it's empty
+  if (grid.empty() || grid[0].empty()) {
+    grid = std::vector<std::vector<CellType>>(height, std::vector<CellType>(width, CellType::EMPTY));
+  } else {
+    for (auto &row : grid) {
+      std::fill(row.begin(), row.end(), CellType::EMPTY);
+    }
   }
 }
 
 bool Map::isPositionFree(const Point &point) const {
-  return isValidPoint(point) && getCellType(point) == CellType::EMPTY;
+  if (!isValidPoint(point)) {
+    return false;
+  }
+  
+  CellType type = getCellType(point);
+  // Allow movement through empty spaces, grass, trees, and desert
+  return type == CellType::EMPTY || type == CellType::GRASS || 
+         type == CellType::TREE || type == CellType::DESERT;
 }
 
 Point Map::randomFreePosition() const {
@@ -96,15 +108,39 @@ Map::transformToGrid(const std::vector<std::string> &maze) const {
   std::vector<std::vector<CellType>> grid;
   grid.reserve(maze.size());
 
+  // Use existing rng for terrain placement
+  std::uniform_int_distribution<int> terrainDist(0, 99);
+  
   for (const auto &row : maze) {
     std::vector<CellType> gridRow;
     gridRow.reserve(row.size());
     for (const auto &cell : row) {
-      gridRow.push_back(cell == '#' ? CellType::WALL : CellType::EMPTY);
+      if (cell == '#') {
+        // For walls, randomly place mountains or keep as walls
+        int chance = terrainDist(rng);
+        if (chance < 30) {
+          gridRow.push_back(CellType::MOUNTAIN);
+        } else {
+          gridRow.push_back(CellType::WALL);
+        }
+      } else {
+        // For empty spaces, randomly place various terrain types
+        int chance = terrainDist(rng);
+        if (chance < 15) {
+          gridRow.push_back(CellType::GRASS);
+        } else if (chance < 25) {
+          gridRow.push_back(CellType::TREE);
+        } else if (chance < 35) {
+          gridRow.push_back(CellType::WATER);
+        } else if (chance < 40) {
+          gridRow.push_back(CellType::DESERT);
+        } else {
+          gridRow.push_back(CellType::EMPTY);
+        }
+      }
     }
     grid.push_back(gridRow);
   }
-
   return grid;
 }
 

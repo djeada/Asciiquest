@@ -21,7 +21,12 @@ enum class CellType {
   SHIELD_EFFECT,
   BOULDER,
   CRATE,
-  BARREL
+  BARREL,
+  MOUNTAIN,
+  GRASS,
+  TREE,
+  WATER,
+  DESERT
 
 };
 

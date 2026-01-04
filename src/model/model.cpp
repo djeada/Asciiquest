@@ -502,7 +502,11 @@ std::unordered_map<std::string, std::string> Model::getPlayerStats() {
 bool Model::isGameOver() { return !player->isAlive(); }
 
 bool Model::isWall(const Point &point) {
-  return map->getCellType(point) == CellType::WALL || !map->isValidPoint(point);
+  if (!map->isValidPoint(point)) {
+    return true;
+  }
+  CellType cell = map->getCellType(point);
+  return cell == CellType::WALL || cell == CellType::MOUNTAIN || cell == CellType::WATER;
 }
 
 bool Model::isPlayer(const Point &point) {

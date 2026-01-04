@@ -24,7 +24,12 @@ enum class ColorPair {
   SHIELD_EFFECT,
   BOULDER,
   CRATE,
-  BARREL
+  BARREL,
+  MOUNTAIN,
+  GRASS,
+  TREE,
+  WATER,
+  DESERT
 };
 extern std::unordered_map<CellType, std::pair<char, ColorPair>>
     cellTypeToCharColor;
