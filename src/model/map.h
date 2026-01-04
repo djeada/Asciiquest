@@ -33,7 +33,8 @@ private:
   Point end;
 
   std::vector<std::vector<CellType>>
-  transformToGrid(const std::vector<std::string> &maze) const;
+  transformToGrid(const std::vector<std::string> &maze, const Point &start,
+                  const Point &end) const;
 };
 
 #endif // MAP_H

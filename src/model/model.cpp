@@ -98,12 +98,14 @@ void Model::restart() {
 
 void Model::loadMap() {
   map->loadLevel();
+  player->underlyingCell = map->getCellType(map->getStart());
   map->setCellType(map->getStart(), CellType::PLAYER);
   player->move(map->getStart());
 
   for (const auto &monster : monsters) {
     auto position = map->randomFreePosition();
     monster->position = position;
+    monster->underlyingCell = map->getCellType(position);
     map->setCellType(position, monster->cellType);
   }
 
@@ -149,6 +151,7 @@ void Model::loadMap() {
   for (int i = 0; i < objectsPerType; ++i) {
     auto position = map->randomFreePosition();
     auto boulder = std::make_shared<Boulder>(position);
+    boulder->underlyingCell = map->getCellType(position);
     movableObjects.emplace(position, boulder);
     map->setCellType(position, CellType::BOULDER);
   }
@@ -157,6 +160,7 @@ void Model::loadMap() {
   for (int i = 0; i < objectsPerType; ++i) {
     auto position = map->randomFreePosition();
     auto crate = std::make_shared<Crate>(position);
+    crate->underlyingCell = map->getCellType(position);
     movableObjects.emplace(position, crate);
     map->setCellType(position, CellType::CRATE);
   }
@@ -165,6 +169,7 @@ void Model::loadMap() {
   for (int i = 0; i < objectsPerType; ++i) {
     auto position = map->randomFreePosition();
     auto barrel = std::make_shared<Barrel>(position);
+    barrel->underlyingCell = map->getCellType(position);
     movableObjects.emplace(position, barrel);
     map->setCellType(position, CellType::BARREL);
   }
@@ -298,11 +303,12 @@ void Model::fight(const std::shared_ptr<Monster> &monster) {
 
   auto updateMapAfterFight = [&](const auto &defeatedMonster) {
     if (!defeatedMonster->isAlive()) {
-      map->setCellType(defeatedMonster->position, CellType::EMPTY);
+      map->setCellType(defeatedMonster->position,
+                       defeatedMonster->underlyingCell);
     }
 
     if (!player->isAlive()) {
-      map->setCellType(player->position, CellType::EMPTY);
+      map->setCellType(player->position, player->underlyingCell);
     } else {
       map->setCellType(player->position, player->cellType);
     }
@@ -386,7 +392,7 @@ void Model::exploreTreasure(const std::shared_ptr<Treasure> &treasure) {
   // Define what happens on the map after treasure exploration
   auto updateMapAfterExploration = [&](const auto &explorer,
                                        const auto &exploredTreasure) {
-    map->setCellType(exploredTreasure->position, CellType::EMPTY);
+    map->setCellType(exploredTreasure->position, CellType::FLOOR);
     treasures.erase(exploredTreasure->position);
   };
 
@@ -498,7 +504,7 @@ void Model::checkSpellCollisions(const std::shared_ptr<SpellEffect> &effect) {
           info->addMessage(MessageType::COMBAT, &player->position,
                            "You defeated " + labelWithCoords(*monster) +
                                ". +" + std::to_string(expGain) + " EXP");
-          map->setCellType(monster->position, CellType::EMPTY);
+          map->setCellType(monster->position, monster->underlyingCell);
         }
       }
     }
@@ -532,7 +538,7 @@ void Model::attemptPlayerMove(const std::shared_ptr<Player> &player,
     if (!player->isAlive()) {
       info->addMessage(MessageType::SYSTEM, &player->position,
                        "You were killed by " + trap->toString() + ".");
-      map->setCellType(player->position, CellType::EMPTY);
+      map->setCellType(player->position, player->underlyingCell);
       return;
     }
   }
@@ -574,7 +580,7 @@ void Model::attemptPlayerMove(const std::shared_ptr<Player> &player,
     }
 
     potions.erase(newPos);
-    map->setCellType(newPos, CellType::EMPTY);
+    map->setCellType(newPos, CellType::FLOOR);
   }
 
   else if (isExit(newPos)) {
@@ -607,8 +613,9 @@ void Model::attemptMonsterMove(const std::shared_ptr<Monster> &monster,
 
 void Model::updateEntityPosition(const std::shared_ptr<Entity> &entity,
                                  const Point &oldPos, const Point &newPos) {
-  auto cellType = map->getCellType(oldPos);
-  map->setCellType(oldPos, CellType::EMPTY);
+  auto cellType = entity->cellType;
+  map->setCellType(oldPos, entity->underlyingCell);
+  entity->underlyingCell = map->getCellType(newPos);
   map->setCellType(newPos, cellType);
   entity->move(newPos);
 }
@@ -693,12 +700,7 @@ bool Model::tryPushObject(const Point &objectPos, const Point &direction) {
     return false;
   }
   
-  // Move the object
-  map->setCellType(objectPos, CellType::EMPTY);
-  map->setCellType(newPos, object->cellType);
-  object->move(newPos);
-  
-  // Update the map
+  updateEntityPosition(object, objectPos, newPos);
   movableObjects.erase(objectPos);
   movableObjects[newPos] = object;
   
@@ -740,7 +742,7 @@ void Model::checkTrapCollisions() {
           info->addMessage(MessageType::SYSTEM, &player->position,
                            "You were killed by " + labelWithCoords(*trap) +
                                ".");
-          map->setCellType(player->position, CellType::EMPTY);
+          map->setCellType(player->position, player->underlyingCell);
         }
         trap->deactivateProjectile(i);
         continue;

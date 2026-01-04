@@ -19,6 +19,7 @@ public:
   // data
   Point position;
   CellType cellType;
+  CellType underlyingCell;
 };
 
 #endif // ENTITY_H
