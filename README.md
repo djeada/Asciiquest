@@ -82,6 +82,16 @@ The game is controlled using the keyboard:
 
 Encounter enemies and items as you explore the dungeon. The goal is to find the exit and advance to the next level. Manage your mana wisely and use spells strategically to defeat powerful enemies! Spells are cast in the direction you last moved, allowing for tactical positioning.
 
+### Enemy AI Behavior
+
+Each enemy type has unique AI behavior and detection range:
+
+- **Goblin (g)**: Small and quick with limited vision. Follows player within **5 tiles** using simple direct movement. Moves randomly when player is out of range.
+- **Skeleton (s)**: Undead creature with erratic behavior. Follows player within **8 tiles** with 70% reliability (30% chance of random movement even when tracking). Moves randomly when player is out of range.
+- **Orc (o)**: Intelligent enemy with moderate tracking. Uses **A* pathfinding** to follow player within **10 tiles**, navigating around obstacles. Stands still when player is out of range.
+- **Troll (T)**: Large creature with excellent vision. Follows player within **15 tiles** using simple direct movement. Moves randomly when player is out of range.
+- **Dragon (D)**: Powerful boss that **never moves**. Guards its position and attacks only when the player approaches.
+
 ## Game design
 
 Mysterious Dungeon combines elements of classic roguelike games with modern algorithms and AI techniques. The dungeon maze, generated with advanced algorithms, creates a unique experience for every game. The enemies, imbued with AI and pathfinding, provide a dynamic challenge. Each level introduces new gameplay elements and tougher enemies, ensuring an engaging experience throughout the game.
