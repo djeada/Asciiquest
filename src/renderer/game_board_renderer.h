@@ -7,6 +7,8 @@
 enum class ColorPair {
   EMPTY = 1,
   WALL,
+  FLOOR,
+  DOOR,
   PLAYER,
   GOBLIN,
   ORC,

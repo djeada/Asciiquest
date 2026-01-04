@@ -4,6 +4,8 @@
 enum class CellType {
   EMPTY = 0,
   WALL,
+  FLOOR,
+  DOOR,
   PLAYER,
   GOBLIN,
   ORC,

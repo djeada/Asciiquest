@@ -57,20 +57,20 @@ The game is controlled using the keyboard:
 | Symbol | Description | Color |
 |--------|-------------|-------|
 | `@` | Player (you!) | White (bold/reverse) |
+| `.` | Floor | White |
 | `#` | Wall | White |
-| `>` | Stairs/Exit | Cyan |
-| `$` | Treasure | Yellow |
-| `!` | Potion | Cyan |
-| `g` | Goblin | Red |
-| `o` | Orc | Red |
-| `T` | Troll | Magenta |
-| `D` | Dragon | Red |
-| `s` | Skeleton | Magenta |
+| `+` | Door | Yellow (bold) |
+| `>` | Stairs/Exit | Cyan (bold) |
+| `$` | Treasure | Yellow (bold) |
+| `!` | Potion | Cyan (bold) |
+| `g` | Goblin | Red (bold) |
+| `o` | Orc | Red (bold) |
+| `T` | Troll | Magenta (bold) |
+| `D` | Dragon | Red (bold) |
+| `s` | Skeleton | Magenta (bold) |
 | `,` | Grass | Green |
-| `"` | Tree | Green |
 | `~` | Water | Blue |
-| `.` | Desert/Floor | Yellow |
-| `^` | Mountain/Spike Trap | White/Magenta |
+| `^` | Spike Trap | Magenta |
 | `/` | Blade Trap | Red |
 | `<` | Arrow Trap | Red |
 

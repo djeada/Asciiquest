@@ -126,9 +126,9 @@ std::string messagePrefix(const MessageEntry &entry) {
 } // namespace
 
 std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
-    {CellType::EMPTY,
-     {GlobalConfig::getInstance().getConfig<int>("EmptySymbol"),
-      ColorPair::EMPTY}},
+    {CellType::EMPTY, {' ', ColorPair::EMPTY}},
+    {CellType::FLOOR, {'.', ColorPair::FLOOR}},
+    {CellType::DOOR, {'+', ColorPair::DOOR}},
     {CellType::WALL,
      {GlobalConfig::getInstance().getConfig<char>("WallSymbol"),
       ColorPair::WALL}},
@@ -193,8 +193,10 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
   // - Player: bright white (most visible)
   // - Interactive: bright colors
   std::unordered_map<ColorPair, std::pair<int, int>> colorDefinitions = {
-      // Terrain (muted colors)
-      {ColorPair::EMPTY, {COLOR_WHITE, COLOR_BLACK}},
+      // Terrain (muted colors for background)
+      {ColorPair::EMPTY, {COLOR_BLACK, COLOR_BLACK}},
+      {ColorPair::FLOOR, {COLOR_WHITE, COLOR_BLACK}},
+      {ColorPair::DOOR, {COLOR_YELLOW, COLOR_BLACK}},
       {ColorPair::WALL, {COLOR_WHITE, COLOR_BLACK}},
       {ColorPair::MOUNTAIN, {COLOR_WHITE, COLOR_BLACK}},
       {ColorPair::GRASS, {COLOR_GREEN, COLOR_BLACK}},
@@ -328,8 +330,15 @@ void GameBoardRenderer::drawBoard() {
         mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
         attroff(A_BOLD | A_REVERSE | COLOR_PAIR(static_cast<int>(color)));
       } else if (cellType == CellType::TREASURE || cellType == CellType::POTION || 
-                 cellType == CellType::END) {
-        // Items and interactive objects get bold for visibility
+                 cellType == CellType::END || cellType == CellType::DOOR) {
+        // Items, doors and interactive objects get bold for visibility
+        attron(A_BOLD | COLOR_PAIR(static_cast<int>(color)));
+        mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
+        attroff(A_BOLD | COLOR_PAIR(static_cast<int>(color)));
+      } else if (cellType == CellType::GOBLIN || cellType == CellType::ORC ||
+                 cellType == CellType::DRAGON || cellType == CellType::TROLL ||
+                 cellType == CellType::SKELETON) {
+        // Enemies get bold for threatening appearance
         attron(A_BOLD | COLOR_PAIR(static_cast<int>(color)));
         mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
         attroff(A_BOLD | COLOR_PAIR(static_cast<int>(color)));
