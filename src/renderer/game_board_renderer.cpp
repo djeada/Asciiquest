@@ -178,7 +178,7 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::DESERT, {'.', ColorPair::DESERT}},
     {CellType::BLADE_TRAP, {'/', ColorPair::BLADE_TRAP}},
     {CellType::SPIKE_TRAP, {'^', ColorPair::SPIKE_TRAP}},
-    {CellType::ARROW_TRAP, {'<', ColorPair::ARROW_TRAP}},
+    {CellType::ARROW_TRAP, {'=', ColorPair::ARROW_TRAP}},
     {CellType::BLADE_PROJECTILE, {'\\', ColorPair::BLADE_PROJECTILE}},
     {CellType::SPIKE_PROJECTILE, {'^', ColorPair::SPIKE_PROJECTILE}},
     {CellType::ARROW_PROJECTILE, {'-', ColorPair::ARROW_PROJECTILE}},
@@ -202,24 +202,32 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
   const short warmGold = canCustomizeColors ? 12 : COLOR_YELLOW;
   const short doorGreen = canCustomizeColors ? 13 : COLOR_GREEN;
 
+  // Custom colors for enhanced visual design
+  const short floorGray = canCustomizeColors ? 14 : COLOR_WHITE;
+  const short wallGray = canCustomizeColors ? 15 : COLOR_WHITE;
+  if (canCustomizeColors) {
+    init_color(14, 400, 400, 400);   // Dark gray for floors (muted background)
+    init_color(15, 700, 700, 700);   // Light gray for walls
+  }
+
   // Define color pairs with improved visual language:
-  // - Terrain: muted colors (gray/dark)
+  // - Terrain: muted colors (gray/dark) - floors are much darker than walls
   // - Enemies: red/dark variants
-  // - Items: yellow/cyan
+  // - Items: yellow/cyan (bright and eye-catching)
   // - Player: bright white (most visible)
-  // - Interactive: bright colors
+  // - Interactive: bright colors with emphasis
   std::unordered_map<ColorPair, std::pair<int, int>> colorDefinitions = {
-      // Terrain (muted colors for background)
+      // Terrain (muted colors for background - floors are darker for contrast)
       {ColorPair::EMPTY, {COLOR_BLACK, COLOR_BLACK}},
-      {ColorPair::FLOOR, {COLOR_WHITE, COLOR_BLACK}},
+      {ColorPair::FLOOR, {floorGray, COLOR_BLACK}},  // Gray floor for muted background
       {ColorPair::DOOR, {doorGreen, COLOR_BLACK}},
-      {ColorPair::WALL, {COLOR_WHITE, COLOR_BLACK}},
-      {ColorPair::MOUNTAIN, {COLOR_WHITE, COLOR_BLACK}},
+      {ColorPair::WALL, {wallGray, COLOR_BLACK}},    // Lighter gray for walls (visible structure)
+      {ColorPair::MOUNTAIN, {wallGray, COLOR_BLACK}},
       {ColorPair::GRASS, {COLOR_GREEN, COLOR_BLACK}},
       {ColorPair::TREE, {COLOR_GREEN, COLOR_BLACK}},
       {ColorPair::WATER, {COLOR_BLUE, COLOR_BLACK}},
       {ColorPair::DESERT, {COLOR_YELLOW, COLOR_BLACK}},
-      // Player (brightest - high visibility)
+      // Player (brightest - maximum visibility with inverse colors)
       {ColorPair::PLAYER, {COLOR_WHITE, COLOR_BLACK}},
       // Enemies (red/threatening colors)
       {ColorPair::GOBLIN, {COLOR_RED, COLOR_BLACK}},
@@ -352,6 +360,12 @@ void GameBoardRenderer::drawBoard() {
   ColorPair enemyColor =
       warmEnemyColors[(dungeonLevel - 1) % warmEnemyColors.size()];
 
+  // Fog-of-war: Calculate player's screen position for visibility calculations
+  int playerScreenX = data.playerPosition.x - viewLeft;
+  int playerScreenY = data.playerPosition.y - viewTop;
+  const int visionRadius = 10;  // Tiles within this radius are fully visible
+  const int haloRadius = 2;     // Tiles within this radius get brightened (player halo)
+
   for (int y = 0; y < boardHeight; ++y) {
     for (int x = 0; x < boardWidth; ++x) {
       // Fetch the character and color representation of the cell type
@@ -364,6 +378,13 @@ void GameBoardRenderer::drawBoard() {
               ? enemyColor
               : baseColor;
 
+      // Calculate distance from player for fog-of-war and halo effects
+      int dx = x - playerScreenX;
+      int dy = y - playerScreenY;
+      int distSq = dx * dx + dy * dy;
+      bool isNearPlayer = distSq <= visionRadius * visionRadius;
+      bool isInHalo = distSq <= haloRadius * haloRadius && distSq > 0;
+
       // Set color attribute, print the character and unset color attribute
       // Player gets bold+reverse for maximum visibility
       if (cellType == CellType::PLAYER) {
@@ -372,21 +393,38 @@ void GameBoardRenderer::drawBoard() {
         attroff(A_BOLD | A_REVERSE | COLOR_PAIR(static_cast<int>(color)));
       } else if (cellType == CellType::TREASURE || cellType == CellType::POTION || 
                  cellType == CellType::END || cellType == CellType::DOOR) {
-        // Items, doors and interactive objects get bold for visibility
-        attron(A_BOLD | COLOR_PAIR(static_cast<int>(color)));
+        // Items, doors and interactive objects get bold + blink for visibility
+        int attrs = A_BOLD | COLOR_PAIR(static_cast<int>(color));
+        if (isInHalo) attrs |= A_STANDOUT;  // Halo effect - standout near player
+        else if (!isNearPlayer) attrs |= A_DIM;
+        attron(attrs);
         mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
-        attroff(A_BOLD | COLOR_PAIR(static_cast<int>(color)));
+        attroff(attrs);
       } else if (cellType == CellType::GOBLIN || cellType == CellType::ORC ||
                  cellType == CellType::DRAGON || cellType == CellType::TROLL ||
                  cellType == CellType::SKELETON) {
         // Enemies get bold for threatening appearance
-        attron(A_BOLD | COLOR_PAIR(static_cast<int>(color)));
+        int attrs = A_BOLD | COLOR_PAIR(static_cast<int>(color));
+        if (isInHalo) attrs |= A_STANDOUT;  // Highlight enemies in halo
+        else if (!isNearPlayer) attrs |= A_DIM;
+        attron(attrs);
         mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
-        attroff(A_BOLD | COLOR_PAIR(static_cast<int>(color)));
+        attroff(attrs);
+      } else if (cellType == CellType::FLOOR && isInHalo) {
+        // Floor tiles in player's halo get brightened (faint halo effect)
+        int attrs = A_BOLD | COLOR_PAIR(static_cast<int>(color));
+        attron(attrs);
+        mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
+        attroff(attrs);
       } else {
-        attron(COLOR_PAIR(static_cast<int>(color)));
+        // Terrain and walls - apply fog-of-war dimming for distant tiles
+        int attrs = COLOR_PAIR(static_cast<int>(color));
+        if (!isNearPlayer) {
+          attrs |= A_DIM;
+        }
+        attron(attrs);
         mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
-        attroff(COLOR_PAIR(static_cast<int>(color)));
+        attroff(attrs);
       }
     }
   }
