@@ -366,6 +366,15 @@ void GameBoardRenderer::drawBoard() {
   const int visionRadius = 10;  // Tiles within this radius are fully visible
   const int haloRadius = 2;     // Tiles within this radius get brightened (player halo)
 
+  // Helper lambda to render floor tile for hidden entities
+  auto renderHiddenFloor = [&](int screenY, int screenX) {
+    const auto &[floorCh, floorColor] = cellTypeToCharColor[CellType::FLOOR];
+    int attrs = COLOR_PAIR(static_cast<int>(floorColor)) | A_DIM;
+    attron(attrs);
+    mvaddch(boardPanel.top + 1 + screenY, boardPanel.left + 1 + screenX, floorCh);
+    attroff(attrs);
+  };
+
   for (int y = 0; y < boardHeight; ++y) {
     for (int x = 0; x < boardWidth; ++x) {
       // Fetch the character and color representation of the cell type
@@ -402,11 +411,7 @@ void GameBoardRenderer::drawBoard() {
           attroff(attrs);
         } else {
           // Render floor instead when outside vision radius
-          const auto &[floorCh, floorColor] = cellTypeToCharColor[CellType::FLOOR];
-          int attrs = COLOR_PAIR(static_cast<int>(floorColor)) | A_DIM;
-          attron(attrs);
-          mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, floorCh);
-          attroff(attrs);
+          renderHiddenFloor(y, x);
         }
       } else if (cellType == CellType::END || cellType == CellType::DOOR) {
         // Doors and interactive objects get bold + blink for visibility
@@ -429,11 +434,7 @@ void GameBoardRenderer::drawBoard() {
           attroff(attrs);
         } else {
           // Render floor instead when outside vision radius
-          const auto &[floorCh, floorColor] = cellTypeToCharColor[CellType::FLOOR];
-          int attrs = COLOR_PAIR(static_cast<int>(floorColor)) | A_DIM;
-          attron(attrs);
-          mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, floorCh);
-          attroff(attrs);
+          renderHiddenFloor(y, x);
         }
       } else if (cellType == CellType::FLOOR && isInHalo) {
         // Floor tiles in player's halo get brightened (faint halo effect)
