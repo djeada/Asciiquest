@@ -391,9 +391,25 @@ void GameBoardRenderer::drawBoard() {
         attron(A_BOLD | A_REVERSE | COLOR_PAIR(static_cast<int>(color)));
         mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
         attroff(A_BOLD | A_REVERSE | COLOR_PAIR(static_cast<int>(color)));
-      } else if (cellType == CellType::TREASURE || cellType == CellType::POTION || 
-                 cellType == CellType::END || cellType == CellType::DOOR) {
-        // Items, doors and interactive objects get bold + blink for visibility
+      } else if (cellType == CellType::TREASURE || cellType == CellType::POTION) {
+        // Treasures and potions should not be rendered outside vision radius
+        if (isNearPlayer) {
+          // Items get bold for visibility
+          int attrs = A_BOLD | COLOR_PAIR(static_cast<int>(color));
+          if (isInHalo) attrs |= A_STANDOUT;  // Halo effect - standout near player
+          attron(attrs);
+          mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
+          attroff(attrs);
+        } else {
+          // Render floor instead when outside vision radius
+          const auto &[floorCh, floorColor] = cellTypeToCharColor[CellType::FLOOR];
+          int attrs = COLOR_PAIR(static_cast<int>(floorColor)) | A_DIM;
+          attron(attrs);
+          mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, floorCh);
+          attroff(attrs);
+        }
+      } else if (cellType == CellType::END || cellType == CellType::DOOR) {
+        // Doors and interactive objects get bold + blink for visibility
         int attrs = A_BOLD | COLOR_PAIR(static_cast<int>(color));
         if (isInHalo) attrs |= A_STANDOUT;  // Halo effect - standout near player
         else if (!isNearPlayer) attrs |= A_DIM;
@@ -403,13 +419,22 @@ void GameBoardRenderer::drawBoard() {
       } else if (cellType == CellType::GOBLIN || cellType == CellType::ORC ||
                  cellType == CellType::DRAGON || cellType == CellType::TROLL ||
                  cellType == CellType::SKELETON) {
-        // Enemies get bold for threatening appearance
-        int attrs = A_BOLD | COLOR_PAIR(static_cast<int>(color));
-        if (isInHalo) attrs |= A_STANDOUT;  // Highlight enemies in halo
-        else if (!isNearPlayer) attrs |= A_DIM;
-        attron(attrs);
-        mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
-        attroff(attrs);
+        // Enemies should not be rendered outside vision radius
+        if (isNearPlayer) {
+          // Enemies get bold for threatening appearance
+          int attrs = A_BOLD | COLOR_PAIR(static_cast<int>(color));
+          if (isInHalo) attrs |= A_STANDOUT;  // Highlight enemies in halo
+          attron(attrs);
+          mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
+          attroff(attrs);
+        } else {
+          // Render floor instead when outside vision radius
+          const auto &[floorCh, floorColor] = cellTypeToCharColor[CellType::FLOOR];
+          int attrs = COLOR_PAIR(static_cast<int>(floorColor)) | A_DIM;
+          attron(attrs);
+          mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, floorCh);
+          attroff(attrs);
+        }
       } else if (cellType == CellType::FLOOR && isInHalo) {
         // Floor tiles in player's halo get brightened (faint halo effect)
         int attrs = A_BOLD | COLOR_PAIR(static_cast<int>(color));
