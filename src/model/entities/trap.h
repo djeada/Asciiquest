@@ -52,6 +52,7 @@ public:
   int getDamage() const;
   const std::vector<TrapProjectile>& getProjectiles() const;
   void clearInactiveProjectiles();
+  void deactivateProjectile(size_t index);
 };
 
 class BladeTrap : public Trap {

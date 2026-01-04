@@ -608,13 +608,15 @@ void Model::checkTrapCollisions() {
   for (auto &trap : traps) {
     const auto &projectiles = trap->getProjectiles();
     
-    for (const auto &proj : projectiles) {
+    for (size_t i = 0; i < projectiles.size(); ++i) {
+      const auto &proj = projectiles[i];
       if (!proj.active) continue;
       
       Point pos = proj.position;
       
       // Check if projectile is out of bounds or hits a wall
       if (!map->isValidPoint(pos) || isWall(pos)) {
+        trap->deactivateProjectile(i);
         continue;
       }
       
@@ -628,6 +630,8 @@ void Model::checkTrapCollisions() {
           info->addMessage("You have been killed by a " + trap->toString() + "!");
           map->setCellType(player->position, CellType::EMPTY);
         }
+        trap->deactivateProjectile(i);
+        continue;
       }
       
       // Check if projectile hits a monster
@@ -640,6 +644,8 @@ void Model::checkTrapCollisions() {
           if (!monster->isAlive()) {
             map->setCellType(monster->position, CellType::EMPTY);
           }
+          trap->deactivateProjectile(i);
+          break;
         }
       }
     }

@@ -142,10 +142,9 @@ TEST(TrapTest, ProjectileClearInactive) {
   BladeTrap trap(position);
   trap.activate();
   
-  // Manually deactivate projectiles
-  auto &projectiles = const_cast<std::vector<TrapProjectile>&>(trap.getProjectiles());
-  for (auto &proj : projectiles) {
-    proj.active = false;
+  // Manually deactivate projectiles using the proper method
+  for (size_t i = 0; i < trap.getProjectiles().size(); ++i) {
+    trap.deactivateProjectile(i);
   }
 
   // Act

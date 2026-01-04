@@ -1,4 +1,5 @@
 #include "trap.h"
+#include <algorithm>
 
 Trap::Trap(const Point &position, TrapType type, CellType cellType)
     : Entity(position, cellType), trapType(type), state(TrapState::INACTIVE),
@@ -44,6 +45,12 @@ void Trap::clearInactiveProjectiles() {
     projectiles.end());
 }
 
+void Trap::deactivateProjectile(size_t index) {
+  if (index < projectiles.size()) {
+    projectiles[index].active = false;
+  }
+}
+
 // BladeTrap implementation
 BladeTrap::BladeTrap(const Point &position)
     : Trap(position, TrapType::BLADE, CellType::BLADE_TRAP),
@@ -55,6 +62,8 @@ BladeTrap::BladeTrap(const Point &position)
 BladeTrap::~BladeTrap() {}
 
 void BladeTrap::update() {
+  const int BLADE_TRAVEL_MULTIPLIER = 2; // Blades move out and back
+  
   switch (state) {
     case TrapState::INACTIVE:
       activationCounter++;
@@ -71,8 +80,8 @@ void BladeTrap::update() {
           proj.position = proj.position + proj.direction;
           moveDistance++;
           
-          // Deactivate if moved too far
-          if (moveDistance >= maxDistance * 2) {
+          // Deactivate if moved too far (travels out and back)
+          if (moveDistance >= maxDistance * BLADE_TRAVEL_MULTIPLIER) {
             proj.active = false;
           }
         }
