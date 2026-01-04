@@ -186,18 +186,21 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
 
 GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
   start_color(); // Start color functionality
-  if (can_change_color() && COLORS >= 16) {
-    init_color(8, 1000, 200, 0);  // Deep red
-    init_color(9, 1000, 350, 0);  // Red-orange
-    init_color(10, 1000, 500, 0); // Orange
-    init_color(11, 1000, 650, 0); // Amber
+  const bool canCustomizeColors = can_change_color() && COLORS >= 16;
+  if (canCustomizeColors) {
+    init_color(8, 1000, 200, 0);   // Deep red
+    init_color(9, 1000, 350, 0);   // Red-orange
+    init_color(10, 1000, 500, 0);  // Orange
+    init_color(11, 1000, 650, 0);  // Amber
     init_color(12, 900, 700, 200); // Gold
+    init_color(13, 0, 1000, 0);    // Vivid green
   }
-  const short warmDeepRed = (COLORS >= 16 && can_change_color()) ? 8 : COLOR_RED;
-  const short warmRed = (COLORS >= 16 && can_change_color()) ? 9 : COLOR_RED;
-  const short warmOrange = (COLORS >= 16 && can_change_color()) ? 10 : COLOR_YELLOW;
-  const short warmAmber = (COLORS >= 16 && can_change_color()) ? 11 : COLOR_YELLOW;
-  const short warmGold = (COLORS >= 16 && can_change_color()) ? 12 : COLOR_YELLOW;
+  const short warmDeepRed = canCustomizeColors ? 8 : COLOR_RED;
+  const short warmRed = canCustomizeColors ? 9 : COLOR_RED;
+  const short warmOrange = canCustomizeColors ? 10 : COLOR_YELLOW;
+  const short warmAmber = canCustomizeColors ? 11 : COLOR_YELLOW;
+  const short warmGold = canCustomizeColors ? 12 : COLOR_YELLOW;
+  const short doorGreen = canCustomizeColors ? 13 : COLOR_GREEN;
 
   // Define color pairs with improved visual language:
   // - Terrain: muted colors (gray/dark)
@@ -209,7 +212,7 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
       // Terrain (muted colors for background)
       {ColorPair::EMPTY, {COLOR_BLACK, COLOR_BLACK}},
       {ColorPair::FLOOR, {COLOR_WHITE, COLOR_BLACK}},
-      {ColorPair::DOOR, {COLOR_GREEN, COLOR_BLACK}},
+      {ColorPair::DOOR, {doorGreen, COLOR_BLACK}},
       {ColorPair::WALL, {COLOR_WHITE, COLOR_BLACK}},
       {ColorPair::MOUNTAIN, {COLOR_WHITE, COLOR_BLACK}},
       {ColorPair::GRASS, {COLOR_GREEN, COLOR_BLACK}},
