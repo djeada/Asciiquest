@@ -33,6 +33,8 @@ public:
   std::shared_ptr<Map> map;
   std::vector<std::shared_ptr<Monster>> monsters;
   std::unordered_map<Point, std::shared_ptr<Treasure>> treasures;
+  enum class PotionType { HEALTH, MANA };
+  std::unordered_map<Point, PotionType> potions;
   std::unordered_map<Point, std::shared_ptr<MovableObject>> movableObjects;
   std::vector<std::shared_ptr<SpellEffect>> activeSpellEffects;
   std::vector<std::shared_ptr<Trap>> traps;
@@ -66,6 +68,7 @@ private:
   bool isExit(const Point &point);
   bool isMonster(const Point &point);
   bool isTreasure(const Point &point);
+  bool isPotion(const Point &point);
   bool isMovableObject(const Point &point);
   bool tryPushObject(const Point &objectPos, const Point &direction);
   std::atomic_bool running;

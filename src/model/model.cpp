@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cmath>
 #include <queue>
+#include <random>
 
 const int monsterUpdateSpeed =
     GlobalConfig::getInstance().getConfig<int>("MonsterUpdateSpeed");
@@ -117,6 +118,25 @@ void Model::loadMap() {
     treasurePtr->move(position);
     treasures.emplace(position, std::move(treasurePtr));
     map->setCellType(position, CellType::TREASURE);
+  }
+
+  // Spawn potions (player-only pickups)
+  int potionCount =
+      GlobalConfig::getInstance().getConfig<int>("PotionCount");
+  potions.clear();
+  std::random_device rd;
+  std::mt19937 potionRng(rd());
+  std::uniform_int_distribution<int> potionTypeDist(0, 99);
+  int manaChance =
+      GlobalConfig::getInstance().getConfig<int>("PotionManaChance");
+
+  for (int i = 0; i < potionCount; ++i) {
+    auto position = map->randomFreePosition();
+    PotionType type = potionTypeDist(potionRng) < manaChance
+                          ? PotionType::MANA
+                          : PotionType::HEALTH;
+    potions.emplace(position, type);
+    map->setCellType(position, CellType::POTION);
   }
 
   map->setCellType(map->getEnd(), CellType::END);
@@ -536,6 +556,25 @@ void Model::attemptPlayerMove(const std::shared_ptr<Player> &player,
     return;
   } else if (isTreasure(newPos)) {
     exploreTreasure(treasures[newPos]);
+  } else if (isPotion(newPos)) {
+    auto potionType = potions[newPos];
+    int healAmount = GlobalConfig::getInstance().getConfig<int>("PotionHeal");
+    int manaAmount = GlobalConfig::getInstance().getConfig<int>("PotionMana");
+
+    if (potionType == PotionType::HEALTH) {
+      player->heal(healAmount);
+      info->addMessage(MessageType::LOOT, &player->position,
+                       "You drink a potion and heal +" +
+                           std::to_string(healAmount) + " HP.");
+    } else {
+      player->restoreMana(manaAmount);
+      info->addMessage(MessageType::LOOT, &player->position,
+                       "You drink a potion and restore +" +
+                           std::to_string(manaAmount) + " MP.");
+    }
+
+    potions.erase(newPos);
+    map->setCellType(newPos, CellType::EMPTY);
   }
 
   else if (isExit(newPos)) {
@@ -550,7 +589,12 @@ void Model::attemptMonsterMove(const std::shared_ptr<Monster> &monster,
   auto currentPos = monster->position;
   auto newPos = currentPos + direction;
 
-  if (isWall(newPos) || isMonster(newPos) || isExit(newPos)) {
+  CellType targetCell = map->getCellType(newPos);
+  bool isPlayerOnlyItem =
+      targetCell == CellType::TREASURE || targetCell == CellType::POTION;
+
+  if (isWall(newPos) || isMonster(newPos) || isExit(newPos) ||
+      isPlayerOnlyItem) {
     monster->randomizeVelocity();
     return;
   } else if (isPlayer(newPos)) {
@@ -612,6 +656,10 @@ bool Model::isExit(const Point &point) {
 
 bool Model::isTreasure(const Point &point) {
   return map->getCellType(point) == CellType::TREASURE;
+}
+
+bool Model::isPotion(const Point &point) {
+  return map->getCellType(point) == CellType::POTION;
 }
 
 bool Model::isMonster(const Point &point) {
@@ -698,22 +746,7 @@ void Model::checkTrapCollisions() {
         continue;
       }
       
-      // Check if projectile hits a monster
-      for (auto &monster : monsters) {
-        if (monster->position == pos && monster->isAlive()) {
-          monster->takeDamage(proj.damage);
-          info->addMessage(MessageType::COMBAT, &trap->position,
-                           labelWithCoords(*trap) + " hits " +
-                               labelWithCoords(*monster) + " for " +
-                               std::to_string(proj.damage) + ".");
-          
-          if (!monster->isAlive()) {
-            map->setCellType(monster->position, CellType::EMPTY);
-          }
-          trap->deactivateProjectile(i);
-          break;
-        }
-      }
+      // Traps do not affect monsters.
     }
   }
 }

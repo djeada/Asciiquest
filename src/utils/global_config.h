@@ -97,6 +97,10 @@ private:
                                                   "TreasureSymbol=*",
                                                   "PotionSymbol=!",
                                                   "TreasureCount=20",
+                                                  "PotionCount=12",
+                                                  "PotionHeal=45",
+                                                  "PotionMana=35",
+                                                  "PotionManaChance=50",
                                                   "BonusValue=50",
                                                   "BonusExpirationCounter=100"};
 
