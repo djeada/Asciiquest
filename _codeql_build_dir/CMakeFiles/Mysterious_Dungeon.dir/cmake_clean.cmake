@@ -1,0 +1,41 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/Mysterious_Dungeon.dir/src/algorithms/maze_generator.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/algorithms/maze_generator.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/controller/controller.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/controller/controller.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/controller/game_state_handler.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/controller/game_state_handler.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/model/entities/entity.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/model/entities/entity.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/model/entities/monster.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/model/entities/monster.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/model/entities/movable_entity.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/model/entities/movable_entity.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/model/entities/player.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/model/entities/player.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/model/entities/treasure.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/model/entities/treasure.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/model/map.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/model/map.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/model/model.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/model/model.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/renderer/game_board_renderer.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/renderer/game_board_renderer.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/renderer/game_over_render.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/renderer/game_over_render.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/renderer/main_menu_renderer.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/renderer/main_menu_renderer.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/renderer/renderer.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/renderer/renderer.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/utils/direction.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/utils/direction.cpp.o.d"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/utils/point.cpp.o"
+  "CMakeFiles/Mysterious_Dungeon.dir/src/utils/point.cpp.o.d"
+  "libMysterious_Dungeon.a"
+  "libMysterious_Dungeon.pdb"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang CXX)
+  include(CMakeFiles/Mysterious_Dungeon.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()
