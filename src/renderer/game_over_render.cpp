@@ -7,10 +7,19 @@ GameOverRenderer::GameOverRenderer(const RendererData &_data) : data(_data) {}
 GameOverRenderer::~GameOverRenderer() {}
 
 void GameOverRenderer::draw() {
+  // First, draw the game board content without finalizing
   std::unique_ptr<GameBoardRenderer> gameBoardRenderer =
       std::make_unique<GameBoardRenderer>(data);
-  gameBoardRenderer->draw(); // Draw the base game board first
-  drawGameOver();            // Then draw "Game Over" on top
+  gameBoardRenderer->drawBoard();
+  gameBoardRenderer->drawMessageDisplay();
+  gameBoardRenderer->drawStats();
+  
+  // Then draw "Game Over" on top
+  drawGameOver();
+  
+  // Finally, apply all changes at once for double buffering
+  wnoutrefresh(stdscr);
+  doupdate();
 }
 
 void GameOverRenderer::drawGameOver() {

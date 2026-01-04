@@ -38,6 +38,9 @@ public:
   ~GameBoardRenderer() override;
 
   void draw() override;
+  void drawBoard();
+  void drawMessageDisplay();
+  void drawStats();
 
 private:
   const RendererData
@@ -51,10 +54,6 @@ private:
   // Terminal size
   int termHeight;
   int termWidth;
-
-  void drawBoard();
-  void drawMessageDisplay();
-  void drawStats();
 };
 
 #endif // GAME_BOARD_RENDERER_H
