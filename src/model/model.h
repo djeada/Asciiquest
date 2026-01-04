@@ -5,6 +5,7 @@
 #include "entities/movable_object.h"
 #include "entities/player.h"
 #include "entities/treasure.h"
+#include "entities/trap.h"
 #include "map.h"
 #include "spell/spell_effect.h"
 #include "utils/direction.h"
@@ -34,6 +35,7 @@ public:
   std::unordered_map<Point, std::shared_ptr<Treasure>> treasures;
   std::unordered_map<Point, std::shared_ptr<MovableObject>> movableObjects;
   std::vector<std::shared_ptr<SpellEffect>> activeSpellEffects;
+  std::vector<std::shared_ptr<Trap>> traps;
 
   // Game progression
   int currentLevel;
@@ -49,6 +51,9 @@ private:
   
   void updateSpellEffects();
   void checkSpellCollisions(const std::shared_ptr<SpellEffect> &effect);
+  
+  void updateTraps();
+  void checkTrapCollisions();
 
   void attemptPlayerMove(const std::shared_ptr<Player> &player,
                          const Point &direction);
