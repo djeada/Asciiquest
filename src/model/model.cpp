@@ -390,6 +390,9 @@ void Model::attemptPlayerMove(const std::shared_ptr<Player> &player,
                               const Point &direction) {
   auto currentPos = player->position;
   auto newPos = currentPos + direction;
+  
+  // Track player's facing direction for spell casting
+  player->setLastDirection(direction);
 
   if (isWall(newPos) || isMonster(newPos)) {
     for (const auto &monster : monsters) {

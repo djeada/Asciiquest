@@ -121,15 +121,8 @@ std::vector<EffectFrame> SpellEffect::getCurrentFrames() const {
     }
     
     case EffectState::FADING: {
-      // Smaller fading effect
-      for (int dx = -1; dx <= 1; dx++) {
-        for (int dy = -1; dy <= 1; dy++) {
-          if (dx == 0 && dy == 0) {
-            Point pos = currentPosition + Point(dx, dy);
-            frames.push_back({pos, spell->getVisual(), spell->getProjectileType(), 1});
-          }
-        }
-      }
+      // Smaller fading effect - single character at center
+      frames.push_back({currentPosition, spell->getVisual(), spell->getProjectileType(), 1});
       break;
     }
     

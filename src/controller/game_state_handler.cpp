@@ -116,19 +116,19 @@ void GameplayStateHandler::handleInput(Controller &controller, int ch) {
     model.info->decreaseStartIndex();
     break;
   case GameplayControls::SPELL_1:
-    model.castPlayerSpell(0, Direction::RIGHT);
+    model.castPlayerSpell(0, model.player->getLastDirection());
     break;
   case GameplayControls::SPELL_2:
-    model.castPlayerSpell(1, Direction::RIGHT);
+    model.castPlayerSpell(1, model.player->getLastDirection());
     break;
   case GameplayControls::SPELL_3:
-    model.castPlayerSpell(2, Direction::RIGHT);
+    model.castPlayerSpell(2, model.player->getLastDirection());
     break;
   case GameplayControls::SPELL_4:
-    model.castPlayerSpell(3, Direction::RIGHT);
+    model.castPlayerSpell(3, model.player->getLastDirection());
     break;
   case GameplayControls::SPELL_5:
-    model.castPlayerSpell(4, Direction::RIGHT);
+    model.castPlayerSpell(4, model.player->getLastDirection());
     break;
   default:
     break;

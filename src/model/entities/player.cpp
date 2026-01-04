@@ -6,7 +6,7 @@ Player::Player()
     : MovableEntity(CellType::PLAYER,
                     GlobalConfig::getInstance().getConfig<int>("PlayerHealth"),
                     GlobalConfig::getInstance().getConfig<int>("PlayerDamage")),
-      level(1), exp(0), mana(100), maxMana(100) {
+      level(1), exp(0), mana(100), maxMana(100), lastDirection(1, 0) {
   initializeSpells();
 }
 
@@ -102,5 +102,16 @@ void Player::heal(int _health) {
 }
 
 void Player::increaseStrength(int _strength) { strength += _strength; }
+
+void Player::setLastDirection(const Point& direction) {
+  // Only update if it's a non-zero direction
+  if (direction.x != 0 || direction.y != 0) {
+    lastDirection = direction;
+  }
+}
+
+Point Player::getLastDirection() const {
+  return lastDirection;
+}
 
 auto Player::toString() const -> std::string { return "Player"; }

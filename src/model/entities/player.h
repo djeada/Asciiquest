@@ -12,6 +12,7 @@ private:
   std::vector<std::shared_ptr<Spell>> spells;
   int mana;
   int maxMana;
+  Point lastDirection;
 
 public:
   Player();
@@ -33,6 +34,10 @@ public:
   int getMaxMana() const;
   std::shared_ptr<Spell> getSpell(int index) const;
   int getSpellCount() const;
+  
+  // Direction tracking
+  void setLastDirection(const Point& direction);
+  Point getLastDirection() const;
 
   std::string toString() const override;
 
