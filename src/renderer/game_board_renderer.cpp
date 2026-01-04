@@ -289,4 +289,16 @@ void GameBoardRenderer::drawStats() {
   mvprintw(y++, 0, " Kills: %s", data.stats["MonstersKilled"].c_str());
   mvprintw(y++, 0, " Enemies: %s", data.stats["MonstersRemaining"].c_str());
   attroff(COLOR_PAIR(4));
+
+  y++; // Empty line
+
+  // === LOCATION INFO ===
+  attron(COLOR_PAIR(4));
+  mvprintw(y++, 0, " X: %d, Y: %d", data.playerPosition.x, data.playerPosition.y);
+  
+  // Get map dimensions from grid
+  int mapHeight = static_cast<int>(data.grid.size());
+  int mapWidth = data.grid.empty() ? 0 : static_cast<int>(data.grid[0].size());
+  mvprintw(y++, 0, " Map Size: %d x %d", mapWidth, mapHeight);
+  attroff(COLOR_PAIR(4));
 }
