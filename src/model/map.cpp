@@ -8,7 +8,7 @@ Map::Map(unsigned int _width, unsigned int _height)
 
 void Map::loadLevel() {
   MazeGenerator generator(width, height,
-                          MazeGeneratorAlgorithm::DepthFirstSearch);
+                          MazeGeneratorAlgorithm::RandomizedPrim);
   auto maze = generator.getMaze();
 
   // Convert maze to grid with CellType values
@@ -154,6 +154,41 @@ Map::transformToGrid(const std::vector<std::string> &maze) const {
     }
     grid.push_back(gridRow);
   }
+
+  int totalCells = static_cast<int>(maze.size() * maze[0].size());
+  int maxWallCells = static_cast<int>(totalCells * 0.30);
+  int wallCells = 0;
+  std::vector<Point> wallCandidates;
+  wallCandidates.reserve(totalCells / 2);
+
+  for (size_t y = 0; y < grid.size(); ++y) {
+    for (size_t x = 0; x < grid[y].size(); ++x) {
+      CellType type = grid[y][x];
+      if (type == CellType::WALL || type == CellType::MOUNTAIN) {
+        wallCells++;
+        bool isBorder = y == 0 || x == 0 || y == grid.size() - 1 ||
+                        x == grid[y].size() - 1;
+        if (!isBorder) {
+          wallCandidates.emplace_back(static_cast<int>(x),
+                                      static_cast<int>(y));
+        }
+      }
+    }
+  }
+
+  if (wallCells > maxWallCells && !wallCandidates.empty()) {
+    std::shuffle(wallCandidates.begin(), wallCandidates.end(), rng);
+    int toCarve = wallCells - maxWallCells;
+    int carved = 0;
+    for (const auto &pos : wallCandidates) {
+      if (carved >= toCarve) {
+        break;
+      }
+      grid[pos.y][pos.x] = CellType::EMPTY;
+      carved++;
+    }
+  }
+
   return grid;
 }
 

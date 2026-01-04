@@ -1,5 +1,6 @@
 #include "model.h"
 #include "utils/global_config.h"
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <queue>
@@ -163,14 +164,13 @@ void Model::loadMap() {
   
   // Spawn traps
   traps.clear();
-  int trapCount = 2 + (currentLevel / 2); // More traps at higher levels
+  int trapCount = 1 + (currentLevel / 3); // Fewer traps at higher levels
   
   // Add blade traps
   for (int i = 0; i < trapCount; ++i) {
     auto position = map->randomFreePosition();
     auto trap = std::make_shared<BladeTrap>(position);
     traps.push_back(trap);
-    map->setCellType(position, CellType::BLADE_TRAP);
   }
   
   // Add spike traps
@@ -178,7 +178,6 @@ void Model::loadMap() {
     auto position = map->randomFreePosition();
     auto trap = std::make_shared<SpikeTrap>(position);
     traps.push_back(trap);
-    map->setCellType(position, CellType::SPIKE_TRAP);
   }
   
   // Add arrow traps (pointing in different directions)
@@ -187,7 +186,6 @@ void Model::loadMap() {
     Point direction = (i % 2 == 0) ? Direction::DOWN : Direction::RIGHT;
     auto trap = std::make_shared<ArrowTrap>(position, direction);
     traps.push_back(trap);
-    map->setCellType(position, CellType::ARROW_TRAP);
   }
 }
 
@@ -204,10 +202,6 @@ void Model::update() {
   
   // Update spell effects
   updateSpellEffects();
-  
-  // Update traps
-  updateTraps();
-  checkTrapCollisions();
 
   if (elapsed.count() < monsterUpdateSpeed) {
     return;
@@ -501,7 +495,29 @@ void Model::attemptPlayerMove(const std::shared_ptr<Player> &player,
 
   if (isWall(newPos)) {
     return;
-  } else if (isMonster(newPos)) {
+  }
+
+  auto trapIt = std::find_if(
+      traps.begin(), traps.end(),
+      [&](const std::shared_ptr<Trap> &trap) { return trap->position == newPos; });
+  if (trapIt != traps.end()) {
+    auto trap = *trapIt;
+    int damage = trap->getDamage();
+    player->takeDamage(damage);
+    info->addMessage(MessageType::COMBAT, &player->position,
+                     "You trigger " + trap->toString() + " (-" +
+                         std::to_string(damage) + " HP).");
+
+    traps.erase(trapIt);
+    if (!player->isAlive()) {
+      info->addMessage(MessageType::SYSTEM, &player->position,
+                       "You were killed by " + trap->toString() + ".");
+      map->setCellType(player->position, CellType::EMPTY);
+      return;
+    }
+  }
+
+  if (isMonster(newPos)) {
     for (const auto &monster : monsters) {
       if (monster->position == newPos) {
         fight(monster);

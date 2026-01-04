@@ -85,7 +85,7 @@ private:
                                                   "MessageQueueSize=20",
                                                   "EmptySymbol=32",
                                                   "WallSymbol=#",
-                                                  "WallCarveChance=35",
+                                                  "WallCarveChance=15",
                                                   "PlayerSymbol=@",
                                                   "GoblinSymbol=g",
                                                   "OrcSymbol=o",
