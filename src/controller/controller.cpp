@@ -22,10 +22,11 @@ void Controller::run() {
   isRunning = true;
 
   while (isRunning) {
+    erase(); // Clear stdscr for double buffering
     handleGameState();
     handleInput();
-    // Sleep for 50 milliseconds
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    // Sleep for 30 milliseconds for smoother gameplay
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
   }
 }
 

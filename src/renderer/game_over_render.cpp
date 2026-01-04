@@ -7,7 +7,6 @@ GameOverRenderer::GameOverRenderer(const RendererData &_data) : data(_data) {}
 GameOverRenderer::~GameOverRenderer() {}
 
 void GameOverRenderer::draw() {
-  clear();
   std::unique_ptr<GameBoardRenderer> gameBoardRenderer =
       std::make_unique<GameBoardRenderer>(data);
   gameBoardRenderer->draw(); // Draw the base game board first
