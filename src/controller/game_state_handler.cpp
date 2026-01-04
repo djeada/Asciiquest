@@ -72,7 +72,7 @@ void GameplayStateHandler::handleState(Controller &controller) {
   auto stat = model.getPlayerStats();
   renderer.setState(GameState::GAMEPLAY);
   renderer.draw(
-      RendererData(model.map->grid, *model.info, stat, model.player->position, &model.activeSpellEffects));
+      RendererData(model.map->grid, *model.info, stat, model.player->position, &model.activeSpellEffects, &model.traps));
 
   if (model.isGameOver()) {
     controller.setState(GameState::GAME_OVER);

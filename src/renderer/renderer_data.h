@@ -11,6 +11,7 @@
 
 // Forward declaration
 class SpellEffect;
+class Trap;
 
 struct RendererData {
   /*
@@ -22,15 +23,17 @@ in RendererData will affect the original objects, and vice versa.
   std::unordered_map<std::string, std::string> &stats;
   Point &playerPosition;
   std::vector<std::shared_ptr<SpellEffect>> *spellEffects;
+  std::vector<std::shared_ptr<Trap>> *traps;
 
   RendererData(std::vector<std::vector<CellType>> &_grid,
                InfoDeque &_messageQueue,
                std::unordered_map<std::string, std::string> &_stats,
                Point &_playerPosition,
-               std::vector<std::shared_ptr<SpellEffect>> *_spellEffects = nullptr
+               std::vector<std::shared_ptr<SpellEffect>> *_spellEffects = nullptr,
+               std::vector<std::shared_ptr<Trap>> *_traps = nullptr
                )
       : grid(_grid), messageQueue(_messageQueue), stats(_stats),
-        playerPosition(_playerPosition), spellEffects(_spellEffects) {}
+        playerPosition(_playerPosition), spellEffects(_spellEffects), traps(_traps) {}
 };
 
 #endif // RENDERER_DATA_H

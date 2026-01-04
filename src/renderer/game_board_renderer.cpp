@@ -1,5 +1,6 @@
 #include "game_board_renderer.h"
 #include "model/spell/spell_effect.h"
+#include "model/entities/trap.h"
 #include "utils/global_config.h"
 #include <ncurses.h>
 
@@ -53,6 +54,12 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::TREE, {'"', ColorPair::TREE}},
     {CellType::WATER, {'~', ColorPair::WATER}},
     {CellType::DESERT, {'.', ColorPair::DESERT}},
+    {CellType::BLADE_TRAP, {'/', ColorPair::BLADE_TRAP}},
+    {CellType::SPIKE_TRAP, {'^', ColorPair::SPIKE_TRAP}},
+    {CellType::ARROW_TRAP, {'>', ColorPair::ARROW_TRAP}},
+    {CellType::BLADE_PROJECTILE, {'s', ColorPair::BLADE_PROJECTILE}},
+    {CellType::SPIKE_PROJECTILE, {'^', ColorPair::SPIKE_PROJECTILE}},
+    {CellType::ARROW_PROJECTILE, {'o', ColorPair::ARROW_PROJECTILE}},
 };
 
 GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
@@ -85,6 +92,12 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
       {ColorPair::TREE, {COLOR_GREEN, COLOR_BLACK}},
       {ColorPair::WATER, {COLOR_BLUE, COLOR_BLACK}},
       {ColorPair::DESERT, {COLOR_YELLOW, COLOR_BLACK}},
+      {ColorPair::BLADE_TRAP, {COLOR_RED, COLOR_BLACK}},
+      {ColorPair::SPIKE_TRAP, {COLOR_MAGENTA, COLOR_BLACK}},
+      {ColorPair::ARROW_TRAP, {COLOR_CYAN, COLOR_BLACK}},
+      {ColorPair::BLADE_PROJECTILE, {COLOR_RED, COLOR_BLACK}},
+      {ColorPair::SPIKE_PROJECTILE, {COLOR_MAGENTA, COLOR_BLACK}},
+      {ColorPair::ARROW_PROJECTILE, {COLOR_CYAN, COLOR_BLACK}},
   };
 
   // Initialize color pairs
@@ -173,6 +186,29 @@ void GameBoardRenderer::drawBoard() {
             screenY >= 0 && screenY < boardHeight) {
           
           const auto &[ch, color] = cellTypeToCharColor[frame.cellType];
+          attron(COLOR_PAIR(static_cast<int>(color)));
+          mvaddch(screenY, screenX, ch);
+          attroff(COLOR_PAIR(static_cast<int>(color)));
+        }
+      }
+    }
+  }
+  
+  // Render trap projectiles on top of the board
+  if (data.traps != nullptr) {
+    for (const auto &trap : *data.traps) {
+      const auto &projectiles = trap->getProjectiles();
+      for (const auto &proj : projectiles) {
+        if (!proj.active) continue;
+        
+        // Check if the projectile is within the visible area
+        int screenX = proj.position.x - viewLeft;
+        int screenY = proj.position.y - viewTop;
+        
+        if (screenX >= 0 && screenX < boardWidth && 
+            screenY >= 0 && screenY < boardHeight) {
+          
+          const auto &[ch, color] = cellTypeToCharColor[proj.cellType];
           attron(COLOR_PAIR(static_cast<int>(color)));
           mvaddch(screenY, screenX, ch);
           attroff(COLOR_PAIR(static_cast<int>(color)));

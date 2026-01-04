@@ -146,6 +146,35 @@ void Model::loadMap() {
     info->addMessage("Difficulty increased! Monsters are stronger.");
   }
   info->addMessage("Find the exit to advance!");
+  
+  // Spawn traps
+  traps.clear();
+  int trapCount = 2 + (currentLevel / 2); // More traps at higher levels
+  
+  // Add blade traps
+  for (int i = 0; i < trapCount; ++i) {
+    auto position = map->randomFreePosition();
+    auto trap = std::make_shared<BladeTrap>(position);
+    traps.push_back(trap);
+    map->setCellType(position, CellType::BLADE_TRAP);
+  }
+  
+  // Add spike traps
+  for (int i = 0; i < trapCount; ++i) {
+    auto position = map->randomFreePosition();
+    auto trap = std::make_shared<SpikeTrap>(position);
+    traps.push_back(trap);
+    map->setCellType(position, CellType::SPIKE_TRAP);
+  }
+  
+  // Add arrow traps (pointing in different directions)
+  for (int i = 0; i < trapCount; ++i) {
+    auto position = map->randomFreePosition();
+    Point direction = (i % 2 == 0) ? Direction::DOWN : Direction::RIGHT;
+    auto trap = std::make_shared<ArrowTrap>(position, direction);
+    traps.push_back(trap);
+    map->setCellType(position, CellType::ARROW_TRAP);
+  }
 }
 
 void Model::update() {
@@ -161,6 +190,10 @@ void Model::update() {
   
   // Update spell effects
   updateSpellEffects();
+  
+  // Update traps
+  updateTraps();
+  checkTrapCollisions();
 
   if (elapsed.count() < monsterUpdateSpeed) {
     return;
@@ -563,4 +596,58 @@ bool Model::tryPushObject(const Point &objectPos, const Point &direction) {
   
   info->addMessage("Pushed " + object->toString() + "!");
   return true;
+}
+
+void Model::updateTraps() {
+  for (auto &trap : traps) {
+    trap->update();
+  }
+}
+
+void Model::checkTrapCollisions() {
+  for (auto &trap : traps) {
+    const auto &projectiles = trap->getProjectiles();
+    
+    for (size_t i = 0; i < projectiles.size(); ++i) {
+      const auto &proj = projectiles[i];
+      if (!proj.active) continue;
+      
+      Point pos = proj.position;
+      
+      // Check if projectile is out of bounds or hits a wall
+      if (!map->isValidPoint(pos) || isWall(pos)) {
+        trap->deactivateProjectile(i);
+        continue;
+      }
+      
+      // Check if projectile hits the player
+      if (isPlayer(pos)) {
+        player->takeDamage(proj.damage);
+        info->addMessage(trap->toString() + " hits you for " + 
+                        std::to_string(proj.damage) + " damage!");
+        
+        if (!player->isAlive()) {
+          info->addMessage("You have been killed by a " + trap->toString() + "!");
+          map->setCellType(player->position, CellType::EMPTY);
+        }
+        trap->deactivateProjectile(i);
+        continue;
+      }
+      
+      // Check if projectile hits a monster
+      for (auto &monster : monsters) {
+        if (monster->position == pos && monster->isAlive()) {
+          monster->takeDamage(proj.damage);
+          info->addMessage(trap->toString() + " hits " + monster->toString() + 
+                          " for " + std::to_string(proj.damage) + " damage!");
+          
+          if (!monster->isAlive()) {
+            map->setCellType(monster->position, CellType::EMPTY);
+          }
+          trap->deactivateProjectile(i);
+          break;
+        }
+      }
+    }
+  }
 }

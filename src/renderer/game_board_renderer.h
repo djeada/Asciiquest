@@ -29,7 +29,13 @@ enum class ColorPair {
   GRASS,
   TREE,
   WATER,
-  DESERT
+  DESERT,
+  BLADE_TRAP,
+  SPIKE_TRAP,
+  ARROW_TRAP,
+  BLADE_PROJECTILE,
+  SPIKE_PROJECTILE,
+  ARROW_PROJECTILE
 };
 extern std::unordered_map<CellType, std::pair<char, ColorPair>>
     cellTypeToCharColor;
