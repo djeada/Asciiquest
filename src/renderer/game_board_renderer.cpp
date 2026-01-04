@@ -356,7 +356,6 @@ void GameBoardRenderer::drawBoard() {
   int playerScreenX = data.playerPosition.x - viewLeft;
   int playerScreenY = data.playerPosition.y - viewTop;
   const int visionRadius = 12;  // Tiles within this radius are fully visible
-  const int fadeRadius = 18;    // Tiles between visionRadius and fadeRadius are dimmed
 
   for (int y = 0; y < boardHeight; ++y) {
     for (int x = 0; x < boardWidth; ++x) {
@@ -375,7 +374,6 @@ void GameBoardRenderer::drawBoard() {
       int dy = y - playerScreenY;
       int distSq = dx * dx + dy * dy;
       bool isNearPlayer = distSq <= visionRadius * visionRadius;
-      bool isInFade = distSq <= fadeRadius * fadeRadius;
 
       // Set color attribute, print the character and unset color attribute
       // Player gets bold+reverse for maximum visibility
@@ -387,7 +385,7 @@ void GameBoardRenderer::drawBoard() {
                  cellType == CellType::END || cellType == CellType::DOOR) {
         // Items, doors and interactive objects get bold for visibility
         int attrs = A_BOLD | COLOR_PAIR(static_cast<int>(color));
-        if (!isNearPlayer && isInFade) attrs |= A_DIM;
+        if (!isNearPlayer) attrs |= A_DIM;
         attron(attrs);
         mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
         attroff(attrs);
@@ -396,20 +394,15 @@ void GameBoardRenderer::drawBoard() {
                  cellType == CellType::SKELETON) {
         // Enemies get bold for threatening appearance
         int attrs = A_BOLD | COLOR_PAIR(static_cast<int>(color));
-        if (!isNearPlayer && isInFade) attrs |= A_DIM;
+        if (!isNearPlayer) attrs |= A_DIM;
         attron(attrs);
         mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
         attroff(attrs);
       } else {
-        // Terrain and walls - apply fog-of-war dimming
+        // Terrain and walls - apply fog-of-war dimming for distant tiles
         int attrs = COLOR_PAIR(static_cast<int>(color));
         if (!isNearPlayer) {
-          if (isInFade) {
-            attrs |= A_DIM;
-          } else {
-            // Far tiles are very dim
-            attrs |= A_DIM;
-          }
+          attrs |= A_DIM;
         }
         attron(attrs);
         mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
