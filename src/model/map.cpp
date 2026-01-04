@@ -109,7 +109,7 @@ Map::transformToGrid(const std::vector<std::string> &maze) const {
   grid.reserve(maze.size());
 
   // Use existing rng for terrain placement
-  std::uniform_int_distribution<int> terrainDist(0, 100);
+  std::uniform_int_distribution<int> terrainDist(0, 99);
   
   for (const auto &row : maze) {
     std::vector<CellType> gridRow;
@@ -141,7 +141,6 @@ Map::transformToGrid(const std::vector<std::string> &maze) const {
     }
     grid.push_back(gridRow);
   }
-
   return grid;
 }
 
