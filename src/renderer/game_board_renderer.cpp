@@ -48,6 +48,11 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::BOULDER, {'O', ColorPair::BOULDER}},
     {CellType::CRATE, {'=', ColorPair::CRATE}},
     {CellType::BARREL, {'%', ColorPair::BARREL}},
+    {CellType::MOUNTAIN, {'^', ColorPair::MOUNTAIN}},
+    {CellType::GRASS, {'&', ColorPair::GRASS}},
+    {CellType::TREE, {'"', ColorPair::TREE}},
+    {CellType::WATER, {'~', ColorPair::WATER}},
+    {CellType::DESERT, {'*', ColorPair::DESERT}},
 };
 
 GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
@@ -75,6 +80,11 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
       {ColorPair::BOULDER, {COLOR_WHITE, COLOR_BLACK}},
       {ColorPair::CRATE, {COLOR_YELLOW, COLOR_BLACK}},
       {ColorPair::BARREL, {COLOR_MAGENTA, COLOR_BLACK}},
+      {ColorPair::MOUNTAIN, {COLOR_WHITE, COLOR_BLACK}},
+      {ColorPair::GRASS, {COLOR_GREEN, COLOR_BLACK}},
+      {ColorPair::TREE, {COLOR_GREEN, COLOR_BLACK}},
+      {ColorPair::WATER, {COLOR_BLUE, COLOR_BLACK}},
+      {ColorPair::DESERT, {COLOR_YELLOW, COLOR_BLACK}},
   };
 
   // Initialize color pairs
