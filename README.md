@@ -59,8 +59,9 @@ The game is controlled using the keyboard:
 | `@` | Player (you!) | White (bold/reverse) |
 | `.` | Floor | White |
 | `#` | Wall | White |
-| `+` | Door | Yellow (bold) |
-| `>` | Stairs/Exit | Cyan (bold) |
+| `+` | Door | Green (bold) |
+| `<` | Stairs up (entrance) | Cyan (bold) |
+| `>` | Stairs down (exit) | Cyan (bold) |
 | `$` | Treasure | Yellow (bold) |
 | `!` | Potion | Cyan (bold) |
 | `g` | Goblin | Red (bold) |
@@ -72,7 +73,7 @@ The game is controlled using the keyboard:
 | `~` | Water | Blue |
 | `^` | Spike Trap | Magenta |
 | `/` | Blade Trap | Red |
-| `<` | Arrow Trap | Red |
+| `=` | Arrow Trap | Red |
 
 Encounter enemies and items as you explore the dungeon. The goal is to find the exit and advance to the next level. Manage your mana wisely and use spells strategically to defeat powerful enemies! Spells are cast in the direction you last moved, allowing for tactical positioning.
 

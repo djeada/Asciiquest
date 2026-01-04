@@ -299,14 +299,15 @@ Map::transformToGrid(const std::vector<std::string> &maze, const Point &startPoi
   };
 
   int area = static_cast<int>(grid.size() * grid[0].size());
-  int featureCount = std::max(1, area / 500);
-  featureCount = std::min(featureCount, 6);
+  // Reduce water features for cleaner dungeon look (less visual noise)
+  int featureCount = std::max(1, area / 800);
+  featureCount = std::min(featureCount, 3);
   std::uniform_int_distribution<int> riverChance(0, 99);
-  int lakeMin = std::max(6, area / 400);
-  int lakeMax = std::max(lakeMin + 6, area / 200);
-  lakeMax = std::min(lakeMax, 40);
+  int lakeMin = std::max(4, area / 600);
+  int lakeMax = std::max(lakeMin + 4, area / 350);
+  lakeMax = std::min(lakeMax, 25);
   std::uniform_int_distribution<int> lakeSizeDist(lakeMin, lakeMax);
-  std::uniform_int_distribution<int> riverLengthDist(12, 30);
+  std::uniform_int_distribution<int> riverLengthDist(8, 20);
   std::uniform_int_distribution<int> dirDist(0, 3);
 
   std::array<Point, 4> cardinalDirs = {
@@ -463,11 +464,12 @@ Map::transformToGrid(const std::vector<std::string> &maze, const Point &startPoi
     }
   }
 
-  int grassFeatureCount = std::max(1, area / 450);
-  grassFeatureCount = std::min(grassFeatureCount, 8);
-  int grassMin = std::max(5, area / 450);
-  int grassMax = std::max(grassMin + 5, area / 260);
-  grassMax = std::min(grassMax, 55);
+  // Reduce grass patches for cleaner dungeon look (less visual noise)
+  int grassFeatureCount = std::max(1, area / 700);
+  grassFeatureCount = std::min(grassFeatureCount, 4);
+  int grassMin = std::max(3, area / 600);
+  int grassMax = std::max(grassMin + 3, area / 400);
+  grassMax = std::min(grassMax, 30);
   std::uniform_int_distribution<int> grassSizeDist(grassMin, grassMax);
 
   auto canFillGrass = [&](const Point &p) {

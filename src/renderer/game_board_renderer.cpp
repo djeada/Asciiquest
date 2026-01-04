@@ -178,7 +178,7 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::DESERT, {'.', ColorPair::DESERT}},
     {CellType::BLADE_TRAP, {'/', ColorPair::BLADE_TRAP}},
     {CellType::SPIKE_TRAP, {'^', ColorPair::SPIKE_TRAP}},
-    {CellType::ARROW_TRAP, {'<', ColorPair::ARROW_TRAP}},
+    {CellType::ARROW_TRAP, {'=', ColorPair::ARROW_TRAP}},
     {CellType::BLADE_PROJECTILE, {'\\', ColorPair::BLADE_PROJECTILE}},
     {CellType::SPIKE_PROJECTILE, {'^', ColorPair::SPIKE_PROJECTILE}},
     {CellType::ARROW_PROJECTILE, {'-', ColorPair::ARROW_PROJECTILE}},
@@ -352,6 +352,12 @@ void GameBoardRenderer::drawBoard() {
   ColorPair enemyColor =
       warmEnemyColors[(dungeonLevel - 1) % warmEnemyColors.size()];
 
+  // Fog-of-war: Calculate player's screen position for visibility calculations
+  int playerScreenX = data.playerPosition.x - viewLeft;
+  int playerScreenY = data.playerPosition.y - viewTop;
+  const int visionRadius = 12;  // Tiles within this radius are fully visible
+  const int fadeRadius = 18;    // Tiles between visionRadius and fadeRadius are dimmed
+
   for (int y = 0; y < boardHeight; ++y) {
     for (int x = 0; x < boardWidth; ++x) {
       // Fetch the character and color representation of the cell type
@@ -364,6 +370,13 @@ void GameBoardRenderer::drawBoard() {
               ? enemyColor
               : baseColor;
 
+      // Calculate distance from player for fog-of-war effect
+      int dx = x - playerScreenX;
+      int dy = y - playerScreenY;
+      int distSq = dx * dx + dy * dy;
+      bool isNearPlayer = distSq <= visionRadius * visionRadius;
+      bool isInFade = distSq <= fadeRadius * fadeRadius;
+
       // Set color attribute, print the character and unset color attribute
       // Player gets bold+reverse for maximum visibility
       if (cellType == CellType::PLAYER) {
@@ -373,20 +386,34 @@ void GameBoardRenderer::drawBoard() {
       } else if (cellType == CellType::TREASURE || cellType == CellType::POTION || 
                  cellType == CellType::END || cellType == CellType::DOOR) {
         // Items, doors and interactive objects get bold for visibility
-        attron(A_BOLD | COLOR_PAIR(static_cast<int>(color)));
+        int attrs = A_BOLD | COLOR_PAIR(static_cast<int>(color));
+        if (!isNearPlayer && isInFade) attrs |= A_DIM;
+        attron(attrs);
         mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
-        attroff(A_BOLD | COLOR_PAIR(static_cast<int>(color)));
+        attroff(attrs);
       } else if (cellType == CellType::GOBLIN || cellType == CellType::ORC ||
                  cellType == CellType::DRAGON || cellType == CellType::TROLL ||
                  cellType == CellType::SKELETON) {
         // Enemies get bold for threatening appearance
-        attron(A_BOLD | COLOR_PAIR(static_cast<int>(color)));
+        int attrs = A_BOLD | COLOR_PAIR(static_cast<int>(color));
+        if (!isNearPlayer && isInFade) attrs |= A_DIM;
+        attron(attrs);
         mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
-        attroff(A_BOLD | COLOR_PAIR(static_cast<int>(color)));
+        attroff(attrs);
       } else {
-        attron(COLOR_PAIR(static_cast<int>(color)));
+        // Terrain and walls - apply fog-of-war dimming
+        int attrs = COLOR_PAIR(static_cast<int>(color));
+        if (!isNearPlayer) {
+          if (isInFade) {
+            attrs |= A_DIM;
+          } else {
+            // Far tiles are very dim
+            attrs |= A_DIM;
+          }
+        }
+        attron(attrs);
         mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
-        attroff(COLOR_PAIR(static_cast<int>(color)));
+        attroff(attrs);
       }
     }
   }

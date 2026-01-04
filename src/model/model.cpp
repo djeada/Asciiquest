@@ -296,9 +296,14 @@ void Model::fight(const std::shared_ptr<Monster> &monster) {
     }
 
     defender->takeDamage(damage);
+    
+    // Enhanced combat feedback with damage and remaining HP
+    std::string hpInfo = defender->isAlive()
+                             ? " (" + std::to_string(defender->health) + " HP left)"
+                             : " (defeated!)";
     info->addMessage(MessageType::COMBAT, &attacker->position,
                      attackerLabel + " hit " + defenderLabel + " for " +
-                         std::to_string(damage) + ".");
+                         std::to_string(damage) + hpInfo);
   };
 
   auto updateMapAfterFight = [&](const auto &defeatedMonster) {
