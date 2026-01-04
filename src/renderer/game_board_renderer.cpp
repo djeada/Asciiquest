@@ -178,7 +178,7 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::BLADE_TRAP, {'/', ColorPair::BLADE_TRAP}},
     {CellType::SPIKE_TRAP, {'^', ColorPair::SPIKE_TRAP}},
     {CellType::ARROW_TRAP, {'<', ColorPair::ARROW_TRAP}},
-    {CellType::BLADE_PROJECTILE, {'/', ColorPair::BLADE_PROJECTILE}},
+    {CellType::BLADE_PROJECTILE, {'\\', ColorPair::BLADE_PROJECTILE}},
     {CellType::SPIKE_PROJECTILE, {'^', ColorPair::SPIKE_PROJECTILE}},
     {CellType::ARROW_PROJECTILE, {'-', ColorPair::ARROW_PROJECTILE}},
 };
