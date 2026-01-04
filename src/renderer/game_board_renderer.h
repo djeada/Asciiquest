@@ -16,7 +16,12 @@ enum class ColorPair {
   TREASURE,
   POTION,
   START,
-  END
+  END,
+  FIRE_PROJECTILE,
+  ICE_PROJECTILE,
+  LIGHTNING_PROJECTILE,
+  HEAL_EFFECT,
+  SHIELD_EFFECT
 };
 extern std::unordered_map<CellType, std::pair<char, ColorPair>>
     cellTypeToCharColor;
