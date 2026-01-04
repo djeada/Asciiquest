@@ -120,7 +120,8 @@ std::string messagePrefix(const MessageEntry &entry) {
   if (!entry.hasSource) {
     return "[" + tag + "] ";
   }
-  return "[" + tag + "] ";
+  return "[" + tag + " " + std::to_string(entry.source.x) + "," +
+         std::to_string(entry.source.y) + "] ";
 }
 } // namespace
 
@@ -171,12 +172,12 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::BARREL, {'%', ColorPair::BARREL}},
     {CellType::MOUNTAIN, {'^', ColorPair::MOUNTAIN}},
     {CellType::GRASS, {',', ColorPair::GRASS}},
-    {CellType::TREE, {'T', ColorPair::TREE}},
+    {CellType::TREE, {'"', ColorPair::TREE}},
     {CellType::WATER, {'~', ColorPair::WATER}},
     {CellType::DESERT, {'.', ColorPair::DESERT}},
     {CellType::BLADE_TRAP, {'/', ColorPair::BLADE_TRAP}},
     {CellType::SPIKE_TRAP, {'^', ColorPair::SPIKE_TRAP}},
-    {CellType::ARROW_TRAP, {'>', ColorPair::ARROW_TRAP}},
+    {CellType::ARROW_TRAP, {'<', ColorPair::ARROW_TRAP}},
     {CellType::BLADE_PROJECTILE, {'/', ColorPair::BLADE_PROJECTILE}},
     {CellType::SPIKE_PROJECTILE, {'^', ColorPair::SPIKE_PROJECTILE}},
     {CellType::ARROW_PROJECTILE, {'-', ColorPair::ARROW_PROJECTILE}},
