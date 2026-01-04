@@ -103,25 +103,24 @@ std::string messagePrefix(const MessageEntry &entry) {
   std::string tag;
   switch (entry.type) {
   case MessageType::SYSTEM:
-    tag = "SYS";
+    tag = "*";
     break;
   case MessageType::COMBAT:
-    tag = "C";
+    tag = "!";
     break;
   case MessageType::LOOT:
-    tag = "L";
+    tag = "$";
     break;
   case MessageType::INFO:
   default:
-    tag = "I";
+    tag = ">";
     break;
   }
 
   if (!entry.hasSource) {
     return "[" + tag + "] ";
   }
-  return "[" + tag + " " + std::to_string(entry.source.x) + "," +
-         std::to_string(entry.source.y) + "] ";
+  return "[" + tag + "] ";
 }
 } // namespace
 
@@ -171,54 +170,67 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::CRATE, {'=', ColorPair::CRATE}},
     {CellType::BARREL, {'%', ColorPair::BARREL}},
     {CellType::MOUNTAIN, {'^', ColorPair::MOUNTAIN}},
-    {CellType::GRASS, {'&', ColorPair::GRASS}},
-    {CellType::TREE, {'"', ColorPair::TREE}},
+    {CellType::GRASS, {',', ColorPair::GRASS}},
+    {CellType::TREE, {'T', ColorPair::TREE}},
     {CellType::WATER, {'~', ColorPair::WATER}},
     {CellType::DESERT, {'.', ColorPair::DESERT}},
     {CellType::BLADE_TRAP, {'/', ColorPair::BLADE_TRAP}},
     {CellType::SPIKE_TRAP, {'^', ColorPair::SPIKE_TRAP}},
     {CellType::ARROW_TRAP, {'>', ColorPair::ARROW_TRAP}},
-    {CellType::BLADE_PROJECTILE, {'s', ColorPair::BLADE_PROJECTILE}},
+    {CellType::BLADE_PROJECTILE, {'/', ColorPair::BLADE_PROJECTILE}},
     {CellType::SPIKE_PROJECTILE, {'^', ColorPair::SPIKE_PROJECTILE}},
-    {CellType::ARROW_PROJECTILE, {'o', ColorPair::ARROW_PROJECTILE}},
+    {CellType::ARROW_PROJECTILE, {'-', ColorPair::ARROW_PROJECTILE}},
 };
 
 GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
   start_color(); // Start color functionality
 
-  // Define color pairs
+  // Define color pairs with improved visual language:
+  // - Terrain: muted colors (gray/dark)
+  // - Enemies: red/dark variants
+  // - Items: yellow/cyan
+  // - Player: bright white (most visible)
+  // - Interactive: bright colors
   std::unordered_map<ColorPair, std::pair<int, int>> colorDefinitions = {
+      // Terrain (muted colors)
       {ColorPair::EMPTY, {COLOR_WHITE, COLOR_BLACK}},
       {ColorPair::WALL, {COLOR_WHITE, COLOR_BLACK}},
-      {ColorPair::PLAYER, {COLOR_CYAN, COLOR_BLACK}},
-      {ColorPair::GOBLIN, {COLOR_GREEN, COLOR_BLACK}},
-      {ColorPair::ORC, {COLOR_YELLOW, COLOR_BLACK}},
+      {ColorPair::MOUNTAIN, {COLOR_WHITE, COLOR_BLACK}},
+      {ColorPair::GRASS, {COLOR_GREEN, COLOR_BLACK}},
+      {ColorPair::TREE, {COLOR_GREEN, COLOR_BLACK}},
+      {ColorPair::WATER, {COLOR_BLUE, COLOR_BLACK}},
+      {ColorPair::DESERT, {COLOR_YELLOW, COLOR_BLACK}},
+      // Player (brightest - high visibility)
+      {ColorPair::PLAYER, {COLOR_WHITE, COLOR_BLACK}},
+      // Enemies (red/threatening colors)
+      {ColorPair::GOBLIN, {COLOR_RED, COLOR_BLACK}},
+      {ColorPair::ORC, {COLOR_RED, COLOR_BLACK}},
       {ColorPair::DRAGON, {COLOR_RED, COLOR_BLACK}},
       {ColorPair::TROLL, {COLOR_MAGENTA, COLOR_BLACK}},
-      {ColorPair::SKELETON, {COLOR_WHITE, COLOR_BLACK}},
-      {ColorPair::START, {COLOR_CYAN, COLOR_BLACK}},
-      {ColorPair::END, {COLOR_RED, COLOR_BLACK}},
+      {ColorPair::SKELETON, {COLOR_MAGENTA, COLOR_BLACK}},
+      // Items (yellow/cyan for visibility)
       {ColorPair::TREASURE, {COLOR_YELLOW, COLOR_BLACK}},
-      {ColorPair::POTION, {COLOR_MAGENTA, COLOR_BLACK}},
+      {ColorPair::POTION, {COLOR_CYAN, COLOR_BLACK}},
+      // Interactive objects
+      {ColorPair::START, {COLOR_CYAN, COLOR_BLACK}},
+      {ColorPair::END, {COLOR_CYAN, COLOR_BLACK}},
+      {ColorPair::BOULDER, {COLOR_WHITE, COLOR_BLACK}},
+      {ColorPair::CRATE, {COLOR_YELLOW, COLOR_BLACK}},
+      {ColorPair::BARREL, {COLOR_YELLOW, COLOR_BLACK}},
+      // Spell effects
       {ColorPair::FIRE_PROJECTILE, {COLOR_RED, COLOR_BLACK}},
       {ColorPair::ICE_PROJECTILE, {COLOR_CYAN, COLOR_BLACK}},
       {ColorPair::LIGHTNING_PROJECTILE, {COLOR_YELLOW, COLOR_BLACK}},
       {ColorPair::HEAL_EFFECT, {COLOR_GREEN, COLOR_BLACK}},
       {ColorPair::SHIELD_EFFECT, {COLOR_BLUE, COLOR_BLACK}},
-      {ColorPair::BOULDER, {COLOR_WHITE, COLOR_BLACK}},
-      {ColorPair::CRATE, {COLOR_YELLOW, COLOR_BLACK}},
-      {ColorPair::BARREL, {COLOR_RED, COLOR_BLACK}},
-      {ColorPair::MOUNTAIN, {COLOR_WHITE, COLOR_BLACK}},
-      {ColorPair::GRASS, {COLOR_GREEN, COLOR_BLACK}},
-      {ColorPair::TREE, {COLOR_YELLOW, COLOR_BLACK}},
-      {ColorPair::WATER, {COLOR_BLUE, COLOR_BLACK}},
-      {ColorPair::DESERT, {COLOR_YELLOW, COLOR_BLACK}},
+      // Traps (warning colors)
       {ColorPair::BLADE_TRAP, {COLOR_RED, COLOR_BLACK}},
       {ColorPair::SPIKE_TRAP, {COLOR_MAGENTA, COLOR_BLACK}},
-      {ColorPair::ARROW_TRAP, {COLOR_CYAN, COLOR_BLACK}},
+      {ColorPair::ARROW_TRAP, {COLOR_RED, COLOR_BLACK}},
       {ColorPair::BLADE_PROJECTILE, {COLOR_RED, COLOR_BLACK}},
       {ColorPair::SPIKE_PROJECTILE, {COLOR_MAGENTA, COLOR_BLACK}},
-      {ColorPair::ARROW_PROJECTILE, {COLOR_CYAN, COLOR_BLACK}},
+      {ColorPair::ARROW_PROJECTILE, {COLOR_RED, COLOR_BLACK}},
+      // UI elements
       {ColorPair::UI_BORDER, {COLOR_WHITE, COLOR_BLACK}},
       {ColorPair::UI_TITLE, {COLOR_YELLOW, COLOR_BLACK}},
       {ColorPair::UI_TEXT, {COLOR_WHITE, COLOR_BLACK}},
@@ -226,6 +238,7 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
       {ColorPair::UI_HP_BAR, {COLOR_GREEN, COLOR_BLACK}},
       {ColorPair::UI_MANA_BAR, {COLOR_BLUE, COLOR_BLACK}},
       {ColorPair::UI_XP_BAR, {COLOR_YELLOW, COLOR_BLACK}},
+      // Log messages
       {ColorPair::LOG_SYSTEM, {COLOR_CYAN, COLOR_BLACK}},
       {ColorPair::LOG_COMBAT, {COLOR_RED, COLOR_BLACK}},
       {ColorPair::LOG_LOOT, {COLOR_YELLOW, COLOR_BLACK}},
@@ -308,9 +321,22 @@ void GameBoardRenderer::drawBoard() {
       const auto &[ch, color] = cellTypeToCharColor[cellType];
 
       // Set color attribute, print the character and unset color attribute
-      attron(COLOR_PAIR(static_cast<int>(color)));
-      mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
-      attroff(COLOR_PAIR(static_cast<int>(color)));
+      // Player gets bold+reverse for maximum visibility
+      if (cellType == CellType::PLAYER) {
+        attron(A_BOLD | A_REVERSE | COLOR_PAIR(static_cast<int>(color)));
+        mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
+        attroff(A_BOLD | A_REVERSE | COLOR_PAIR(static_cast<int>(color)));
+      } else if (cellType == CellType::TREASURE || cellType == CellType::POTION || 
+                 cellType == CellType::END) {
+        // Items and interactive objects get bold for visibility
+        attron(A_BOLD | COLOR_PAIR(static_cast<int>(color)));
+        mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
+        attroff(A_BOLD | COLOR_PAIR(static_cast<int>(color)));
+      } else {
+        attron(COLOR_PAIR(static_cast<int>(color)));
+        mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
+        attroff(COLOR_PAIR(static_cast<int>(color)));
+      }
     }
   }
   
@@ -386,7 +412,7 @@ void GameBoardRenderer::drawMessageDisplay() {
   }
 
   attron(COLOR_PAIR(static_cast<int>(ColorPair::UI_TEXT)));
-  mvprintw(y++, x, " I/K scroll | Tags: C combat, L loot, SYS system");
+  mvprintw(y++, x, " I/K scroll | [!] combat [$] loot [*] system");
   attroff(COLOR_PAIR(static_cast<int>(ColorPair::UI_TEXT)));
 
   for (const auto &entry : data.messageQueue.reverse()) {
@@ -459,23 +485,26 @@ void GameBoardRenderer::drawStats() {
     mvprintw(barY, xStart, "%-*s", labelWidth,
              (label + ":").c_str());
 
-    // draw the progress bar
+    // draw the progress bar with improved visual style
     int progressBarWidth = std::max(4, maxBarWidth - labelWidth - 8);
     int progress = static_cast<int>(progressBarWidth * percentage);
 
-    // set color and draw progress
-    attron(COLOR_PAIR(color));
+    // set color and draw filled portion with block characters
+    attron(A_BOLD | COLOR_PAIR(color));
     for (int i = 0; i < progress; i++) {
-      mvaddch(barY, xStart + labelWidth + 1 + i, '=');
+      mvaddch(barY, xStart + labelWidth + 1 + i, ACS_CKBOARD);
     }
-    attroff(COLOR_PAIR(color));
+    attroff(A_BOLD | COLOR_PAIR(color));
 
+    // draw empty portion with dimmer style
     attron(COLOR_PAIR(static_cast<int>(ColorPair::UI_TEXT)));
     for (int i = progress; i < progressBarWidth; i++) {
-      mvaddch(barY, xStart + labelWidth + 1 + i, '-');
+      mvaddch(barY, xStart + labelWidth + 1 + i, ACS_BULLET);
     }
-    mvprintw(barY, xStart + labelWidth + 1 + progressBarWidth + 1, "%d/%d",
-             current, maximum);
+    // Right-align the numeric values
+    std::string valueStr = std::to_string(current) + "/" + std::to_string(maximum);
+    mvprintw(barY, xStart + labelWidth + 1 + progressBarWidth + 1, "%s",
+             valueStr.c_str());
     attroff(COLOR_PAIR(static_cast<int>(ColorPair::UI_TEXT)));
   };
 
