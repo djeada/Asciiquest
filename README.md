@@ -57,8 +57,8 @@ The game is controlled using the keyboard:
 | Symbol | Description | Color |
 |--------|-------------|-------|
 | `@` | Player (you!) | White (bold/reverse) |
-| `.` | Floor | White |
-| `#` | Wall | White |
+| `.` | Floor | Gray (muted background) |
+| `#` | Wall | Light Gray |
 | `+` | Door | Green (bold) |
 | `<` | Stairs up (entrance) | Cyan (bold) |
 | `>` | Stairs down (exit) | Cyan (bold) |
@@ -69,11 +69,14 @@ The game is controlled using the keyboard:
 | `T` | Troll | Magenta (bold) |
 | `D` | Dragon | Red (bold) |
 | `s` | Skeleton | Magenta (bold) |
-| `,` | Grass | Green |
-| `~` | Water | Blue |
 | `^` | Spike Trap | Magenta |
 | `/` | Blade Trap | Red |
 | `=` | Arrow Trap | Red |
+
+**Visual Effects:**
+- **Fog-of-War**: Tiles beyond your vision radius appear dimmed
+- **Player Halo**: Adjacent tiles are brightened for easy player location
+- **Interactive Highlighting**: Items and enemies near you stand out
 
 Encounter enemies and items as you explore the dungeon. The goal is to find the exit and advance to the next level. Manage your mana wisely and use spells strategically to defeat powerful enemies! Spells are cast in the direction you last moved, allowing for tactical positioning.
 
