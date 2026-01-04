@@ -69,6 +69,8 @@ The game is controlled using the keyboard:
 | `T` | Troll | Magenta (bold) |
 | `D` | Dragon | Red (bold) |
 | `s` | Skeleton | Magenta (bold) |
+| `,` | Grass | Green |
+| `~` | Water | Blue |
 | `^` | Spike Trap | Magenta |
 | `/` | Blade Trap | Red |
 | `=` | Arrow Trap | Red |

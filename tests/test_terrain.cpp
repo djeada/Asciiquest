@@ -2,34 +2,35 @@
 #include "utils/game_settings.h"
 #include "gtest/gtest.h"
 
-TEST(TerrainTest, MapGeneratesBasicDungeonTiles) {
+TEST(TerrainTest, MapGeneratesTerrainTypes) {
   // Arrange
   Map map(50, 50);
   
   // Act
   map.loadLevel();
   
-  // Assert - Check that basic dungeon tile types are generated
-  // The dungeon uses a clean theme with only floors, walls, and doors
-  bool hasFloor = false;
-  bool hasWall = false;
-  bool hasDoor = false;
+  // Assert - Check that terrain types are generated
+  bool hasGrass = false;
+  bool hasTree = false;
+  bool hasWater = false;
+  bool hasDesert = false;
+  bool hasMountain = false;
   
   for (unsigned int y = 0; y < map.getHeight(); ++y) {
     for (unsigned int x = 0; x < map.getWidth(); ++x) {
       Point p(x, y);
       CellType cell = map.getCellType(p);
       
-      if (cell == CellType::FLOOR) hasFloor = true;
-      if (cell == CellType::WALL) hasWall = true;
-      if (cell == CellType::DOOR) hasDoor = true;
+      if (cell == CellType::GRASS) hasGrass = true;
+      if (cell == CellType::TREE) hasTree = true;
+      if (cell == CellType::WATER) hasWater = true;
+      if (cell == CellType::DESERT) hasDesert = true;
+      if (cell == CellType::MOUNTAIN) hasMountain = true;
     }
   }
   
-  // A dungeon should have floor and wall tiles
-  EXPECT_TRUE(hasFloor);
-  EXPECT_TRUE(hasWall);
-  // Doors may or may not be generated depending on RNG
+  // At least some terrain types should be present in a 50x50 map
+  EXPECT_TRUE(hasGrass || hasTree || hasWater || hasDesert || hasMountain);
 }
 
 TEST(TerrainTest, PassableTerrainAllowsMovement) {

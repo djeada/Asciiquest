@@ -200,10 +200,332 @@ Map::transformToGrid(const std::vector<std::string> &maze, const Point &startPoi
     }
   }
 
-  // REMOVED: Water and grass features for clean dungeon theme
-  // Following roguelike conventions: pure floor/wall/door dungeon layout
-  // This reduces visual noise and maintains thematic consistency
-  // The dungeon now consists of: walls (#), floors (.), doors (+), and entities
+  std::vector<std::vector<bool>> protectedPath(
+      grid.size(), std::vector<bool>(grid[0].size(), false));
+  auto isWalkable = [&grid](const Point &p) {
+    CellType type = grid[p.y][p.x];
+    return type == CellType::FLOOR || type == CellType::DOOR ||
+           type == CellType::GRASS || type == CellType::TREE ||
+           type == CellType::DESERT;
+  };
+
+  if (isValidPoint(startPoint) && isValidPoint(endPoint) &&
+      isWalkable(startPoint) && isWalkable(endPoint)) {
+    std::queue<Point> frontier;
+    std::vector<std::vector<bool>> visited(
+        grid.size(), std::vector<bool>(grid[0].size(), false));
+    std::vector<std::vector<Point>> prev(
+        grid.size(), std::vector<Point>(grid[0].size(), {-1, -1}));
+    const std::array<Point, 8> directions = {
+        Point{1, 0},   Point{-1, 0},  Point{0, 1},  Point{0, -1},
+        Point{1, 1},   Point{-1, -1}, Point{1, -1}, Point{-1, 1}};
+
+    frontier.push(startPoint);
+    visited[startPoint.y][startPoint.x] = true;
+
+    bool found = false;
+    while (!frontier.empty()) {
+      Point current = frontier.front();
+      frontier.pop();
+      if (current.x == endPoint.x && current.y == endPoint.y) {
+        found = true;
+        break;
+      }
+      for (const auto &dir : directions) {
+        Point next{current.x + dir.x, current.y + dir.y};
+        if (!isValidPoint(next) || visited[next.y][next.x]) {
+          continue;
+        }
+        if (!isWalkable(next)) {
+          continue;
+        }
+        visited[next.y][next.x] = true;
+        prev[next.y][next.x] = current;
+        frontier.push(next);
+      }
+    }
+
+    if (found) {
+      Point step = endPoint;
+      protectedPath[step.y][step.x] = true;
+      while (!(step.x == startPoint.x && step.y == startPoint.y)) {
+        Point previous = prev[step.y][step.x];
+        if (!isValidPoint(previous)) {
+          break;
+        }
+        protectedPath[previous.y][previous.x] = true;
+        step = previous;
+      }
+      protectedPath[startPoint.y][startPoint.x] = true;
+    } else {
+      protectedPath[startPoint.y][startPoint.x] = true;
+      protectedPath[endPoint.y][endPoint.x] = true;
+    }
+  }
+
+  std::vector<Point> floorCandidates;
+  floorCandidates.reserve(grid.size() * grid[0].size());
+  auto isSeedEligible = [&](const Point &p) {
+    if (grid[p.y][p.x] != CellType::FLOOR) {
+      return false;
+    }
+    if (protectedPath[p.y][p.x]) {
+      return false;
+    }
+    int dxStart = std::abs(p.x - startPoint.x);
+    int dyStart = std::abs(p.y - startPoint.y);
+    int dxEnd = std::abs(p.x - endPoint.x);
+    int dyEnd = std::abs(p.y - endPoint.y);
+    return (dxStart > 2 || dyStart > 2) && (dxEnd > 2 || dyEnd > 2);
+  };
+
+  for (size_t y = 1; y + 1 < grid.size(); ++y) {
+    for (size_t x = 1; x + 1 < grid[y].size(); ++x) {
+      Point p{static_cast<int>(x), static_cast<int>(y)};
+      if (isSeedEligible(p)) {
+        floorCandidates.push_back(p);
+      }
+    }
+  }
+
+  auto canFillWater = [&](const Point &p) {
+    if (!isValidPoint(p)) {
+      return false;
+    }
+    if (grid[p.y][p.x] != CellType::FLOOR) {
+      return false;
+    }
+    return !protectedPath[p.y][p.x];
+  };
+
+  int area = static_cast<int>(grid.size() * grid[0].size());
+  int featureCount = std::max(1, area / 500);
+  featureCount = std::min(featureCount, 6);
+  std::uniform_int_distribution<int> riverChance(0, 99);
+  int lakeMin = std::max(6, area / 400);
+  int lakeMax = std::max(lakeMin + 6, area / 200);
+  lakeMax = std::min(lakeMax, 40);
+  std::uniform_int_distribution<int> lakeSizeDist(lakeMin, lakeMax);
+  std::uniform_int_distribution<int> riverLengthDist(12, 30);
+  std::uniform_int_distribution<int> dirDist(0, 3);
+
+  std::array<Point, 4> cardinalDirs = {
+      Point{1, 0}, Point{-1, 0}, Point{0, 1}, Point{0, -1}};
+
+  auto addLake = [&](const Point &seed) {
+    int targetSize = lakeSizeDist(rng);
+    std::vector<Point> frontier;
+    frontier.push_back(seed);
+    grid[seed.y][seed.x] = CellType::WATER;
+    int placed = 1;
+    while (placed < targetSize && !frontier.empty()) {
+      std::uniform_int_distribution<int> frontierDist(
+          0, static_cast<int>(frontier.size()) - 1);
+      int index = frontierDist(rng);
+      Point current = frontier[index];
+      bool expanded = false;
+      std::array<Point, 4> shuffled = cardinalDirs;
+      std::shuffle(shuffled.begin(), shuffled.end(), rng);
+      for (const auto &dir : shuffled) {
+        Point next{current.x + dir.x, current.y + dir.y};
+        if (!canFillWater(next)) {
+          continue;
+        }
+        grid[next.y][next.x] = CellType::WATER;
+        frontier.push_back(next);
+        placed++;
+        expanded = true;
+        if (placed >= targetSize) {
+          break;
+        }
+      }
+      if (!expanded) {
+        frontier.erase(frontier.begin() + index);
+      }
+    }
+  };
+
+  auto addRiver = [&](const Point &seed) {
+    int length = riverLengthDist(rng);
+    Point current = seed;
+    grid[current.y][current.x] = CellType::WATER;
+    int currentDir = dirDist(rng);
+    for (int step = 0; step < length; ++step) {
+      int attempts = 0;
+      bool moved = false;
+      int dirIndex = currentDir;
+      while (attempts < 4) {
+        Point next{current.x + cardinalDirs[dirIndex].x,
+                   current.y + cardinalDirs[dirIndex].y};
+        if (canFillWater(next)) {
+          grid[next.y][next.x] = CellType::WATER;
+          current = next;
+          moved = true;
+          break;
+        }
+        dirIndex = (dirIndex + 1) % 4;
+        attempts++;
+      }
+      if (!moved) {
+        break;
+      }
+      if (terrainDist(rng) >= 65) {
+        currentDir = dirDist(rng);
+      }
+    }
+  };
+
+  if (!floorCandidates.empty()) {
+    for (int featureIndex = 0; featureIndex < featureCount; ++featureIndex) {
+      if (floorCandidates.empty()) {
+        break;
+      }
+      Point seed;
+      int tries = 0;
+      bool foundSeed = false;
+      while (tries < 8 && !floorCandidates.empty()) {
+        std::uniform_int_distribution<int> seedIndexDist(
+            0, static_cast<int>(floorCandidates.size()) - 1);
+        int index = seedIndexDist(rng);
+        seed = floorCandidates[index];
+        if (canFillWater(seed)) {
+          foundSeed = true;
+          break;
+        }
+        floorCandidates.erase(floorCandidates.begin() + index);
+        tries++;
+      }
+      if (!foundSeed) {
+        break;
+      }
+      if (riverChance(rng) < 35) {
+        addRiver(seed);
+      } else {
+        addLake(seed);
+      }
+    }
+  }
+
+  auto hasPath = [&]() {
+    if (!isValidPoint(startPoint) || !isValidPoint(endPoint)) {
+      return false;
+    }
+    if (!isWalkable(startPoint) || !isWalkable(endPoint)) {
+      return false;
+    }
+    std::queue<Point> frontier;
+    std::vector<std::vector<bool>> visited(
+        grid.size(), std::vector<bool>(grid[0].size(), false));
+    frontier.push(startPoint);
+    visited[startPoint.y][startPoint.x] = true;
+    const std::array<Point, 8> directions = {
+        Point{1, 0},   Point{-1, 0},  Point{0, 1},  Point{0, -1},
+        Point{1, 1},   Point{-1, -1}, Point{1, -1}, Point{-1, 1}};
+    while (!frontier.empty()) {
+      Point current = frontier.front();
+      frontier.pop();
+      if (current.x == endPoint.x && current.y == endPoint.y) {
+        return true;
+      }
+      for (const auto &dir : directions) {
+        Point next{current.x + dir.x, current.y + dir.y};
+        if (!isValidPoint(next) || visited[next.y][next.x]) {
+          continue;
+        }
+        if (!isWalkable(next)) {
+          continue;
+        }
+        visited[next.y][next.x] = true;
+        frontier.push(next);
+      }
+    }
+    return false;
+  };
+
+  if (!hasPath()) {
+    for (auto &row : grid) {
+      for (auto &cell : row) {
+        if (cell == CellType::WATER) {
+          cell = CellType::FLOOR;
+        }
+      }
+    }
+  }
+
+  std::vector<Point> grassCandidates;
+  grassCandidates.reserve(grid.size() * grid[0].size());
+  for (size_t y = 1; y + 1 < grid.size(); ++y) {
+    for (size_t x = 1; x + 1 < grid[y].size(); ++x) {
+      if (grid[y][x] == CellType::FLOOR) {
+        grassCandidates.emplace_back(static_cast<int>(x),
+                                     static_cast<int>(y));
+      }
+    }
+  }
+
+  int grassFeatureCount = std::max(1, area / 450);
+  grassFeatureCount = std::min(grassFeatureCount, 8);
+  int grassMin = std::max(5, area / 450);
+  int grassMax = std::max(grassMin + 5, area / 260);
+  grassMax = std::min(grassMax, 55);
+  std::uniform_int_distribution<int> grassSizeDist(grassMin, grassMax);
+
+  auto canFillGrass = [&](const Point &p) {
+    if (!isValidPoint(p)) {
+      return false;
+    }
+    return grid[p.y][p.x] == CellType::FLOOR;
+  };
+
+  auto addGrassPatch = [&](const Point &seed) {
+    int targetSize = grassSizeDist(rng);
+    std::vector<Point> frontier;
+    frontier.push_back(seed);
+    grid[seed.y][seed.x] = CellType::GRASS;
+    int placed = 1;
+    while (placed < targetSize && !frontier.empty()) {
+      std::uniform_int_distribution<int> frontierDist(
+          0, static_cast<int>(frontier.size()) - 1);
+      int index = frontierDist(rng);
+      Point current = frontier[index];
+      bool expanded = false;
+      std::array<Point, 4> shuffled = cardinalDirs;
+      std::shuffle(shuffled.begin(), shuffled.end(), rng);
+      for (const auto &dir : shuffled) {
+        Point next{current.x + dir.x, current.y + dir.y};
+        if (!canFillGrass(next)) {
+          continue;
+        }
+        grid[next.y][next.x] = CellType::GRASS;
+        frontier.push_back(next);
+        placed++;
+        expanded = true;
+        if (placed >= targetSize) {
+          break;
+        }
+      }
+      if (!expanded) {
+        frontier.erase(frontier.begin() + index);
+      }
+    }
+  };
+
+  if (!grassCandidates.empty()) {
+    for (int featureIndex = 0; featureIndex < grassFeatureCount;
+         ++featureIndex) {
+      if (grassCandidates.empty()) {
+        break;
+      }
+      std::uniform_int_distribution<int> seedIndexDist(
+          0, static_cast<int>(grassCandidates.size()) - 1);
+      int index = seedIndexDist(rng);
+      Point seed = grassCandidates[index];
+      if (canFillGrass(seed)) {
+        addGrassPatch(seed);
+      }
+      grassCandidates.erase(grassCandidates.begin() + index);
+    }
+  }
 
   return grid;
 }
