@@ -52,7 +52,7 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::GRASS, {'&', ColorPair::GRASS}},
     {CellType::TREE, {'"', ColorPair::TREE}},
     {CellType::WATER, {'~', ColorPair::WATER}},
-    {CellType::DESERT, {'*', ColorPair::DESERT}},
+    {CellType::DESERT, {'.', ColorPair::DESERT}},
 };
 
 GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
