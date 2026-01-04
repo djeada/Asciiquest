@@ -21,7 +21,10 @@ enum class ColorPair {
   ICE_PROJECTILE,
   LIGHTNING_PROJECTILE,
   HEAL_EFFECT,
-  SHIELD_EFFECT
+  SHIELD_EFFECT,
+  BOULDER,
+  CRATE,
+  BARREL
 };
 extern std::unordered_map<CellType, std::pair<char, ColorPair>>
     cellTypeToCharColor;

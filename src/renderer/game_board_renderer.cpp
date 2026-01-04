@@ -45,6 +45,9 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::LIGHTNING_PROJECTILE, {'-', ColorPair::LIGHTNING_PROJECTILE}},
     {CellType::HEAL_EFFECT, {'+', ColorPair::HEAL_EFFECT}},
     {CellType::SHIELD_EFFECT, {'#', ColorPair::SHIELD_EFFECT}},
+    {CellType::BOULDER, {'O', ColorPair::BOULDER}},
+    {CellType::CRATE, {'=', ColorPair::CRATE}},
+    {CellType::BARREL, {'%', ColorPair::BARREL}},
 };
 
 GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
@@ -69,6 +72,9 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
       {ColorPair::LIGHTNING_PROJECTILE, {COLOR_YELLOW, COLOR_BLACK}},
       {ColorPair::HEAL_EFFECT, {COLOR_GREEN, COLOR_BLACK}},
       {ColorPair::SHIELD_EFFECT, {COLOR_BLUE, COLOR_BLACK}},
+      {ColorPair::BOULDER, {COLOR_WHITE, COLOR_BLACK}},
+      {ColorPair::CRATE, {COLOR_YELLOW, COLOR_BLACK}},
+      {ColorPair::BARREL, {COLOR_MAGENTA, COLOR_BLACK}},
   };
 
   // Initialize color pairs

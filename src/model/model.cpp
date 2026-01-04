@@ -110,6 +110,34 @@ void Model::loadMap() {
 
   map->setCellType(map->getEnd(), CellType::END);
 
+  // Spawn movable objects
+  movableObjects.clear();
+  int objectsPerType = 2 + (currentLevel / 2); // More objects at higher levels
+  
+  // Add boulders
+  for (int i = 0; i < objectsPerType; ++i) {
+    auto position = map->randomFreePosition();
+    auto boulder = std::make_shared<Boulder>(position);
+    movableObjects.emplace(position, boulder);
+    map->setCellType(position, CellType::BOULDER);
+  }
+  
+  // Add crates
+  for (int i = 0; i < objectsPerType; ++i) {
+    auto position = map->randomFreePosition();
+    auto crate = std::make_shared<Crate>(position);
+    movableObjects.emplace(position, crate);
+    map->setCellType(position, CellType::CRATE);
+  }
+  
+  // Add barrels
+  for (int i = 0; i < objectsPerType; ++i) {
+    auto position = map->randomFreePosition();
+    auto barrel = std::make_shared<Barrel>(position);
+    movableObjects.emplace(position, barrel);
+    map->setCellType(position, CellType::BARREL);
+  }
+
   // Show level info
   info->addMessage("=== DUNGEON LEVEL " + std::to_string(currentLevel) + " ===");
   info->addMessage("Monsters: " + std::to_string(monsters.size()) +
@@ -394,7 +422,9 @@ void Model::attemptPlayerMove(const std::shared_ptr<Player> &player,
   // Track player's facing direction for spell casting
   player->setLastDirection(direction);
 
-  if (isWall(newPos) || isMonster(newPos)) {
+  if (isWall(newPos)) {
+    return;
+  } else if (isMonster(newPos)) {
     for (const auto &monster : monsters) {
       if (monster->position == newPos) {
         fight(monster);
@@ -402,6 +432,13 @@ void Model::attemptPlayerMove(const std::shared_ptr<Player> &player,
                        monsters.end());
         break;
       }
+    }
+    return;
+  } else if (isMovableObject(newPos)) {
+    // Try to push the object
+    if (tryPushObject(newPos, direction)) {
+      // If push successful, move player to the object's old position
+      updateEntityPosition(player, currentPos, newPos);
     }
     return;
   } else if (isTreasure(newPos)) {
@@ -487,4 +524,39 @@ bool Model::isMonster(const Point &point) {
          cell == CellType::TROLL ||
          cell == CellType::DRAGON ||
          cell == CellType::SKELETON;
+}
+
+bool Model::isMovableObject(const Point &point) {
+  CellType cell = map->getCellType(point);
+  return cell == CellType::BOULDER ||
+         cell == CellType::CRATE ||
+         cell == CellType::BARREL;
+}
+
+bool Model::tryPushObject(const Point &objectPos, const Point &direction) {
+  // Check if there's actually a movable object at this position
+  if (!isMovableObject(objectPos) || movableObjects.find(objectPos) == movableObjects.end()) {
+    return false;
+  }
+  
+  auto object = movableObjects[objectPos];
+  Point newPos = objectPos + direction;
+  
+  // Check if the new position is free
+  if (!map->isPositionFree(newPos) || isMonster(newPos) || 
+      isPlayer(newPos) || isMovableObject(newPos) || isTreasure(newPos)) {
+    return false;
+  }
+  
+  // Move the object
+  map->setCellType(objectPos, CellType::EMPTY);
+  map->setCellType(newPos, object->cellType);
+  object->move(newPos);
+  
+  // Update the map
+  movableObjects.erase(objectPos);
+  movableObjects[newPos] = object;
+  
+  info->addMessage("Pushed " + object->toString() + "!");
+  return true;
 }
