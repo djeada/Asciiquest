@@ -92,7 +92,7 @@ Point Orc::getVelocity() {
         }
         pathCalculating = false;
       } catch (const std::system_error &e) {
-        std::cerr << "Error occurred: " << e.what() << '\n';
+        std::cerr << "Orc pathfinding error: " << e.what() << '\n';
         pathCalculating = false;
       }
     }
@@ -112,6 +112,8 @@ std::string Orc::toString() const { return "Orc"; }
 void Orc::randomizeVelocity() {
   // Don't start a new pathfinding if one is already in progress
   if (pathCalculating) {
+    // Use random movement as fallback while pathfinding is in progress
+    Monster::randomizeVelocity();
     return;
   }
   
@@ -124,9 +126,11 @@ void Orc::randomizeVelocity() {
   };
 
   // Start pathfinding asynchronously without blocking
+  // Capture necessary values by copy to avoid race conditions
   pathCalculating = true;
-  pathFuture = std::async(std::launch::async, [this, isNavigable, playerPosition = player->position]() {
-    AStar<CellType> aStar(map->grid, position, playerPosition, isNavigable);
+  pathFuture = std::async(std::launch::async, 
+    [map = this->map, currentPosition = this->position, isNavigable, playerPosition = player->position]() {
+    AStar<CellType> aStar(map->grid, currentPosition, playerPosition, isNavigable);
     return aStar.getPath();
   });
 }
