@@ -1,5 +1,5 @@
-#ifndef _GLOBAL_CONFIG_H
-#define _GLOBAL_CONFIG_H
+#ifndef GLOBAL_CONFIG_H
+#define GLOBAL_CONFIG_H
 
 #include <fstream>
 #include <iostream>
@@ -89,6 +89,7 @@ private:
                                                   "StartSymbol=S",
                                                   "EndSymbol=❎",
                                                   "TreasureSymbol=*",
+                                                  "TreasureCount=20",
                                                   "BonusValue=50",
                                                   "BonusExpirationCounter=100"};
 
@@ -108,4 +109,4 @@ private:
   void operator=(GlobalConfig const &) = delete;
 };
 
-#endif
+#endif // GLOBAL_CONFIG_H

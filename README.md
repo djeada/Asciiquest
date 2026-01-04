@@ -34,7 +34,7 @@ To build and run Mysterious Dungeon, follow these steps:
 1. Navigate to the build directory: `cd build`
 1. Run CMake: `cmake ..`
 1. Build the game: `make`
-1. Run the game: `./exe`
+1. Run the game: `./bin/main`
 
 ## How to play
 

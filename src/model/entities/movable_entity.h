@@ -12,18 +12,18 @@ public:
   explicit MovableEntity(CellType cellType = CellType::EMPTY, int health = 100,
                          int strength = 10, const Point &position = Point(0, 0),
                          const Point &velocity = Point(0, 0));
-  virtual ~MovableEntity();
+  ~MovableEntity() override;
 
   // Other member functions
 
   bool isAlive() const;
   void takeDamage(int damage);
   virtual Point getVelocity();
-  virtual void move(const Point &destination);
+  void move(const Point &destination) override;
 
   // data
   int health;
   int strength;
 };
 
-#endif
+#endif // MOVABLE_ENTITY_H

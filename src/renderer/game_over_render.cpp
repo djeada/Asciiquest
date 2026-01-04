@@ -29,6 +29,6 @@ void GameOverRenderer::drawGameOver() {
 
   // Use bold and red color for "Game Over"
   attron(A_BOLD | COLOR_PAIR(static_cast<int>(ColorPair::PLAYER)));
-  mvprintw(yPos, xPos, gameOver.c_str());
+  mvprintw(yPos, xPos, "%s", gameOver.c_str());
   attroff(A_BOLD | COLOR_PAIR(static_cast<int>(ColorPair::PLAYER)));
 }

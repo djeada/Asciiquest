@@ -9,7 +9,7 @@ private:
 
 public:
   Player();
-  ~Player();
+  ~Player() override;
 
   void addExperience(int _exp);
   void heal(int _health);
@@ -20,11 +20,10 @@ public:
   int expToNextLevel() const;
 
   std::string toString() const override;
-  // void exploreTreasure(const Treasure &treasure);
 
   // data
   int level;
   int exp;
 };
 
-#endif
+#endif // PLAYER_H

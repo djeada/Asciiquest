@@ -54,9 +54,9 @@ void Model::loadMap() {
     map->setCellType(position, monster->cellType);
   }
 
-  auto treasuerCount =
+  auto treasureCount =
       GlobalConfig::getInstance().getConfig<int>("TreasureCount");
-  for (int i = 0; i < treasuerCount; ++i) {
+  for (int i = 0; i < treasureCount; ++i) {
     auto treasurePtr = std::make_shared<Treasure>();
     auto position = map->randomFreePosition();
     treasurePtr->move(position);
