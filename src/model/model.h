@@ -2,6 +2,7 @@
 #define MODEL_H
 
 #include "entities/monster.h"
+#include "entities/movable_object.h"
 #include "entities/player.h"
 #include "entities/treasure.h"
 #include "map.h"
@@ -31,6 +32,7 @@ public:
   std::shared_ptr<Map> map;
   std::vector<std::shared_ptr<Monster>> monsters;
   std::unordered_map<Point, std::shared_ptr<Treasure>> treasures;
+  std::unordered_map<Point, std::shared_ptr<MovableObject>> movableObjects;
   std::vector<std::shared_ptr<SpellEffect>> activeSpellEffects;
 
   // Game progression
@@ -59,6 +61,8 @@ private:
   bool isExit(const Point &point);
   bool isMonster(const Point &point);
   bool isTreasure(const Point &point);
+  bool isMovableObject(const Point &point);
+  bool tryPushObject(const Point &objectPos, const Point &direction);
   std::atomic_bool running;
   std::queue<Point> playerMoves;
   std::chrono::steady_clock::time_point lastUpdate;
