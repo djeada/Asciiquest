@@ -38,6 +38,7 @@ public:
   ~GameBoardRenderer() override;
 
   void draw() override;
+  void drawContent(); // Draw content without finalizing (for composite renderers)
   void drawBoard();
   void drawMessageDisplay();
   void drawStats();

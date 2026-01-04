@@ -88,11 +88,15 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
 GameBoardRenderer::~GameBoardRenderer() {}
 
 void GameBoardRenderer::draw() {
+  drawContent();
+  doupdate(); // Apply all changes at once for double buffering
+}
+
+void GameBoardRenderer::drawContent() {
   drawBoard();
   drawMessageDisplay();
   drawStats();
   wnoutrefresh(stdscr); // Update virtual screen
-  doupdate(); // Apply all changes at once for double buffering
 }
 
 void GameBoardRenderer::drawBoard() {
