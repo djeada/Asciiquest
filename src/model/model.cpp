@@ -13,7 +13,9 @@ Model::Model()
 
 int Model::getDifficultyMultiplier() const {
   // Difficulty increases by 10% per level
-  return static_cast<int>(100 * std::pow(1.1, currentLevel - 1));
+  // Ensure minimum level of 1 to avoid weaker monsters
+  int level = std::max(1, currentLevel);
+  return static_cast<int>(100 * std::pow(1.1, level - 1));
 }
 
 void Model::spawnMonsters() {
