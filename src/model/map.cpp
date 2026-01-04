@@ -20,8 +20,13 @@ void Map::loadLevel() {
 }
 
 void Map::clear() {
-  for (auto &row : grid) {
-    std::fill(row.begin(), row.end(), CellType::EMPTY);
+  // Initialize grid if it's empty
+  if (grid.empty() || grid[0].empty()) {
+    grid = std::vector<std::vector<CellType>>(height, std::vector<CellType>(width, CellType::EMPTY));
+  } else {
+    for (auto &row : grid) {
+      std::fill(row.begin(), row.end(), CellType::EMPTY);
+    }
   }
 }
 
