@@ -12,18 +12,7 @@ int MovableObject::getWeight() const { return weight; }
 
 void MovableObject::move(const Point &destination) { position = destination; }
 
-std::string MovableObject::toString() const {
-  switch (cellType) {
-  case CellType::BOULDER:
-    return "Boulder";
-  case CellType::CRATE:
-    return "Crate";
-  case CellType::BARREL:
-    return "Barrel";
-  default:
-    return "Movable Object";
-  }
-}
+std::string MovableObject::toString() const { return "Movable Object"; }
 
 Boulder::Boulder(const Point &_position)
     : MovableObject(CellType::BOULDER, _position, true, 3) {}

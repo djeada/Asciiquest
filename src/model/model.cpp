@@ -116,27 +116,24 @@ void Model::loadMap() {
   
   // Add boulders
   for (int i = 0; i < objectsPerType; ++i) {
-    auto boulder = std::make_shared<Boulder>();
     auto position = map->randomFreePosition();
-    boulder->move(position);
+    auto boulder = std::make_shared<Boulder>(position);
     movableObjects.emplace(position, boulder);
     map->setCellType(position, CellType::BOULDER);
   }
   
   // Add crates
   for (int i = 0; i < objectsPerType; ++i) {
-    auto crate = std::make_shared<Crate>();
     auto position = map->randomFreePosition();
-    crate->move(position);
+    auto crate = std::make_shared<Crate>(position);
     movableObjects.emplace(position, crate);
     map->setCellType(position, CellType::CRATE);
   }
   
   // Add barrels
   for (int i = 0; i < objectsPerType; ++i) {
-    auto barrel = std::make_shared<Barrel>();
     auto position = map->randomFreePosition();
-    barrel->move(position);
+    auto barrel = std::make_shared<Barrel>(position);
     movableObjects.emplace(position, barrel);
     map->setCellType(position, CellType::BARREL);
   }
