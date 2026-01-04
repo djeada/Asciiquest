@@ -5,6 +5,7 @@
 #include "entities/player.h"
 #include "entities/treasure.h"
 #include "map.h"
+#include "spell/spell_effect.h"
 #include "utils/direction.h"
 #include "utils/info_deque.h"
 #include <atomic>
@@ -20,6 +21,7 @@ public:
   void update();
 
   void queuePlayerMove(const Point &point);
+  void castPlayerSpell(int spellIndex, const Point &direction);
   void restart();
   bool isGameOver();
   std::unordered_map<std::string, std::string> getPlayerStats();
@@ -29,6 +31,7 @@ public:
   std::shared_ptr<Map> map;
   std::vector<std::shared_ptr<Monster>> monsters;
   std::unordered_map<Point, std::shared_ptr<Treasure>> treasures;
+  std::vector<std::shared_ptr<SpellEffect>> activeSpellEffects;
 
   // Game progression
   int currentLevel;
@@ -41,6 +44,9 @@ private:
   void exploreTreasure(const std::shared_ptr<Treasure> &treasure);
   void spawnMonsters();
   int getDifficultyMultiplier() const;
+  
+  void updateSpellEffects();
+  void checkSpellCollisions(const std::shared_ptr<SpellEffect> &effect);
 
   void attemptPlayerMove(const std::shared_ptr<Player> &player,
                          const Point &direction);

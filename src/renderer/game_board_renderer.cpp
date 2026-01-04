@@ -1,4 +1,5 @@
 #include "game_board_renderer.h"
+#include "model/spell/spell_effect.h"
 #include "utils/global_config.h"
 #include <ncurses.h>
 
@@ -39,6 +40,11 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::POTION,
      {GlobalConfig::getInstance().getConfig<char>("PotionSymbol"),
       ColorPair::POTION}},
+    {CellType::FIRE_PROJECTILE, {'*', ColorPair::FIRE_PROJECTILE}},
+    {CellType::ICE_PROJECTILE, {'|', ColorPair::ICE_PROJECTILE}},
+    {CellType::LIGHTNING_PROJECTILE, {'-', ColorPair::LIGHTNING_PROJECTILE}},
+    {CellType::HEAL_EFFECT, {'+', ColorPair::HEAL_EFFECT}},
+    {CellType::SHIELD_EFFECT, {'#', ColorPair::SHIELD_EFFECT}},
 };
 
 GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
@@ -58,6 +64,11 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
       {ColorPair::END, {COLOR_RED, COLOR_WHITE}},
       {ColorPair::TREASURE, {COLOR_CYAN, COLOR_BLACK}},
       {ColorPair::POTION, {COLOR_GREEN, COLOR_BLACK}},
+      {ColorPair::FIRE_PROJECTILE, {COLOR_RED, COLOR_BLACK}},
+      {ColorPair::ICE_PROJECTILE, {COLOR_CYAN, COLOR_BLACK}},
+      {ColorPair::LIGHTNING_PROJECTILE, {COLOR_YELLOW, COLOR_BLACK}},
+      {ColorPair::HEAL_EFFECT, {COLOR_GREEN, COLOR_BLACK}},
+      {ColorPair::SHIELD_EFFECT, {COLOR_BLUE, COLOR_BLACK}},
   };
 
   // Initialize color pairs
@@ -130,6 +141,27 @@ void GameBoardRenderer::drawBoard() {
       attron(COLOR_PAIR(static_cast<int>(color)));
       mvaddch(y, x, ch);
       attroff(COLOR_PAIR(static_cast<int>(color)));
+    }
+  }
+  
+  // Render spell effects on top of the board
+  if (data.spellEffects != nullptr) {
+    for (const auto &effect : *data.spellEffects) {
+      auto frames = effect->getCurrentFrames();
+      for (const auto &frame : frames) {
+        // Check if the frame is within the visible area
+        int screenX = frame.position.x - viewLeft;
+        int screenY = frame.position.y - viewTop;
+        
+        if (screenX >= 0 && screenX < boardWidth && 
+            screenY >= 0 && screenY < boardHeight) {
+          
+          const auto &[ch, color] = cellTypeToCharColor[frame.cellType];
+          attron(COLOR_PAIR(static_cast<int>(color)));
+          mvaddch(screenY, screenX, ch);
+          attroff(COLOR_PAIR(static_cast<int>(color)));
+        }
+      }
     }
   }
 }

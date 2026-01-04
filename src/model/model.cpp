@@ -130,6 +130,9 @@ void Model::update() {
     playerMoves.pop();
     attemptPlayerMove(player, offset);
   }
+  
+  // Update spell effects
+  updateSpellEffects();
 
   if (elapsed.count() < monsterUpdateSpeed) {
     return;
@@ -293,10 +296,103 @@ void Model::exploreTreasure(const std::shared_ptr<Treasure> &treasure) {
 
 void Model::queuePlayerMove(const Point &point) { playerMoves.push(point); }
 
+void Model::castPlayerSpell(int spellIndex, const Point &direction) {
+  if (!player || !player->isAlive()) {
+    return;
+  }
+  
+  if (player->castSpell(spellIndex)) {
+    auto spell = player->getSpell(spellIndex);
+    if (spell) {
+      auto effect = std::make_shared<SpellEffect>(spell, player->position, direction);
+      activeSpellEffects.push_back(effect);
+      info->addMessage("Cast " + spell->getName() + "!");
+    }
+  } else {
+    info->addMessage("Not enough mana!");
+  }
+}
+
+void Model::updateSpellEffects() {
+  // Update all active spell effects
+  for (auto &effect : activeSpellEffects) {
+    effect->update();
+    
+    // Check for collisions during traveling state
+    if (effect->getState() == EffectState::TRAVELING ||
+        effect->getState() == EffectState::IMPACT ||
+        effect->getState() == EffectState::EXPANDING) {
+      checkSpellCollisions(effect);
+    }
+  }
+  
+  // Remove completed effects
+  activeSpellEffects.erase(
+    std::remove_if(activeSpellEffects.begin(), activeSpellEffects.end(),
+                   [](const std::shared_ptr<SpellEffect> &effect) {
+                     return effect->isComplete();
+                   }),
+    activeSpellEffects.end());
+}
+
+void Model::checkSpellCollisions(const std::shared_ptr<SpellEffect> &effect) {
+  auto frames = effect->getCurrentFrames();
+  auto spell = effect->getSpell();
+  
+  // Handle healing and shield spells (self-cast)
+  if (spell->getType() == SpellType::HEAL) {
+    player->heal(spell->getDamage());
+    info->addMessage("Healed for " + std::to_string(spell->getDamage()) + " HP!");
+    return;
+  }
+  
+  if (spell->getType() == SpellType::SHIELD) {
+    // Shield effect could be implemented as temporary damage reduction
+    info->addMessage("Shield activated!");
+    return;
+  }
+  
+  // Check for collisions with monsters
+  for (const auto &frame : frames) {
+    Point pos = frame.position;
+    
+    // Check if spell hits a wall
+    if (isWall(pos)) {
+      // Spell stops at wall
+      continue;
+    }
+    
+    // Check if spell hits a monster
+    for (auto &monster : monsters) {
+      if (monster->position == pos && monster->isAlive()) {
+        int damage = effect->getDamage();
+        monster->takeDamage(damage);
+        
+        info->addMessage(spell->getName() + " hits " + monster->toString() + 
+                        " for " + std::to_string(damage) + " damage!");
+        
+        if (!monster->isAlive()) {
+          monstersKilled++;
+          int expGain = monsterExpMap[monster->cellType];
+          int scoreGain = expGain * currentLevel;
+          totalScore += scoreGain;
+          player->addExperience(expGain);
+          info->addMessage("Defeated " + monster->toString() + "! +" + 
+                          std::to_string(expGain) + " EXP");
+          map->setCellType(monster->position, CellType::EMPTY);
+        }
+      }
+    }
+  }
+}
+
 void Model::attemptPlayerMove(const std::shared_ptr<Player> &player,
                               const Point &direction) {
   auto currentPos = player->position;
   auto newPos = currentPos + direction;
+  
+  // Track player's facing direction for spell casting
+  player->setLastDirection(direction);
 
   if (isWall(newPos) || isMonster(newPos)) {
     for (const auto &monster : monsters) {
@@ -351,6 +447,8 @@ std::unordered_map<std::string, std::string> Model::getPlayerStats() {
   result["Level"] = std::to_string(player->level);
   result["Health"] = std::to_string(player->health);
   result["MaxHealth"] = std::to_string(player->getMaxHealth());
+  result["Mana"] = std::to_string(player->getMana());
+  result["MaxMana"] = std::to_string(player->getMaxMana());
   result["Experience"] = std::to_string(player->exp);
   result["MaxExp"] = std::to_string(player->expToNextLevel());
   result["Strength"] = std::to_string(player->strength);

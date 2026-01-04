@@ -16,7 +16,12 @@ enum class GameplayControls {
   ENTER = '\n', // or '\r' depending on the system
   SPACE = '\0',
   INC_MSG_INDEX = 'k',
-  DEC_MSG_INDEX = 'i'
+  DEC_MSG_INDEX = 'i',
+  SPELL_1 = '1',
+  SPELL_2 = '2',
+  SPELL_3 = '3',
+  SPELL_4 = '4',
+  SPELL_5 = '5'
 };
 
 enum class MainMenuOptions { START_GAME = '1', OPTIONS = '2', QUIT = '3' };
@@ -67,7 +72,7 @@ void GameplayStateHandler::handleState(Controller &controller) {
   auto stat = model.getPlayerStats();
   renderer.setState(GameState::GAMEPLAY);
   renderer.draw(
-      RendererData(model.map->grid, *model.info, stat, model.player->position));
+      RendererData(model.map->grid, *model.info, stat, model.player->position, &model.activeSpellEffects));
 
   if (model.isGameOver()) {
     controller.setState(GameState::GAME_OVER);
@@ -109,6 +114,21 @@ void GameplayStateHandler::handleInput(Controller &controller, int ch) {
     break;
   case GameplayControls::DEC_MSG_INDEX:
     model.info->decreaseStartIndex();
+    break;
+  case GameplayControls::SPELL_1:
+    model.castPlayerSpell(0, model.player->getLastDirection());
+    break;
+  case GameplayControls::SPELL_2:
+    model.castPlayerSpell(1, model.player->getLastDirection());
+    break;
+  case GameplayControls::SPELL_3:
+    model.castPlayerSpell(2, model.player->getLastDirection());
+    break;
+  case GameplayControls::SPELL_4:
+    model.castPlayerSpell(3, model.player->getLastDirection());
+    break;
+  case GameplayControls::SPELL_5:
+    model.castPlayerSpell(4, model.player->getLastDirection());
     break;
   default:
     break;
