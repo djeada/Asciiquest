@@ -37,8 +37,9 @@ bool Map::isPositionFree(const Point &point) const {
   }
   
   CellType type = getCellType(point);
-  // Allow movement through empty spaces, grass, trees, and desert
-  return type == CellType::EMPTY || type == CellType::GRASS || 
+  // Allow movement through floor, doors, empty spaces, grass, trees, and desert
+  return type == CellType::EMPTY || type == CellType::FLOOR ||
+         type == CellType::DOOR || type == CellType::GRASS || 
          type == CellType::TREE || type == CellType::DESERT;
 }
 
@@ -126,33 +127,51 @@ Map::transformToGrid(const std::vector<std::string> &maze) const {
                         colIndex == row.size() - 1;
         int carveRoll = terrainDist(rng);
         if (!isBorder && carveRoll < wallCarveChance) {
-          gridRow.push_back(CellType::EMPTY);
+          // Carved walls become floor
+          gridRow.push_back(CellType::FLOOR);
         } else {
-          // For walls, randomly place mountains or keep as walls
-          int chance = terrainDist(rng);
-          if (chance < 25) {
-            gridRow.push_back(CellType::MOUNTAIN);
-          } else {
-            gridRow.push_back(CellType::WALL);
-          }
+          // Keep walls consistent - no random mountains
+          gridRow.push_back(CellType::WALL);
         }
       } else {
-        // For empty spaces, randomly place various terrain types
+        // Empty spaces become floor tiles (clean dungeon look)
+        // Only add minimal decoration (5% chance)
         int chance = terrainDist(rng);
-        if (chance < 15) {
-          gridRow.push_back(CellType::GRASS);
-        } else if (chance < 25) {
-          gridRow.push_back(CellType::TREE);
-        } else if (chance < 35) {
+        if (chance < 3) {
+          // Rare water pools
           gridRow.push_back(CellType::WATER);
-        } else if (chance < 40) {
-          gridRow.push_back(CellType::DESERT);
+        } else if (chance < 5) {
+          // Rare grass patches
+          gridRow.push_back(CellType::GRASS);
         } else {
-          gridRow.push_back(CellType::EMPTY);
+          // Standard floor tile (95% of walkable area)
+          gridRow.push_back(CellType::FLOOR);
         }
       }
     }
     grid.push_back(gridRow);
+  }
+
+  // Post-process: Add doors at corridor entrances (where floor meets wall opening)
+  for (size_t y = 1; y < grid.size() - 1; ++y) {
+    for (size_t x = 1; x < grid[y].size() - 1; ++x) {
+      if (grid[y][x] != CellType::FLOOR) continue;
+      
+      // Check if this is a doorway (narrow passage between walls)
+      bool isVerticalDoor = 
+          grid[y][x-1] == CellType::WALL && grid[y][x+1] == CellType::WALL &&
+          (grid[y-1][x] == CellType::FLOOR || grid[y+1][x] == CellType::FLOOR);
+      bool isHorizontalDoor = 
+          grid[y-1][x] == CellType::WALL && grid[y+1][x] == CellType::WALL &&
+          (grid[y][x-1] == CellType::FLOOR || grid[y][x+1] == CellType::FLOOR);
+      
+      if (isVerticalDoor || isHorizontalDoor) {
+        // Only place door with 30% chance to avoid too many doors
+        if (terrainDist(rng) < 30) {
+          grid[y][x] = CellType::DOOR;
+        }
+      }
+    }
   }
 
   int totalCells = static_cast<int>(maze.size() * maze[0].size());
@@ -164,7 +183,7 @@ Map::transformToGrid(const std::vector<std::string> &maze) const {
   for (size_t y = 0; y < grid.size(); ++y) {
     for (size_t x = 0; x < grid[y].size(); ++x) {
       CellType type = grid[y][x];
-      if (type == CellType::WALL || type == CellType::MOUNTAIN) {
+      if (type == CellType::WALL) {
         wallCells++;
         bool isBorder = y == 0 || x == 0 || y == grid.size() - 1 ||
                         x == grid[y].size() - 1;
@@ -184,7 +203,7 @@ Map::transformToGrid(const std::vector<std::string> &maze) const {
       if (carved >= toCarve) {
         break;
       }
-      grid[pos.y][pos.x] = CellType::EMPTY;
+      grid[pos.y][pos.x] = CellType::FLOOR;
       carved++;
     }
   }

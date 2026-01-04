@@ -52,6 +52,28 @@ The game is controlled using the keyboard:
 - **Pause**: Press P to pause the game.
 - **Quit**: Press Q or ESC to quit the game.
 
+### Tile Legend
+
+| Symbol | Description | Color |
+|--------|-------------|-------|
+| `@` | Player (you!) | White (bold/reverse) |
+| `.` | Floor | White |
+| `#` | Wall | White |
+| `+` | Door | Yellow (bold) |
+| `>` | Stairs/Exit | Cyan (bold) |
+| `$` | Treasure | Yellow (bold) |
+| `!` | Potion | Cyan (bold) |
+| `g` | Goblin | Red (bold) |
+| `o` | Orc | Red (bold) |
+| `T` | Troll | Magenta (bold) |
+| `D` | Dragon | Red (bold) |
+| `s` | Skeleton | Magenta (bold) |
+| `,` | Grass | Green |
+| `~` | Water | Blue |
+| `^` | Spike Trap | Magenta |
+| `/` | Blade Trap | Red |
+| `<` | Arrow Trap | Red |
+
 Encounter enemies and items as you explore the dungeon. The goal is to find the exit and advance to the next level. Manage your mana wisely and use spells strategically to defeat powerful enemies! Spells are cast in the direction you last moved, allowing for tactical positioning.
 
 ## Game design
