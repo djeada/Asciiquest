@@ -12,7 +12,9 @@ enum class ColorPair {
   ORC,
   DRAGON,
   TROLL,
+  SKELETON,
   TREASURE,
+  POTION,
   START,
   END
 };

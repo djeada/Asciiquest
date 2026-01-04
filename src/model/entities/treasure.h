@@ -1,5 +1,5 @@
-#ifndef _TREASURE_H
-#define _TREASURE_H
+#ifndef TREASURE_H
+#define TREASURE_H
 
 #include "entity.h"
 #include "utils/global_config.h"
@@ -30,4 +30,4 @@ public:
   std::string toString() const override;
 };
 
-#endif
+#endif // TREASURE_H

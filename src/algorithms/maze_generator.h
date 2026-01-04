@@ -1,5 +1,5 @@
-#ifndef _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_MAZE_GENERATOR_H
-#define _HOME_ADAM_MYSTERIOUS_DUNGEON_SRC_MAZE_GENERATOR_H
+#ifndef MAZE_GENERATOR_H
+#define MAZE_GENERATOR_H
 
 #include <algorithm>
 #include <iostream>
@@ -56,4 +56,4 @@ public:
   std::pair<unsigned int, unsigned int> getStart();
   std::pair<unsigned int, unsigned int> getEnd();
 };
-#endif
+#endif // MAZE_GENERATOR_H

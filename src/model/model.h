@@ -30,10 +30,17 @@ public:
   std::vector<std::shared_ptr<Monster>> monsters;
   std::unordered_map<Point, std::shared_ptr<Treasure>> treasures;
 
+  // Game progression
+  int currentLevel;
+  int monstersKilled;
+  int totalScore;
+
 private:
   void loadMap();
   void fight(const std::shared_ptr<Monster> &monster);
   void exploreTreasure(const std::shared_ptr<Treasure> &treasure);
+  void spawnMonsters();
+  int getDifficultyMultiplier() const;
 
   void attemptPlayerMove(const std::shared_ptr<Player> &player,
                          const Point &direction);

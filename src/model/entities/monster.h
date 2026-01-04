@@ -1,5 +1,5 @@
-#ifndef _MONSTER_H
-#define _MONSTER_H
+#ifndef MONSTER_H
+#define MONSTER_H
 
 #include "model/map.h"
 #include "movable_entity.h"
@@ -23,7 +23,7 @@ class Goblin : public Monster {
 public:
   explicit Goblin();
   void move(const Point &destination) override;
-  auto toString() const -> std::string override;
+  std::string toString() const override;
 };
 
 class Orc : public Monster {
@@ -35,8 +35,8 @@ class Orc : public Monster {
 
 public:
   explicit Orc(std::shared_ptr<Map> _map, std::shared_ptr<Player> player);
-  void move(const Point &destination);
-  auto toString() const -> std::string override;
+  void move(const Point &destination) override;
+  std::string toString() const override;
   void randomizeVelocity() override;
   Point getVelocity() override;
 };
@@ -45,17 +45,25 @@ class Troll : public Monster {
 
 public:
   explicit Troll();
-  void move(const Point &destination);
-  auto toString() const -> std::string override;
+  void move(const Point &destination) override;
+  std::string toString() const override;
 };
 
 class Dragon : public Monster {
 
 public:
   explicit Dragon();
-  void move(const Point &destination);
+  void move(const Point &destination) override;
   void randomizeVelocity() override;
-  auto toString() const -> std::string override;
+  std::string toString() const override;
 };
 
-#endif
+class Skeleton : public Monster {
+
+public:
+  explicit Skeleton();
+  void move(const Point &destination) override;
+  std::string toString() const override;
+};
+
+#endif // MONSTER_H

@@ -1,5 +1,5 @@
-#ifndef _INFO_DEQUE_H
-#define _INFO_DEQUE_H
+#ifndef INFO_DEQUE_H
+#define INFO_DEQUE_H
 
 #include <algorithm>
 #include <deque>
@@ -84,4 +84,4 @@ public:
   ReverseWrapper reverse() { return ReverseWrapper(info, startIndex); }
 };
 
-#endif
+#endif // INFO_DEQUE_H

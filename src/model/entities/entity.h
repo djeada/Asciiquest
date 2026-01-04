@@ -1,5 +1,5 @@
-#ifndef _ENTITY_H
-#define _ENTITY_H
+#ifndef ENTITY_H
+#define ENTITY_H
 
 #include "utils/game_settings.h"
 #include "utils/point.h"
@@ -21,4 +21,4 @@ public:
   CellType cellType;
 };
 
-#endif
+#endif // ENTITY_H

@@ -13,8 +13,10 @@ void Map::loadLevel() {
   // Convert maze to grid with CellType values
   grid = transformToGrid(maze);
 
-  start = {generator.getStart().first, generator.getStart().second};
-  end = {generator.getEnd().first, generator.getEnd().second};
+  start = {static_cast<int>(generator.getStart().first),
+           static_cast<int>(generator.getStart().second)};
+  end = {static_cast<int>(generator.getEnd().first),
+         static_cast<int>(generator.getEnd().second)};
 }
 
 void Map::clear() {
@@ -80,9 +82,9 @@ void Map::setCellType(const Point &point, CellType symbol) {
 CellType Map::getCellType(const Point &point) const {
   if (isValidPoint(point)) {
     return grid[point.y][point.x];
-  } else {
-    //  throw std::out_of_range("Point is outside of the map's boundaries.");
   }
+  // Return WALL for out-of-bounds points to prevent movement outside map
+  return CellType::WALL;
 }
 
 bool Map::isValidPoint(const Point &point) const {

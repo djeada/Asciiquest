@@ -1,5 +1,5 @@
-#ifndef _GLOBAL_CONFIG_H
-#define _GLOBAL_CONFIG_H
+#ifndef GLOBAL_CONFIG_H
+#define GLOBAL_CONFIG_H
 
 #include <fstream>
 #include <iostream>
@@ -78,6 +78,9 @@ private:
                                                   "DragonsCount=10",
                                                   "DragonHealth=400",
                                                   "DragonDamage=100",
+                                                  "SkeletonsCount=30",
+                                                  "SkeletonHealth=80",
+                                                  "SkeletonDamage=25",
                                                   "MessageQueueSize=20",
                                                   "EmptySymbol=32",
                                                   "WallSymbol=#",
@@ -86,9 +89,12 @@ private:
                                                   "OrcSymbol=o",
                                                   "DragonSymbol=D",
                                                   "TrollSymbol=T",
+                                                  "SkeletonSymbol=s",
                                                   "StartSymbol=S",
-                                                  "EndSymbol=❎",
+                                                  "EndSymbol=E",
                                                   "TreasureSymbol=*",
+                                                  "PotionSymbol=!",
+                                                  "TreasureCount=20",
                                                   "BonusValue=50",
                                                   "BonusExpirationCounter=100"};
 
@@ -108,4 +114,4 @@ private:
   void operator=(GlobalConfig const &) = delete;
 };
 
-#endif
+#endif // GLOBAL_CONFIG_H

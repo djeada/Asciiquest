@@ -24,16 +24,21 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::TROLL,
      {GlobalConfig::getInstance().getConfig<char>("TrollSymbol"),
       ColorPair::TROLL}},
+    {CellType::SKELETON,
+     {GlobalConfig::getInstance().getConfig<char>("SkeletonSymbol"),
+      ColorPair::SKELETON}},
     {CellType::START,
      {GlobalConfig::getInstance().getConfig<char>("StartSymbol"),
       ColorPair::START}},
     {CellType::END,
      {GlobalConfig::getInstance().getConfig<char>("EndSymbol"),
       ColorPair::END}},
-
     {CellType::TREASURE,
      {GlobalConfig::getInstance().getConfig<char>("TreasureSymbol"),
       ColorPair::TREASURE}},
+    {CellType::POTION,
+     {GlobalConfig::getInstance().getConfig<char>("PotionSymbol"),
+      ColorPair::POTION}},
 };
 
 GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
@@ -48,9 +53,11 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
       {ColorPair::ORC, {COLOR_CYAN, COLOR_BLACK}},
       {ColorPair::DRAGON, {COLOR_YELLOW, COLOR_BLACK}},
       {ColorPair::TROLL, {COLOR_MAGENTA, COLOR_BLACK}},
+      {ColorPair::SKELETON, {COLOR_WHITE, COLOR_BLACK}},
       {ColorPair::START, {COLOR_GREEN, COLOR_BLACK}},
       {ColorPair::END, {COLOR_RED, COLOR_WHITE}},
       {ColorPair::TREASURE, {COLOR_CYAN, COLOR_BLACK}},
+      {ColorPair::POTION, {COLOR_GREEN, COLOR_BLACK}},
   };
 
   // Initialize color pairs
@@ -186,22 +193,23 @@ void GameBoardRenderer::drawStats() {
   getmaxyx(stdscr, termHeight, termWidth);
 
   // calculate positions based on statsRect
-  int yLevel = static_cast<int>(statsRect.top * termHeight) + 1;
-  int yHealth = yLevel + 1;
-  int yExp = yHealth + 1;
+  int yStart = static_cast<int>(statsRect.top * termHeight) + 1;
+  int y = yStart;
 
   // initialize colors
   start_color();
   init_pair(1, COLOR_GREEN, COLOR_BLACK);
   init_pair(2, COLOR_BLUE, COLOR_BLACK);
+  init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+  init_pair(4, COLOR_CYAN, COLOR_BLACK);
 
   int maxBarWidth = termWidth / 2;
-  int labelWidth = 8;
+  int labelWidth = 10;
 
-  auto drawProgressBar = [&](int y, const std::string &label, float percentage,
+  auto drawProgressBar = [&](int barY, const std::string &label, float percentage,
                              int color) {
     // draw label
-    mvprintw(y, 0, "%-*s", labelWidth,
+    mvprintw(barY, 0, "%-*s", labelWidth,
              (label + ": ")
                  .c_str()); // Left justify the label to a width of labelWidth
 
@@ -212,21 +220,37 @@ void GameBoardRenderer::drawStats() {
     // set color and draw progress
     attron(COLOR_PAIR(color));
     for (int i = 0; i < progress; i++) {
-      mvprintw(y, labelWidth + i, "=");
+      mvprintw(barY, labelWidth + i, "=");
     }
     attroff(COLOR_PAIR(color));
   };
 
-  // Print Level
-  mvprintw(yLevel, 0, " Level: %s", data.stats["Level"].c_str());
+  // === GAME STATS ===
+  attron(A_BOLD | COLOR_PAIR(3));
+  mvprintw(y++, 0, " DUNGEON LV.%s", data.stats["DungeonLevel"].c_str());
+  attroff(A_BOLD | COLOR_PAIR(3));
+
+  // Print Character Level and Strength
+  mvprintw(y++, 0, " Char Lv: %s  STR: %s",
+           data.stats["Level"].c_str(),
+           data.stats["Strength"].c_str());
 
   // Render Health
   float healthPercentage =
       stof(data.stats["Health"]) / stof(data.stats["MaxHealth"]);
-  drawProgressBar(yHealth, " Health", healthPercentage, 1); // 1 = COLOR_GREEN
+  drawProgressBar(y++, " HP", healthPercentage, 1); // 1 = COLOR_GREEN
 
   // Render Experience
   float expPercentage =
       stof(data.stats["Experience"]) / stof(data.stats["MaxExp"]);
-  drawProgressBar(yExp, " Exp", expPercentage, 2); // 2 = COLOR_BLUE
+  drawProgressBar(y++, " EXP", expPercentage, 2); // 2 = COLOR_BLUE
+
+  y++; // Empty line
+
+  // === PROGRESS STATS ===
+  attron(COLOR_PAIR(4));
+  mvprintw(y++, 0, " Score: %s", data.stats["Score"].c_str());
+  mvprintw(y++, 0, " Kills: %s", data.stats["MonstersKilled"].c_str());
+  mvprintw(y++, 0, " Enemies: %s", data.stats["MonstersRemaining"].c_str());
+  attroff(COLOR_PAIR(4));
 }

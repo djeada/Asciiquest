@@ -1,5 +1,5 @@
-#ifndef _RENDERER_DATA_H
-#define _RENDERER_DATA_H
+#ifndef RENDERER_DATA_H
+#define RENDERER_DATA_H
 
 #include "utils/game_settings.h"
 #include "utils/info_deque.h"
@@ -28,4 +28,4 @@ in RendererData will affect the original objects, and vice versa.
         playerPosition(_playerPosition) {}
 };
 
-#endif
+#endif // RENDERER_DATA_H

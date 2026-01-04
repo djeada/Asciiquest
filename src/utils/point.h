@@ -1,5 +1,5 @@
-#ifndef _UTILS_POINT_H
-#define _UTILS_POINT_H
+#ifndef POINT_H
+#define POINT_H
 
 #include <cstddef>
 #include <functional>
@@ -47,4 +47,4 @@ template <> struct hash<Point> {
 };
 } // namespace std
 
-#endif
+#endif // POINT_H
