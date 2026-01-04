@@ -9,8 +9,6 @@ void MainMenuRenderer::draw(
 
 ) {
 
-  clear(); // Clear the screen
-
   // Draw the title
   mvprintw(0, 0, "Main Menu");
 
@@ -19,5 +17,6 @@ void MainMenuRenderer::draw(
   mvprintw(3, 0, "2. Settings");
   mvprintw(4, 0, "3. Exit");
 
-  refresh(); // Refresh the screen to apply the changes
+  wnoutrefresh(stdscr); // Update virtual screen
+  doupdate(); // Apply all changes at once for double buffering
 }
