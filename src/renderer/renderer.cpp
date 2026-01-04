@@ -7,6 +7,10 @@ Renderer::Renderer() {
   initscr(); // Call initscr() to initialize the library
   noecho();
   curs_set(0);
+  if (has_colors()) {
+    start_color();
+    use_default_colors();
+  }
 
   stateRendererMap[GameState::MAIN_MENU] = [](const RendererData &) {
     return std::make_unique<MainMenuRenderer>();
@@ -26,6 +30,10 @@ Renderer::Renderer(const Renderer &other)
   initscr();
   noecho();
   curs_set(0);
+  if (has_colors()) {
+    start_color();
+    use_default_colors();
+  }
 }
 
 Renderer::~Renderer() {

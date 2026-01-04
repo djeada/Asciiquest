@@ -7,6 +7,16 @@
 const int monsterUpdateSpeed =
     GlobalConfig::getInstance().getConfig<int>("MonsterUpdateSpeed");
 
+namespace {
+std::string formatCoords(const Point &pos) {
+  return "[" + std::to_string(pos.x) + "," + std::to_string(pos.y) + "]";
+}
+
+template <typename T> std::string labelWithCoords(const T &entity) {
+  return entity.toString() + " " + formatCoords(entity.position);
+}
+} // namespace
+
 Model::Model()
     : running(false), lastUpdate(std::chrono::steady_clock::now()),
       currentLevel(0), monstersKilled(0), totalScore(0) {}
@@ -139,13 +149,17 @@ void Model::loadMap() {
   }
 
   // Show level info
-  info->addMessage("=== DUNGEON LEVEL " + std::to_string(currentLevel) + " ===");
-  info->addMessage("Monsters: " + std::to_string(monsters.size()) +
-                   " | Treasures: " + std::to_string(treasureCount));
+  info->addMessage(MessageType::SYSTEM, &player->position,
+                   "Entering Dungeon Level " + std::to_string(currentLevel));
+  info->addMessage(MessageType::SYSTEM, &player->position,
+                   "Monsters: " + std::to_string(monsters.size()) +
+                       " | Treasures: " + std::to_string(treasureCount));
   if (currentLevel > 1) {
-    info->addMessage("Difficulty increased! Monsters are stronger.");
+    info->addMessage(MessageType::SYSTEM, &player->position,
+                     "Difficulty increased. Monsters are stronger.");
   }
-  info->addMessage("Find the exit to advance!");
+  info->addMessage(MessageType::SYSTEM, &player->position,
+                   "Find the exit to advance.");
   
   // Spawn traps
   traps.clear();
@@ -214,21 +228,37 @@ void Model::update() {
 
 void Model::fight(const std::shared_ptr<Monster> &monster) {
 
-  auto attack = [&](const auto &attacker, const auto &defender,
-                    auto &messages) {
+  auto attack = [&](const std::shared_ptr<Entity> &attacker,
+                    const std::shared_ptr<Entity> &defender) {
     double successRate = (rand() % 100) / 100.0; // random value between 0 and 1
+    bool attackerIsPlayer = (attacker.get() == player.get());
+    bool defenderIsPlayer = (defender.get() == player.get());
+
+    std::string attackerLabel =
+        attackerIsPlayer ? "You" : labelWithCoords(*attacker);
+    std::string defenderLabel =
+        defenderIsPlayer ? "you" : labelWithCoords(*defender);
 
     // 15% chance of attack missing
     if (successRate > 0.85) {
-      messages.push_back(attacker->toString() + " misses " +
-                         defender->toString() + "!");
+      info->addMessage(MessageType::COMBAT, &attacker->position,
+                       attackerLabel + " miss " + defenderLabel + ".");
       return;
     }
 
     // 10% chance of attack being blocked
     if (successRate < 0.1) {
-      messages.push_back(defender->toString() + " blocks " +
-                         attacker->toString() + "'s attack!");
+      std::string blockMessage =
+          defenderIsPlayer
+              ? "You block " +
+                    (attackerIsPlayer ? "your own"
+                                      : attackerLabel + "'s") +
+                    " attack."
+              : defenderLabel + " blocks " +
+                    (attackerIsPlayer ? "your" : attackerLabel + "'s") +
+                    " attack.";
+      info->addMessage(MessageType::COMBAT, &defender->position,
+                       std::move(blockMessage));
       return;
     }
 
@@ -239,13 +269,14 @@ void Model::fight(const std::shared_ptr<Monster> &monster) {
     bool isCritical = (rand() % 100) < 10;
     if (isCritical) {
       damage *= 2;
-      messages.push_back("*** CRITICAL HIT! ***");
+      info->addMessage(MessageType::COMBAT, &attacker->position,
+                       "Critical hit!");
     }
 
     defender->takeDamage(damage);
-    messages.push_back(attacker->toString() + " hits " +
-                       defender->toString() + " for " +
-                       std::to_string(damage) + " damage.");
+    info->addMessage(MessageType::COMBAT, &attacker->position,
+                     attackerLabel + " hit " + defenderLabel + " for " +
+                         std::to_string(damage) + ".");
   };
 
   auto updateMapAfterFight = [&](const auto &defeatedMonster) {
@@ -260,21 +291,18 @@ void Model::fight(const std::shared_ptr<Monster> &monster) {
     }
   };
 
-  info->addMessage("=== BATTLE: " + player->toString() + " vs " +
-                   monster->toString() + " ===");
+  info->addMessage(MessageType::COMBAT, &player->position,
+                   "Battle: You vs " + labelWithCoords(*monster));
 
   int round = 0;
   while (player->isAlive() && monster->isAlive()) {
     round++;
-    std::vector<std::string> roundMessages;
-    roundMessages.push_back("Round " + std::to_string(round) + ":");
-
-    attack(player, monster, roundMessages);
+    info->addMessage(MessageType::COMBAT, &player->position,
+                     "Round " + std::to_string(round));
+    attack(player, monster);
     if (monster->isAlive()) {
-      attack(monster, player, roundMessages);
+      attack(monster, player);
     }
-
-    info->addMessage(roundMessages);
   }
 
   // Handle fight outcome
@@ -284,13 +312,19 @@ void Model::fight(const std::shared_ptr<Monster> &monster) {
     int scoreGain = expGain * currentLevel;
     totalScore += scoreGain;
     player->addExperience(expGain);
-    info->addMessage("Victory! +" + std::to_string(expGain) + " EXP, +" +
-                     std::to_string(scoreGain) + " Score");
+    info->addMessage(MessageType::COMBAT, &player->position,
+                     "You defeated " + labelWithCoords(*monster) + ". +" +
+                         std::to_string(expGain) + " EXP, +" +
+                         std::to_string(scoreGain) + " Score");
   } else if (!player->isAlive()) {
-    info->addMessage("=== GAME OVER ===");
-    info->addMessage("Final Score: " + std::to_string(totalScore));
-    info->addMessage("Monsters Killed: " + std::to_string(monstersKilled));
-    info->addMessage("Dungeon Level Reached: " + std::to_string(currentLevel));
+    info->addMessage(MessageType::SYSTEM, &player->position, "Game Over");
+    info->addMessage(MessageType::SYSTEM, &player->position,
+                     "Final Score: " + std::to_string(totalScore));
+    info->addMessage(MessageType::SYSTEM, &player->position,
+                     "Monsters Killed: " + std::to_string(monstersKilled));
+    info->addMessage(MessageType::SYSTEM, &player->position,
+                     "Dungeon Level Reached: " +
+                         std::to_string(currentLevel));
   }
 
   updateMapAfterFight(monster);
@@ -306,8 +340,8 @@ void Model::exploreTreasure(const std::shared_ptr<Treasure> &treasure) {
   auto explore = [&](const auto &explorer, const auto &treasure,
                      auto &messages) {
     if (successRate > 0.85) { // 15% chance of exploration failure
-      messages.push_back(explorer->toString() + " fails to explore " +
-                         treasure->toString() + ".");
+      messages.push_back("You fail to loot " + labelWithCoords(*treasure) +
+                         ".");
       return;
     }
 
@@ -328,8 +362,7 @@ void Model::exploreTreasure(const std::shared_ptr<Treasure> &treasure) {
     }
 
     // Display a message for successful exploration
-    messages.push_back(explorer->toString() + " successfully explores " +
-                       treasure->toString() + " for a bonus of " +
+    messages.push_back("You loot " + labelWithCoords(*treasure) + " for +" +
                        std::to_string(bonus) + ".");
   };
 
@@ -341,7 +374,8 @@ void Model::exploreTreasure(const std::shared_ptr<Treasure> &treasure) {
   };
 
   // Display a message for starting treasure exploration
-  info->addMessage("Treasure exploration starts!");
+  info->addMessage(MessageType::LOOT, &player->position,
+                   "You search the treasure...");
 
   std::vector<std::string> explorationMessages;
 
@@ -352,7 +386,7 @@ void Model::exploreTreasure(const std::shared_ptr<Treasure> &treasure) {
   updateMapAfterExploration(player, treasure);
 
   // Display exploration messages
-  info->addMessage(explorationMessages);
+  info->addMessage(MessageType::LOOT, &player->position, explorationMessages);
 }
 
 void Model::queuePlayerMove(const Point &point) { playerMoves.push(point); }
@@ -367,10 +401,12 @@ void Model::castPlayerSpell(int spellIndex, const Point &direction) {
     if (spell) {
       auto effect = std::make_shared<SpellEffect>(spell, player->position, direction);
       activeSpellEffects.push_back(effect);
-      info->addMessage("Cast " + spell->getName() + "!");
+      info->addMessage(MessageType::COMBAT, &player->position,
+                       "You cast " + spell->getName() + ".");
     }
   } else {
-    info->addMessage("Not enough mana!");
+    info->addMessage(MessageType::INFO, &player->position,
+                     "Not enough mana.");
   }
 }
 
@@ -403,13 +439,15 @@ void Model::checkSpellCollisions(const std::shared_ptr<SpellEffect> &effect) {
   // Handle healing and shield spells (self-cast)
   if (spell->getType() == SpellType::HEAL) {
     player->heal(spell->getDamage());
-    info->addMessage("Healed for " + std::to_string(spell->getDamage()) + " HP!");
+    info->addMessage(MessageType::INFO, &player->position,
+                     "You heal for " + std::to_string(spell->getDamage()) +
+                         " HP.");
     return;
   }
   
   if (spell->getType() == SpellType::SHIELD) {
     // Shield effect could be implemented as temporary damage reduction
-    info->addMessage("Shield activated!");
+    info->addMessage(MessageType::INFO, &player->position, "Shield up.");
     return;
   }
   
@@ -429,8 +467,10 @@ void Model::checkSpellCollisions(const std::shared_ptr<SpellEffect> &effect) {
         int damage = effect->getDamage();
         monster->takeDamage(damage);
         
-        info->addMessage(spell->getName() + " hits " + monster->toString() + 
-                        " for " + std::to_string(damage) + " damage!");
+        info->addMessage(MessageType::COMBAT, &player->position,
+                         spell->getName() + " hits " +
+                             labelWithCoords(*monster) + " for " +
+                             std::to_string(damage) + ".");
         
         if (!monster->isAlive()) {
           monstersKilled++;
@@ -438,8 +478,9 @@ void Model::checkSpellCollisions(const std::shared_ptr<SpellEffect> &effect) {
           int scoreGain = expGain * currentLevel;
           totalScore += scoreGain;
           player->addExperience(expGain);
-          info->addMessage("Defeated " + monster->toString() + "! +" + 
-                          std::to_string(expGain) + " EXP");
+          info->addMessage(MessageType::COMBAT, &player->position,
+                           "You defeated " + labelWithCoords(*monster) +
+                               ". +" + std::to_string(expGain) + " EXP");
           map->setCellType(monster->position, CellType::EMPTY);
         }
       }
@@ -594,7 +635,8 @@ bool Model::tryPushObject(const Point &objectPos, const Point &direction) {
   movableObjects.erase(objectPos);
   movableObjects[newPos] = object;
   
-  info->addMessage("Pushed " + object->toString() + "!");
+  info->addMessage(MessageType::INFO, &player->position,
+                   "You push " + labelWithCoords(*object) + ".");
   return true;
 }
 
@@ -623,11 +665,14 @@ void Model::checkTrapCollisions() {
       // Check if projectile hits the player
       if (isPlayer(pos)) {
         player->takeDamage(proj.damage);
-        info->addMessage(trap->toString() + " hits you for " + 
-                        std::to_string(proj.damage) + " damage!");
+        info->addMessage(MessageType::COMBAT, &trap->position,
+                         labelWithCoords(*trap) + " hits you for " +
+                             std::to_string(proj.damage) + ".");
         
         if (!player->isAlive()) {
-          info->addMessage("You have been killed by a " + trap->toString() + "!");
+          info->addMessage(MessageType::SYSTEM, &player->position,
+                           "You were killed by " + labelWithCoords(*trap) +
+                               ".");
           map->setCellType(player->position, CellType::EMPTY);
         }
         trap->deactivateProjectile(i);
@@ -638,8 +683,10 @@ void Model::checkTrapCollisions() {
       for (auto &monster : monsters) {
         if (monster->position == pos && monster->isAlive()) {
           monster->takeDamage(proj.damage);
-          info->addMessage(trap->toString() + " hits " + monster->toString() + 
-                          " for " + std::to_string(proj.damage) + " damage!");
+          info->addMessage(MessageType::COMBAT, &trap->position,
+                           labelWithCoords(*trap) + " hits " +
+                               labelWithCoords(*monster) + " for " +
+                               std::to_string(proj.damage) + ".");
           
           if (!monster->isAlive()) {
             map->setCellType(monster->position, CellType::EMPTY);

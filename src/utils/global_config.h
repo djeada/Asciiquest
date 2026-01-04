@@ -6,6 +6,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <vector>
 
 class GlobalConfig {
 public:
@@ -100,6 +101,14 @@ private:
 
         for (const auto &entry : defaultConfig) {
           newConfigFile << entry << "\n";
+          std::istringstream is_line(entry);
+          std::string key;
+          if (std::getline(is_line, key, '=')) {
+            std::string value;
+            if (std::getline(is_line, value)) {
+              config[key] = value;
+            }
+          }
         }
 
         newConfigFile.close();

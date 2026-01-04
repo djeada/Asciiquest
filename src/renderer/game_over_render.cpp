@@ -1,5 +1,5 @@
 #include "game_over_renderer.h"
-#include "utils/global_config.h"
+#include <algorithm>
 #include <ncurses.h>
 #include <string>
 
@@ -22,19 +22,39 @@ void GameOverRenderer::draw() {
 
 void GameOverRenderer::drawGameOver() {
   getmaxyx(stdscr, termHeight, termWidth);
-  std::string gameOver = "Game Over";
+  std::string gameOver = "GAME OVER";
+  std::string score = "Score: " + data.stats["Score"];
+  std::string dungeon = "Dungeon Level: " + data.stats["DungeonLevel"];
+  std::string hint = "Press Enter/Space for Menu, Q/ESC to Quit";
 
-  // Calculate the position to center "Game Over" in the terminal window
-  int xPos = (termWidth * GlobalConfig::getInstance().getConfig<double>(
-                              "BoardRectRight") -
-              gameOver.length()) /
-             2;
-  int yPos = (termHeight * GlobalConfig::getInstance().getConfig<double>(
-                               "BoardRectBottom")) /
-             2;
+  int boxWidth = std::min(50, termWidth - 4);
+  boxWidth = std::max(10, boxWidth);
+  boxWidth = std::min(boxWidth, termWidth - 2);
+  int boxHeight = 7;
+  int boxTop = std::max(1, (termHeight - boxHeight) / 2);
+  int boxLeft = std::max(2, (termWidth - boxWidth) / 2);
 
-  // Use bold and red color for "Game Over"
+  attron(COLOR_PAIR(static_cast<int>(ColorPair::UI_BORDER)));
+  mvaddch(boxTop, boxLeft, ACS_ULCORNER);
+  mvaddch(boxTop, boxLeft + boxWidth - 1, ACS_URCORNER);
+  mvaddch(boxTop + boxHeight - 1, boxLeft, ACS_LLCORNER);
+  mvaddch(boxTop + boxHeight - 1, boxLeft + boxWidth - 1, ACS_LRCORNER);
+  mvhline(boxTop, boxLeft + 1, ACS_HLINE, boxWidth - 2);
+  mvhline(boxTop + boxHeight - 1, boxLeft + 1, ACS_HLINE, boxWidth - 2);
+  mvvline(boxTop + 1, boxLeft, ACS_VLINE, boxHeight - 2);
+  mvvline(boxTop + 1, boxLeft + boxWidth - 1, ACS_VLINE, boxHeight - 2);
+  attroff(COLOR_PAIR(static_cast<int>(ColorPair::UI_BORDER)));
+
+  int textX = boxLeft + 2;
+  int textY = boxTop + 1;
+
   attron(A_BOLD | COLOR_PAIR(static_cast<int>(ColorPair::PLAYER)));
-  mvprintw(yPos, xPos, "%s", gameOver.c_str());
+  mvprintw(textY++, textX, "%s", gameOver.c_str());
   attroff(A_BOLD | COLOR_PAIR(static_cast<int>(ColorPair::PLAYER)));
+
+  attron(COLOR_PAIR(static_cast<int>(ColorPair::UI_TEXT)));
+  mvprintw(textY++, textX, "%s", score.c_str());
+  mvprintw(textY++, textX, "%s", dungeon.c_str());
+  mvprintw(textY + 1, textX, "%s", hint.c_str());
+  attroff(COLOR_PAIR(static_cast<int>(ColorPair::UI_TEXT)));
 }

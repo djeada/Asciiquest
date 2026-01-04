@@ -2,7 +2,128 @@
 #include "model/spell/spell_effect.h"
 #include "model/entities/trap.h"
 #include "utils/global_config.h"
+#include <algorithm>
 #include <ncurses.h>
+
+namespace {
+struct PanelLayout {
+  int top;
+  int left;
+  int bottom;
+  int right;
+
+  int width() const { return right - left; }
+  int height() const { return bottom - top; }
+};
+
+PanelLayout getPanelLayout(const Rect &rect, int termHeight, int termWidth) {
+  PanelLayout layout{};
+  layout.left = std::max(0, std::min(termWidth - 1,
+                                     static_cast<int>(rect.right * termWidth)));
+  layout.top = std::max(0, std::min(termHeight - 1,
+                                    static_cast<int>(rect.top * termHeight)));
+  layout.right = std::max(layout.left + 1,
+                          std::min(termWidth,
+                                   static_cast<int>(rect.left * termWidth)));
+  layout.bottom = std::max(layout.top + 1,
+                           std::min(termHeight,
+                                    static_cast<int>(rect.bottom * termHeight)));
+  return layout;
+}
+
+void drawPanel(const PanelLayout &layout, const std::string &title,
+               int borderColor, int titleColor) {
+  if (layout.width() < 3 || layout.height() < 3) {
+    return;
+  }
+
+  attron(COLOR_PAIR(borderColor));
+  mvaddch(layout.top, layout.left, ACS_ULCORNER);
+  mvaddch(layout.top, layout.right - 1, ACS_URCORNER);
+  mvaddch(layout.bottom - 1, layout.left, ACS_LLCORNER);
+  mvaddch(layout.bottom - 1, layout.right - 1, ACS_LRCORNER);
+
+  mvhline(layout.top, layout.left + 1, ACS_HLINE, layout.width() - 2);
+  mvhline(layout.bottom - 1, layout.left + 1, ACS_HLINE, layout.width() - 2);
+  mvvline(layout.top + 1, layout.left, ACS_VLINE, layout.height() - 2);
+  mvvline(layout.top + 1, layout.right - 1, ACS_VLINE, layout.height() - 2);
+  attroff(COLOR_PAIR(borderColor));
+
+  if (!title.empty() && layout.width() > 4) {
+    int titleX = layout.left + 2;
+    int maxTitleWidth = layout.width() - 4;
+    std::string clippedTitle = title.substr(0, maxTitleWidth);
+    attron(A_BOLD | COLOR_PAIR(titleColor));
+    mvprintw(layout.top, titleX, "%s", clippedTitle.c_str());
+    attroff(A_BOLD | COLOR_PAIR(titleColor));
+  }
+}
+
+std::vector<std::string> wrapLines(const std::string &text, int width) {
+  std::vector<std::string> result;
+  if (width <= 0) {
+    return result;
+  }
+
+  int length = static_cast<int>(text.length());
+  int start = 0;
+
+  while (start < length) {
+    int end = std::min(start + width, length);
+    if (end != length && text[end] != ' ') {
+      int lastSpace = text.rfind(' ', end);
+      end = (lastSpace != std::string::npos && lastSpace > start) ? lastSpace
+                                                                  : end;
+    }
+    result.push_back(text.substr(start, end - start));
+    start = end;
+    while (start < length && text[start] == ' ') {
+      ++start;
+    }
+  }
+
+  return result;
+}
+
+int messageColor(MessageType type) {
+  switch (type) {
+  case MessageType::SYSTEM:
+    return static_cast<int>(ColorPair::LOG_SYSTEM);
+  case MessageType::COMBAT:
+    return static_cast<int>(ColorPair::LOG_COMBAT);
+  case MessageType::LOOT:
+    return static_cast<int>(ColorPair::LOG_LOOT);
+  case MessageType::INFO:
+  default:
+    return static_cast<int>(ColorPair::LOG_INFO);
+  }
+}
+
+std::string messagePrefix(const MessageEntry &entry) {
+  std::string tag;
+  switch (entry.type) {
+  case MessageType::SYSTEM:
+    tag = "SYS";
+    break;
+  case MessageType::COMBAT:
+    tag = "C";
+    break;
+  case MessageType::LOOT:
+    tag = "L";
+    break;
+  case MessageType::INFO:
+  default:
+    tag = "I";
+    break;
+  }
+
+  if (!entry.hasSource) {
+    return "[" + tag + "] ";
+  }
+  return "[" + tag + " " + std::to_string(entry.source.x) + "," +
+         std::to_string(entry.source.y) + "] ";
+}
+} // namespace
 
 std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
     {CellType::EMPTY,
@@ -98,6 +219,17 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
       {ColorPair::BLADE_PROJECTILE, {COLOR_RED, COLOR_BLACK}},
       {ColorPair::SPIKE_PROJECTILE, {COLOR_MAGENTA, COLOR_BLACK}},
       {ColorPair::ARROW_PROJECTILE, {COLOR_CYAN, COLOR_BLACK}},
+      {ColorPair::UI_BORDER, {COLOR_WHITE, COLOR_BLACK}},
+      {ColorPair::UI_TITLE, {COLOR_YELLOW, COLOR_BLACK}},
+      {ColorPair::UI_TEXT, {COLOR_WHITE, COLOR_BLACK}},
+      {ColorPair::UI_ACCENT, {COLOR_CYAN, COLOR_BLACK}},
+      {ColorPair::UI_HP_BAR, {COLOR_GREEN, COLOR_BLACK}},
+      {ColorPair::UI_MANA_BAR, {COLOR_BLUE, COLOR_BLACK}},
+      {ColorPair::UI_XP_BAR, {COLOR_YELLOW, COLOR_BLACK}},
+      {ColorPair::LOG_SYSTEM, {COLOR_CYAN, COLOR_BLACK}},
+      {ColorPair::LOG_COMBAT, {COLOR_RED, COLOR_BLACK}},
+      {ColorPair::LOG_LOOT, {COLOR_YELLOW, COLOR_BLACK}},
+      {ColorPair::LOG_INFO, {COLOR_WHITE, COLOR_BLACK}},
   };
 
   // Initialize color pairs
@@ -143,21 +275,30 @@ void GameBoardRenderer::drawBoard() {
 
   getmaxyx(stdscr, termHeight, termWidth);
 
+  PanelLayout boardPanel = getPanelLayout(boardRect, termHeight, termWidth);
+  if (boardPanel.width() < 3 || boardPanel.height() < 3) {
+    return;
+  }
+  drawPanel(boardPanel, " DUNGEON ", static_cast<int>(ColorPair::UI_BORDER),
+            static_cast<int>(ColorPair::UI_TITLE));
+
   // Calculate board dimensions based on terminal size and grid size
   int gridRowSize = static_cast<int>(data.grid.size());
   int gridColSize = static_cast<int>(data.grid[0].size());
   int boardHeight =
-      std::min(static_cast<int>(boardRect.bottom * termHeight), gridRowSize);
+      std::min(boardPanel.height() - 2, gridRowSize);
   int boardWidth =
-      std::min(static_cast<int>(boardRect.left * termWidth), gridColSize);
+      std::min(boardPanel.width() - 2, gridColSize);
+
+  if (boardHeight <= 0 || boardWidth <= 0) {
+    return;
+  }
 
   // Determine the top and left view based on the player position
-  int viewTop = std::max(static_cast<int>(boardRect.top * termHeight),
-                         std::min(gridRowSize - boardHeight,
-                                  data.playerPosition.y - boardHeight / 2));
-  int viewLeft = std::max(static_cast<int>(boardRect.right * termWidth),
-                          std::min(gridColSize - boardWidth,
-                                   data.playerPosition.x - boardWidth / 2));
+  int viewTop = std::max(0, std::min(gridRowSize - boardHeight,
+                                     data.playerPosition.y - boardHeight / 2));
+  int viewLeft = std::max(0, std::min(gridColSize - boardWidth,
+                                      data.playerPosition.x - boardWidth / 2));
 
   // Render the game board based on the determined view
   for (int y = 0; y < boardHeight; ++y) {
@@ -168,7 +309,7 @@ void GameBoardRenderer::drawBoard() {
 
       // Set color attribute, print the character and unset color attribute
       attron(COLOR_PAIR(static_cast<int>(color)));
-      mvaddch(y, x, ch);
+      mvaddch(boardPanel.top + 1 + y, boardPanel.left + 1 + x, ch);
       attroff(COLOR_PAIR(static_cast<int>(color)));
     }
   }
@@ -187,7 +328,8 @@ void GameBoardRenderer::drawBoard() {
           
           const auto &[ch, color] = cellTypeToCharColor[frame.cellType];
           attron(COLOR_PAIR(static_cast<int>(color)));
-          mvaddch(screenY, screenX, ch);
+          mvaddch(boardPanel.top + 1 + screenY, boardPanel.left + 1 + screenX,
+                  ch);
           attroff(COLOR_PAIR(static_cast<int>(color)));
         }
       }
@@ -210,7 +352,8 @@ void GameBoardRenderer::drawBoard() {
           
           const auto &[ch, color] = cellTypeToCharColor[proj.cellType];
           attron(COLOR_PAIR(static_cast<int>(color)));
-          mvaddch(screenY, screenX, ch);
+          mvaddch(boardPanel.top + 1 + screenY, boardPanel.left + 1 + screenX,
+                  ch);
           attroff(COLOR_PAIR(static_cast<int>(color)));
         }
       }
@@ -219,138 +362,189 @@ void GameBoardRenderer::drawBoard() {
 }
 
 void GameBoardRenderer::drawMessageDisplay() {
-  auto splitStringToLines = [](const std::string &str, int lineWidth) {
-    std::vector<std::string> result;
-    int length = str.length();
-    int start = 0;
-
-    while (start < length) {
-      int end = std::min(start + lineWidth, length);
-
-      if (end != length && str[end] != ' ') {
-        // If we're not at the end of the string, backtrack to the last space
-        int lastSpace = str.rfind(' ', end);
-        end = (lastSpace != std::string::npos) ? lastSpace : end;
-      }
-
-      // Push the line to the result
-      result.push_back(str.substr(start, end - start));
-
-      // Update start for the next iteration
-      start = end;
-
-      // Skip spaces at the start of the next line
-      while (start < length && str[start] == ' ') {
-        ++start;
-      }
-    }
-
-    return result;
-  };
-
   getmaxyx(stdscr, termHeight, termWidth);
 
-  int x = std::min(static_cast<int>(messageDisplayRect.right * termWidth),
-                   static_cast<int>(data.grid[0].size()));
-  int y = static_cast<int>(messageDisplayRect.top * termHeight);
+  PanelLayout logPanel =
+      getPanelLayout(messageDisplayRect, termHeight, termWidth);
+  PanelLayout statsPanel = getPanelLayout(statsRect, termHeight, termWidth);
+  if (statsPanel.top > logPanel.top && statsPanel.top < logPanel.bottom) {
+    logPanel.bottom = statsPanel.top;
+  }
+  if (logPanel.width() < 3 || logPanel.height() < 3) {
+    return;
+  }
+  drawPanel(logPanel, " LOG ", static_cast<int>(ColorPair::UI_BORDER),
+            static_cast<int>(ColorPair::UI_TITLE));
 
-  int infoHeight =
-      std::min(static_cast<int>(messageDisplayRect.bottom * termHeight), LINES);
+  int x = logPanel.left + 1;
+  int y = logPanel.top + 1;
+  int width = logPanel.width() - 2;
+  int height = logPanel.height() - 2;
 
-  for (const auto &messgaes : data.messageQueue.reverse()) {
-    for (const auto &info : messgaes) {
-      // Prevent overflow if there are more fight info lines than screen rows
-      if (y >= infoHeight) {
-        break;
+  if (width <= 0 || height <= 0) {
+    return;
+  }
+
+  attron(COLOR_PAIR(static_cast<int>(ColorPair::UI_TEXT)));
+  mvprintw(y++, x, " I/K scroll | Tags: C combat, L loot, SYS system");
+  attroff(COLOR_PAIR(static_cast<int>(ColorPair::UI_TEXT)));
+
+  for (const auto &entry : data.messageQueue.reverse()) {
+    if (y >= logPanel.top + height) {
+      return;
+    }
+
+    std::string prefix = messagePrefix(entry);
+    int prefixWidth = static_cast<int>(prefix.size());
+    int availableWidth = width - prefixWidth;
+    if (availableWidth <= 0) {
+      return;
+    }
+
+    int colorPair = messageColor(entry.type);
+    attron(COLOR_PAIR(colorPair));
+
+    for (size_t lineIndex = 0; lineIndex < entry.lines.size(); ++lineIndex) {
+      if (y >= logPanel.top + height) {
+        attroff(COLOR_PAIR(colorPair));
+        return;
       }
-      auto lines = splitStringToLines(
-          info, COLS - x - 3); // Subtract 2 to account for the empty space
-      for (const auto &line : lines) {
-        mvprintw(y++, x + 1, " %s",
-                 line.c_str()); // line + empty space
-        if (y >= infoHeight) {
-          break;
+
+      std::string text = entry.lines[lineIndex];
+      if (lineIndex == entry.lines.size() - 1 && entry.repeatCount > 1) {
+        text += " x" + std::to_string(entry.repeatCount);
+      }
+
+      auto wrapped = wrapLines(text, availableWidth);
+      for (size_t i = 0; i < wrapped.size(); ++i) {
+        if (y >= logPanel.top + height) {
+          attroff(COLOR_PAIR(colorPair));
+          return;
         }
+        std::string linePrefix = (i == 0) ? prefix : std::string(prefixWidth, ' ');
+        mvprintw(y++, x, "%s%s", linePrefix.c_str(), wrapped[i].c_str());
       }
     }
-    mvprintw(y++, x, " \n");
+
+    attroff(COLOR_PAIR(colorPair));
+    if (y < logPanel.top + height) {
+      mvprintw(y++, x, " ");
+    }
   }
 }
 
 void GameBoardRenderer::drawStats() {
   getmaxyx(stdscr, termHeight, termWidth);
 
-  // calculate positions based on statsRect
-  int yStart = static_cast<int>(statsRect.top * termHeight) + 1;
+  PanelLayout statsPanel = getPanelLayout(statsRect, termHeight, termWidth);
+  if (statsPanel.width() < 3 || statsPanel.height() < 3) {
+    return;
+  }
+  drawPanel(statsPanel, " STATUS ", static_cast<int>(ColorPair::UI_BORDER),
+            static_cast<int>(ColorPair::UI_TITLE));
+
+  int xStart = statsPanel.left + 1;
+  int yStart = statsPanel.top + 1;
   int y = yStart;
+  int contentWidth = statsPanel.width() - 2;
+  int contentHeight = statsPanel.height() - 2;
 
-  // initialize colors
-  start_color();
-  init_pair(1, COLOR_GREEN, COLOR_BLACK);
-  init_pair(2, COLOR_BLUE, COLOR_BLACK);
-  init_pair(3, COLOR_YELLOW, COLOR_BLACK);
-  init_pair(4, COLOR_CYAN, COLOR_BLACK);
+  int maxBarWidth = std::max(10, contentWidth - 12);
+  int labelWidth = 6;
 
-  int maxBarWidth = termWidth / 2;
-  int labelWidth = 10;
-
-  auto drawProgressBar = [&](int barY, const std::string &label, float percentage,
-                             int color) {
+  auto drawProgressBar = [&](int barY, const std::string &label,
+                             float percentage, int color, int current,
+                             int maximum) {
     // draw label
-    mvprintw(barY, 0, "%-*s", labelWidth,
-             (label + ": ")
-                 .c_str()); // Left justify the label to a width of labelWidth
+    mvprintw(barY, xStart, "%-*s", labelWidth,
+             (label + ":").c_str());
 
     // draw the progress bar
-    int progressBarWidth = maxBarWidth - labelWidth - 2; // Adjust as needed
+    int progressBarWidth = std::max(4, maxBarWidth - labelWidth - 8);
     int progress = static_cast<int>(progressBarWidth * percentage);
 
     // set color and draw progress
     attron(COLOR_PAIR(color));
     for (int i = 0; i < progress; i++) {
-      mvprintw(barY, labelWidth + i, "=");
+      mvaddch(barY, xStart + labelWidth + 1 + i, '=');
     }
     attroff(COLOR_PAIR(color));
+
+    attron(COLOR_PAIR(static_cast<int>(ColorPair::UI_TEXT)));
+    for (int i = progress; i < progressBarWidth; i++) {
+      mvaddch(barY, xStart + labelWidth + 1 + i, '-');
+    }
+    mvprintw(barY, xStart + labelWidth + 1 + progressBarWidth + 1, "%d/%d",
+             current, maximum);
+    attroff(COLOR_PAIR(static_cast<int>(ColorPair::UI_TEXT)));
   };
 
   // === GAME STATS ===
-  attron(A_BOLD | COLOR_PAIR(3));
-  mvprintw(y++, 0, " DUNGEON LV.%s", data.stats["DungeonLevel"].c_str());
-  attroff(A_BOLD | COLOR_PAIR(3));
+  attron(A_BOLD | COLOR_PAIR(static_cast<int>(ColorPair::UI_TITLE)));
+  mvprintw(y++, xStart, " DUNGEON LV.%s", data.stats["DungeonLevel"].c_str());
+  attroff(A_BOLD | COLOR_PAIR(static_cast<int>(ColorPair::UI_TITLE)));
 
   // Print Character Level and Strength
-  mvprintw(y++, 0, " Char Lv: %s  STR: %s",
+  mvprintw(y++, xStart, " Char Lv: %s  STR: %s",
            data.stats["Level"].c_str(),
            data.stats["Strength"].c_str());
 
   // Render Health
+  int health = std::stoi(data.stats["Health"]);
+  int maxHealth = std::stoi(data.stats["MaxHealth"]);
   float healthPercentage =
-      stof(data.stats["Health"]) / stof(data.stats["MaxHealth"]);
-  drawProgressBar(y++, " HP", healthPercentage, 1); // 1 = COLOR_GREEN
+      maxHealth > 0 ? static_cast<float>(health) / maxHealth : 0.0f;
+  drawProgressBar(y++, "HP", healthPercentage,
+                  static_cast<int>(ColorPair::UI_HP_BAR), health, maxHealth);
+
+  // Render Mana
+  int mana = std::stoi(data.stats["Mana"]);
+  int maxMana = std::stoi(data.stats["MaxMana"]);
+  float manaPercentage =
+      maxMana > 0 ? static_cast<float>(mana) / maxMana : 0.0f;
+  drawProgressBar(y++, "MP", manaPercentage,
+                  static_cast<int>(ColorPair::UI_MANA_BAR), mana, maxMana);
 
   // Render Experience
+  int exp = std::stoi(data.stats["Experience"]);
+  int maxExp = std::stoi(data.stats["MaxExp"]);
   float expPercentage =
-      stof(data.stats["Experience"]) / stof(data.stats["MaxExp"]);
-  drawProgressBar(y++, " EXP", expPercentage, 2); // 2 = COLOR_BLUE
+      maxExp > 0 ? static_cast<float>(exp) / maxExp : 0.0f;
+  drawProgressBar(y++, "XP", expPercentage,
+                  static_cast<int>(ColorPair::UI_XP_BAR), exp, maxExp);
 
   y++; // Empty line
 
   // === PROGRESS STATS ===
-  attron(COLOR_PAIR(4));
-  mvprintw(y++, 0, " Score: %s", data.stats["Score"].c_str());
-  mvprintw(y++, 0, " Kills: %s", data.stats["MonstersKilled"].c_str());
-  mvprintw(y++, 0, " Enemies: %s", data.stats["MonstersRemaining"].c_str());
-  attroff(COLOR_PAIR(4));
+  attron(COLOR_PAIR(static_cast<int>(ColorPair::UI_ACCENT)));
+  mvprintw(y++, xStart, " Score: %s", data.stats["Score"].c_str());
+  mvprintw(y++, xStart, " Kills: %s", data.stats["MonstersKilled"].c_str());
+  mvprintw(y++, xStart, " Enemies: %s", data.stats["MonstersRemaining"].c_str());
+  attroff(COLOR_PAIR(static_cast<int>(ColorPair::UI_ACCENT)));
 
   y++; // Empty line
 
   // === LOCATION INFO ===
-  attron(COLOR_PAIR(4));
-  mvprintw(y++, 0, " X: %d, Y: %d", data.playerPosition.x, data.playerPosition.y);
+  attron(COLOR_PAIR(static_cast<int>(ColorPair::UI_ACCENT)));
+  mvprintw(y++, xStart, " X: %d, Y: %d", data.playerPosition.x,
+           data.playerPosition.y);
   
   // Get map dimensions from grid
   int mapHeight = static_cast<int>(data.grid.size());
   int mapWidth = data.grid.empty() ? 0 : static_cast<int>(data.grid[0].size());
-  mvprintw(y++, 0, " Map Size: %d x %d", mapWidth, mapHeight);
-  attroff(COLOR_PAIR(4));
+  mvprintw(y++, xStart, " Map: %d x %d", mapWidth, mapHeight);
+  attroff(COLOR_PAIR(static_cast<int>(ColorPair::UI_ACCENT)));
+
+  y++; // Empty line
+
+  if (y < yStart + contentHeight) {
+    std::string controls =
+        "Move: WASD/Arrows  Spells: 1-5  Pause: P  Quit: Q/ESC";
+    for (const auto &line : wrapLines(controls, contentWidth - 1)) {
+      if (y >= yStart + contentHeight) {
+        break;
+      }
+      mvprintw(y++, xStart, "%s", line.c_str());
+    }
+  }
 }

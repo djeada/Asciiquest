@@ -5,72 +5,116 @@
 #include <deque>
 #include <string>
 #include <vector>
+#include "utils/point.h"
+
+enum class MessageType {
+  SYSTEM,
+  COMBAT,
+  LOOT,
+  INFO
+};
+
+struct MessageEntry {
+  MessageType type;
+  Point source;
+  bool hasSource;
+  std::vector<std::string> lines;
+  int repeatCount;
+};
 
 class ReverseWrapper {
-  std::deque<std::vector<std::string>> &info;
+  std::deque<MessageEntry> &info;
   int startIndex;
 
 public:
-  ReverseWrapper(std::deque<std::vector<std::string>> &info, int startIndex)
+  ReverseWrapper(std::deque<MessageEntry> &info, int startIndex)
       : info(info), startIndex(startIndex) {}
 
-  std::deque<std::vector<std::string>>::reverse_iterator begin() {
+  std::deque<MessageEntry>::reverse_iterator begin() {
     auto it = info.rbegin();
     std::advance(it, startIndex);
     return it;
   }
 
-  std::deque<std::vector<std::string>>::reverse_iterator end() {
+  std::deque<MessageEntry>::reverse_iterator end() {
     return info.rend();
   }
 };
 
 class InfoDeque {
 private:
-  std::deque<std::vector<std::string>> info;
+  std::deque<MessageEntry> info;
   size_t maxSize;
   int startIndex = 0;
 
 public:
   InfoDeque(size_t maxSize) : maxSize(maxSize) {}
 
-  void addMessage(const std::vector<std::string> &message) {
+  void addMessage(MessageType type, const Point *source,
+                  const std::vector<std::string> &lines) {
+    MessageEntry entry{type, Point(), source != nullptr, lines, 1};
+    if (source != nullptr) {
+      entry.source = *source;
+    }
+
+    if (!info.empty()) {
+      const auto &last = info.back();
+      if (last.type == entry.type && last.hasSource == entry.hasSource &&
+          (!entry.hasSource || last.source == entry.source) &&
+          last.lines == entry.lines) {
+        info.back().repeatCount++;
+        return;
+      }
+    }
+
     if (info.size() >= maxSize) {
       info.pop_front();
+      if (startIndex > 0) {
+        startIndex--;
+      }
     }
-    info.push_back(message);
+    info.push_back(std::move(entry));
+  }
+
+  void addMessage(MessageType type, const Point *source, std::string &&line) {
+    addMessage(type, source, std::vector<std::string>{std::move(line)});
+  }
+
+  void addMessage(const std::vector<std::string> &message) {
+    addMessage(MessageType::INFO, nullptr, message);
   }
   void addMessage(std::string &&message) {
-    if (info.size() >= maxSize) {
-      info.pop_front();
-    }
-    info.push_back(std::vector<std::string>{std::move(message)});
+    addMessage(MessageType::INFO, nullptr,
+               std::vector<std::string>{std::move(message)});
   }
 
-  std::vector<std::string> front() { return info.front(); }
+  MessageEntry front() { return info.front(); }
 
-  std::vector<std::string> back() { return info.back(); }
+  MessageEntry back() { return info.back(); }
 
   size_t size() const { return info.size(); }
 
   bool empty() const { return info.empty(); }
 
-  std::deque<std::vector<std::string>>::iterator begin() {
+  std::deque<MessageEntry>::iterator begin() {
     return info.begin();
   }
 
-  std::deque<std::vector<std::string>>::iterator end() { return info.end(); }
+  std::deque<MessageEntry>::iterator end() { return info.end(); }
 
-  std::deque<std::vector<std::string>>::const_iterator begin() const {
+  std::deque<MessageEntry>::const_iterator begin() const {
     return info.begin();
   }
 
-  std::deque<std::vector<std::string>>::const_iterator end() const {
+  std::deque<MessageEntry>::const_iterator end() const {
     return info.end();
   }
 
   void increaseStartIndex() {
-    if (startIndex < info.size() - 1) {
+    if (info.empty()) {
+      return;
+    }
+    if (startIndex < static_cast<int>(info.size()) - 1) {
       startIndex++;
     }
   }

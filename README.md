@@ -30,11 +30,12 @@ To build and run Mysterious Dungeon, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/djeada/Asciiquest.git`
 1. Navigate to the project directory: `cd Asciiquest`
-1. Create a build directory: `mkdir build`
-1. Navigate to the build directory: `cd build`
-1. Run CMake: `cmake ..`
 1. Build the game: `make`
-1. Run the game: `./bin/main`
+1. Run the game: `make run`
+
+Other useful commands:
+- Install: `make install` (use `PREFIX=/path` to change the install location)
+- Clean build artifacts: `make clean` or `make distclean`
 
 ## How to play
 

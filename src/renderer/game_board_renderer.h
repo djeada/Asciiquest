@@ -35,7 +35,18 @@ enum class ColorPair {
   ARROW_TRAP,
   BLADE_PROJECTILE,
   SPIKE_PROJECTILE,
-  ARROW_PROJECTILE
+  ARROW_PROJECTILE,
+  UI_BORDER,
+  UI_TITLE,
+  UI_TEXT,
+  UI_ACCENT,
+  UI_HP_BAR,
+  UI_MANA_BAR,
+  UI_XP_BAR,
+  LOG_SYSTEM,
+  LOG_COMBAT,
+  LOG_LOOT,
+  LOG_INFO
 };
 extern std::unordered_map<CellType, std::pair<char, ColorPair>>
     cellTypeToCharColor;
