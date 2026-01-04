@@ -48,7 +48,12 @@ enum class ColorPair {
   LOG_SYSTEM,
   LOG_COMBAT,
   LOG_LOOT,
-  LOG_INFO
+  LOG_INFO,
+  ENEMY_WARM_DEEP_RED,
+  ENEMY_WARM_RED,
+  ENEMY_WARM_ORANGE,
+  ENEMY_WARM_AMBER,
+  ENEMY_WARM_GOLD
 };
 extern std::unordered_map<CellType, std::pair<char, ColorPair>>
     cellTypeToCharColor;

@@ -3,6 +3,7 @@
 #include "model/entities/trap.h"
 #include "utils/global_config.h"
 #include <algorithm>
+#include <array>
 #include <ncurses.h>
 
 namespace {
@@ -185,6 +186,18 @@ std::unordered_map<CellType, std::pair<char, ColorPair>> cellTypeToCharColor = {
 
 GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
   start_color(); // Start color functionality
+  if (can_change_color() && COLORS >= 16) {
+    init_color(8, 1000, 200, 0);  // Deep red
+    init_color(9, 1000, 350, 0);  // Red-orange
+    init_color(10, 1000, 500, 0); // Orange
+    init_color(11, 1000, 650, 0); // Amber
+    init_color(12, 900, 700, 200); // Gold
+  }
+  const short warmDeepRed = (COLORS >= 16 && can_change_color()) ? 8 : COLOR_RED;
+  const short warmRed = (COLORS >= 16 && can_change_color()) ? 9 : COLOR_RED;
+  const short warmOrange = (COLORS >= 16 && can_change_color()) ? 10 : COLOR_YELLOW;
+  const short warmAmber = (COLORS >= 16 && can_change_color()) ? 11 : COLOR_YELLOW;
+  const short warmGold = (COLORS >= 16 && can_change_color()) ? 12 : COLOR_YELLOW;
 
   // Define color pairs with improved visual language:
   // - Terrain: muted colors (gray/dark)
@@ -196,7 +209,7 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
       // Terrain (muted colors for background)
       {ColorPair::EMPTY, {COLOR_BLACK, COLOR_BLACK}},
       {ColorPair::FLOOR, {COLOR_WHITE, COLOR_BLACK}},
-      {ColorPair::DOOR, {COLOR_YELLOW, COLOR_BLACK}},
+      {ColorPair::DOOR, {COLOR_GREEN, COLOR_BLACK}},
       {ColorPair::WALL, {COLOR_WHITE, COLOR_BLACK}},
       {ColorPair::MOUNTAIN, {COLOR_WHITE, COLOR_BLACK}},
       {ColorPair::GRASS, {COLOR_GREEN, COLOR_BLACK}},
@@ -246,6 +259,11 @@ GameBoardRenderer::GameBoardRenderer(const RendererData &_data) : data(_data) {
       {ColorPair::LOG_COMBAT, {COLOR_RED, COLOR_BLACK}},
       {ColorPair::LOG_LOOT, {COLOR_YELLOW, COLOR_BLACK}},
       {ColorPair::LOG_INFO, {COLOR_WHITE, COLOR_BLACK}},
+      {ColorPair::ENEMY_WARM_DEEP_RED, {warmDeepRed, COLOR_BLACK}},
+      {ColorPair::ENEMY_WARM_RED, {warmRed, COLOR_BLACK}},
+      {ColorPair::ENEMY_WARM_ORANGE, {warmOrange, COLOR_BLACK}},
+      {ColorPair::ENEMY_WARM_AMBER, {warmAmber, COLOR_BLACK}},
+      {ColorPair::ENEMY_WARM_GOLD, {warmGold, COLOR_BLACK}},
   };
 
   // Initialize color pairs
@@ -317,11 +335,31 @@ void GameBoardRenderer::drawBoard() {
                                       data.playerPosition.x - boardWidth / 2));
 
   // Render the game board based on the determined view
+  std::array<ColorPair, 5> warmEnemyColors = {
+      ColorPair::ENEMY_WARM_DEEP_RED,
+      ColorPair::ENEMY_WARM_RED,
+      ColorPair::ENEMY_WARM_ORANGE,
+      ColorPair::ENEMY_WARM_AMBER,
+      ColorPair::ENEMY_WARM_GOLD};
+  int dungeonLevel = 1;
+  auto levelIt = data.stats.find("DungeonLevel");
+  if (levelIt != data.stats.end()) {
+    dungeonLevel = std::max(1, std::stoi(levelIt->second));
+  }
+  ColorPair enemyColor =
+      warmEnemyColors[(dungeonLevel - 1) % warmEnemyColors.size()];
+
   for (int y = 0; y < boardHeight; ++y) {
     for (int x = 0; x < boardWidth; ++x) {
       // Fetch the character and color representation of the cell type
       const auto cellType = data.grid[viewTop + y][viewLeft + x];
-      const auto &[ch, color] = cellTypeToCharColor[cellType];
+      const auto &[ch, baseColor] = cellTypeToCharColor[cellType];
+      const auto color =
+          (cellType == CellType::GOBLIN || cellType == CellType::ORC ||
+           cellType == CellType::DRAGON || cellType == CellType::TROLL ||
+           cellType == CellType::SKELETON)
+              ? enemyColor
+              : baseColor;
 
       // Set color attribute, print the character and unset color attribute
       // Player gets bold+reverse for maximum visibility
