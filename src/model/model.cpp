@@ -228,11 +228,14 @@ void Model::update() {
 
 void Model::fight(const std::shared_ptr<Monster> &monster) {
 
-  auto attack = [&](const std::shared_ptr<Entity> &attacker,
-                    const std::shared_ptr<Entity> &defender) {
+  auto attack = [&](const auto &attacker, const auto &defender) {
     double successRate = (rand() % 100) / 100.0; // random value between 0 and 1
-    bool attackerIsPlayer = (attacker.get() == player.get());
-    bool defenderIsPlayer = (defender.get() == player.get());
+    bool attackerIsPlayer =
+        (static_cast<const void *>(attacker.get()) ==
+         static_cast<const void *>(player.get()));
+    bool defenderIsPlayer =
+        (static_cast<const void *>(defender.get()) ==
+         static_cast<const void *>(player.get()));
 
     std::string attackerLabel =
         attackerIsPlayer ? "You" : labelWithCoords(*attacker);

@@ -1,4 +1,5 @@
 #include "map.h"
+#include "utils/global_config.h"
 #include <algorithm>
 #include <random>
 
@@ -110,18 +111,30 @@ Map::transformToGrid(const std::vector<std::string> &maze) const {
 
   // Use existing rng for terrain placement
   std::uniform_int_distribution<int> terrainDist(0, 99);
+  int wallCarveChance =
+      GlobalConfig::getInstance().getConfig<int>("WallCarveChance");
   
-  for (const auto &row : maze) {
+  for (size_t rowIndex = 0; rowIndex < maze.size(); ++rowIndex) {
+    const auto &row = maze[rowIndex];
     std::vector<CellType> gridRow;
     gridRow.reserve(row.size());
-    for (const auto &cell : row) {
+    for (size_t colIndex = 0; colIndex < row.size(); ++colIndex) {
+      const auto &cell = row[colIndex];
       if (cell == '#') {
-        // For walls, randomly place mountains or keep as walls
-        int chance = terrainDist(rng);
-        if (chance < 30) {
-          gridRow.push_back(CellType::MOUNTAIN);
+        bool isBorder = rowIndex == 0 || colIndex == 0 ||
+                        rowIndex == maze.size() - 1 ||
+                        colIndex == row.size() - 1;
+        int carveRoll = terrainDist(rng);
+        if (!isBorder && carveRoll < wallCarveChance) {
+          gridRow.push_back(CellType::EMPTY);
         } else {
-          gridRow.push_back(CellType::WALL);
+          // For walls, randomly place mountains or keep as walls
+          int chance = terrainDist(rng);
+          if (chance < 25) {
+            gridRow.push_back(CellType::MOUNTAIN);
+          } else {
+            gridRow.push_back(CellType::WALL);
+          }
         }
       } else {
         // For empty spaces, randomly place various terrain types
