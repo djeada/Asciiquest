@@ -38,7 +38,20 @@ To build and run Mysterious Dungeon, follow these steps:
 
 ## How to play
 
-The game is controlled using the keyboard. Use the arrow keys or WASD to move the player. Press the spacebar to attack enemies. Press q or ESC to quit the game. Encounter enemies and items as you explore the dungeon. The goal is to find the exit and advance to the next level.
+The game is controlled using the keyboard:
+- **Movement**: Use the arrow keys or WASD to move the player.
+- **Combat**: Walk into enemies to engage in melee combat.
+- **Magic**: Press number keys 1-5 to cast spells:
+  - **1**: Fireball (*) - A powerful offensive fire spell (30 damage, 20 mana)
+  - **2**: Ice Shard (|) - An offensive ice spell (25 damage, 20 mana)
+  - **3**: Heal (+) - Restores health (50 HP, 30 mana)
+  - **4**: Lightning Bolt (-) - A powerful lightning attack (40 damage, 35 mana)
+  - **5**: Shield (#) - Creates a protective barrier (0 damage, 25 mana)
+- **Messages**: Press I/K to scroll through message history.
+- **Pause**: Press P to pause the game.
+- **Quit**: Press Q or ESC to quit the game.
+
+Encounter enemies and items as you explore the dungeon. The goal is to find the exit and advance to the next level. Manage your mana wisely and use spells strategically to defeat powerful enemies!
 
 ## Game design
 
