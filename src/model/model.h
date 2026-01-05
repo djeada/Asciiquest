@@ -56,6 +56,10 @@ private:
   
   void updateTraps();
   void checkTrapCollisions();
+  
+  void placeBlockingObjects();
+  std::vector<Point> findPath(const Point &start, const Point &end) const;
+  std::vector<Point> findPathIgnoringMovables(const Point &start, const Point &end) const;
 
   void attemptPlayerMove(const std::shared_ptr<Player> &player,
                          const Point &direction);

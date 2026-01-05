@@ -1,6 +1,7 @@
 #include "model.h"
 #include "utils/global_config.h"
 #include <algorithm>
+#include <array>
 #include <chrono>
 #include <cmath>
 #include <queue>
@@ -151,36 +152,9 @@ void Model::loadMap() {
 
   map->setCellType(map->getEnd(), CellType::END);
 
-  // Spawn movable objects
+  // Spawn movable objects strategically to block pockets
   movableObjects.clear();
-  int objectsPerType = 2 + (currentLevel / 2); // More objects at higher levels
-  
-  // Add boulders
-  for (int i = 0; i < objectsPerType; ++i) {
-    auto position = map->randomFreePosition();
-    auto boulder = std::make_shared<Boulder>(position);
-    boulder->underlyingCell = map->getCellType(position);
-    movableObjects.emplace(position, boulder);
-    map->setCellType(position, CellType::BOULDER);
-  }
-  
-  // Add crates
-  for (int i = 0; i < objectsPerType; ++i) {
-    auto position = map->randomFreePosition();
-    auto crate = std::make_shared<Crate>(position);
-    crate->underlyingCell = map->getCellType(position);
-    movableObjects.emplace(position, crate);
-    map->setCellType(position, CellType::CRATE);
-  }
-  
-  // Add barrels
-  for (int i = 0; i < objectsPerType; ++i) {
-    auto position = map->randomFreePosition();
-    auto barrel = std::make_shared<Barrel>(position);
-    barrel->underlyingCell = map->getCellType(position);
-    movableObjects.emplace(position, barrel);
-    map->setCellType(position, CellType::BARREL);
-  }
+  placeBlockingObjects();
 
   // Show level info
   info->addMessage(MessageType::SYSTEM, &player->position,
@@ -219,6 +193,345 @@ void Model::loadMap() {
     Point direction = (i % 2 == 0) ? Direction::DOWN : Direction::RIGHT;
     auto trap = std::make_shared<ArrowTrap>(position, direction);
     traps.push_back(trap);
+  }
+}
+
+std::vector<Point> Model::findPath(const Point &start, const Point &end) const {
+  // BFS pathfinding that respects current map state
+  if (!map->isValidPoint(start) || !map->isValidPoint(end)) {
+    return {};
+  }
+  
+  auto isWalkableCell = [this](const Point &p) {
+    if (!map->isValidPoint(p)) return false;
+    CellType cell = map->getCellType(p);
+    return cell == CellType::FLOOR || cell == CellType::DOOR ||
+           cell == CellType::GRASS || cell == CellType::TREE ||
+           cell == CellType::DESERT || cell == CellType::END ||
+           cell == CellType::PLAYER || cell == CellType::START;
+  };
+  
+  if (!isWalkableCell(start) && map->getCellType(start) != CellType::PLAYER) {
+    return {};
+  }
+  
+  std::queue<Point> frontier;
+  std::vector<std::vector<bool>> visited(
+      map->getHeight(), std::vector<bool>(map->getWidth(), false));
+  std::vector<std::vector<Point>> prev(
+      map->getHeight(), std::vector<Point>(map->getWidth(), {-1, -1}));
+  
+  frontier.push(start);
+  visited[start.y][start.x] = true;
+  
+  const std::array<Point, 4> directions = {
+      Point{1, 0}, Point{-1, 0}, Point{0, 1}, Point{0, -1}};
+  
+  while (!frontier.empty()) {
+    Point current = frontier.front();
+    frontier.pop();
+    
+    if (current == end) {
+      // Reconstruct path
+      std::vector<Point> path;
+      Point step = end;
+      while (!(step == start)) {
+        path.push_back(step);
+        step = prev[step.y][step.x];
+        if (!map->isValidPoint(step)) break;
+      }
+      path.push_back(start);
+      std::reverse(path.begin(), path.end());
+      return path;
+    }
+    
+    for (const auto &dir : directions) {
+      Point next{current.x + dir.x, current.y + dir.y};
+      if (!map->isValidPoint(next) || visited[next.y][next.x]) continue;
+      if (!isWalkableCell(next) && next != end) continue;
+      
+      visited[next.y][next.x] = true;
+      prev[next.y][next.x] = current;
+      frontier.push(next);
+    }
+  }
+  
+  return {};
+}
+
+std::vector<Point> Model::findPathIgnoringMovables(const Point &start, const Point &end) const {
+  // BFS pathfinding that treats movable objects as walkable (can be pushed)
+  if (!map->isValidPoint(start) || !map->isValidPoint(end)) {
+    return {};
+  }
+  
+  auto isWalkableOrPushable = [this](const Point &p) {
+    if (!map->isValidPoint(p)) return false;
+    CellType cell = map->getCellType(p);
+    return cell == CellType::FLOOR || cell == CellType::DOOR ||
+           cell == CellType::GRASS || cell == CellType::TREE ||
+           cell == CellType::DESERT || cell == CellType::END ||
+           cell == CellType::PLAYER || cell == CellType::START ||
+           cell == CellType::CRATE || cell == CellType::BARREL ||
+           cell == CellType::BOULDER;
+  };
+  
+  std::queue<Point> frontier;
+  std::vector<std::vector<bool>> visited(
+      map->getHeight(), std::vector<bool>(map->getWidth(), false));
+  std::vector<std::vector<Point>> prev(
+      map->getHeight(), std::vector<Point>(map->getWidth(), {-1, -1}));
+  
+  frontier.push(start);
+  visited[start.y][start.x] = true;
+  
+  const std::array<Point, 4> directions = {
+      Point{1, 0}, Point{-1, 0}, Point{0, 1}, Point{0, -1}};
+  
+  while (!frontier.empty()) {
+    Point current = frontier.front();
+    frontier.pop();
+    
+    if (current == end) {
+      std::vector<Point> path;
+      Point step = end;
+      while (!(step == start)) {
+        path.push_back(step);
+        step = prev[step.y][step.x];
+        if (!map->isValidPoint(step)) break;
+      }
+      path.push_back(start);
+      std::reverse(path.begin(), path.end());
+      return path;
+    }
+    
+    for (const auto &dir : directions) {
+      Point next{current.x + dir.x, current.y + dir.y};
+      if (!map->isValidPoint(next) || visited[next.y][next.x]) continue;
+      if (!isWalkableOrPushable(next) && next != end) continue;
+      
+      visited[next.y][next.x] = true;
+      prev[next.y][next.x] = current;
+      frontier.push(next);
+    }
+  }
+  
+  return {};
+}
+
+void Model::placeBlockingObjects() {
+  // Find the path from start to exit
+  Point startPos = map->getStart();
+  Point endPos = map->getEnd();
+  
+  std::vector<Point> mainPath = findPath(startPos, endPos);
+  if (mainPath.empty()) {
+    // No path exists, just place random objects
+    int objectsPerType = 2 + (currentLevel / 2);
+    for (int i = 0; i < objectsPerType; ++i) {
+      auto position = map->randomFreePosition();
+      auto crate = std::make_shared<Crate>(position);
+      crate->underlyingCell = map->getCellType(position);
+      movableObjects.emplace(position, crate);
+      map->setCellType(position, CellType::CRATE);
+    }
+    return;
+  }
+  
+  std::random_device rd;
+  std::mt19937 rng(rd());
+  
+  // Find chokepoints on the main path (narrow passages where we can block)
+  std::vector<Point> chokepoints;
+  const std::array<Point, 4> directions = {
+      Point{1, 0}, Point{-1, 0}, Point{0, 1}, Point{0, -1}};
+  
+  auto isBlockable = [this](const Point &p) {
+    if (!map->isValidPoint(p)) return false;
+    CellType cell = map->getCellType(p);
+    return cell == CellType::FLOOR || cell == CellType::GRASS ||
+           cell == CellType::DOOR;
+  };
+  
+  auto isBlocking = [this](const Point &p) {
+    if (!map->isValidPoint(p)) return true;
+    CellType cell = map->getCellType(p);
+    return cell == CellType::WALL || cell == CellType::WATER ||
+           cell == CellType::MOUNTAIN;
+  };
+  
+  // Find narrow passages on the path (chokepoints)
+  for (size_t i = 1; i + 1 < mainPath.size(); ++i) {
+    const Point &pos = mainPath[i];
+    
+    // Skip positions too close to start or end
+    int distToStart = std::abs(pos.x - startPos.x) + std::abs(pos.y - startPos.y);
+    int distToEnd = std::abs(pos.x - endPos.x) + std::abs(pos.y - endPos.y);
+    if (distToStart < 3 || distToEnd < 3) continue;
+    
+    // Check if this is a narrow passage (walls/water on two opposite sides)
+    bool horizontalNarrow = isBlocking(Point{pos.x - 1, pos.y}) && 
+                            isBlocking(Point{pos.x + 1, pos.y});
+    bool verticalNarrow = isBlocking(Point{pos.x, pos.y - 1}) && 
+                          isBlocking(Point{pos.x, pos.y + 1});
+    
+    if ((horizontalNarrow || verticalNarrow) && isBlockable(pos)) {
+      chokepoints.push_back(pos);
+    }
+  }
+  
+  // Find pocket entrances (areas that can be blocked off)
+  std::vector<std::pair<Point, Point>> pocketEntrances; // (entrance, direction to push into)
+  
+  for (int y = 1; y < static_cast<int>(map->getHeight()) - 1; ++y) {
+    for (int x = 1; x < static_cast<int>(map->getWidth()) - 1; ++x) {
+      Point pos{x, y};
+      if (!isBlockable(pos)) continue;
+      
+      // Skip positions on the main path
+      bool onMainPath = std::find(mainPath.begin(), mainPath.end(), pos) != mainPath.end();
+      
+      // Check each direction for a potential pocket
+      for (const auto &dir : directions) {
+        Point behind{pos.x - dir.x, pos.y - dir.y};
+        Point ahead{pos.x + dir.x, pos.y + dir.y};
+        
+        if (!map->isValidPoint(behind) || !map->isValidPoint(ahead)) continue;
+        
+        // Check if behind is walkable (the pocket)
+        CellType behindCell = map->getCellType(behind);
+        bool behindWalkable = behindCell == CellType::FLOOR || 
+                              behindCell == CellType::GRASS ||
+                              behindCell == CellType::DOOR;
+        
+        // Check if ahead is walkable (where player approaches from)
+        CellType aheadCell = map->getCellType(ahead);
+        bool aheadWalkable = aheadCell == CellType::FLOOR || 
+                             aheadCell == CellType::GRASS ||
+                             aheadCell == CellType::DOOR ||
+                             aheadCell == CellType::PLAYER;
+        
+        if (behindWalkable && aheadWalkable) {
+          // Check if the sides are blocked (forming a pocket entrance)
+          Point side1{pos.x + dir.y, pos.y + dir.x};
+          Point side2{pos.x - dir.y, pos.y - dir.x};
+          
+          if (isBlocking(side1) && isBlocking(side2)) {
+            pocketEntrances.push_back({pos, dir});
+          }
+        }
+      }
+    }
+  }
+  
+  // Place blocking objects
+  int blockedPockets = 0;
+  int pathBlockedPockets = 0;
+  const int minBlockedPockets = 2;
+  const int minPathBlockedPockets = 1;
+  
+  std::shuffle(chokepoints.begin(), chokepoints.end(), rng);
+  std::shuffle(pocketEntrances.begin(), pocketEntrances.end(), rng);
+  
+  // First, place a blocking object on the path (at a chokepoint)
+  for (const auto &pos : chokepoints) {
+    if (pathBlockedPockets >= minPathBlockedPockets) break;
+    
+    // Place a crate or barrel at this chokepoint
+    auto crate = std::make_shared<Crate>(pos);
+    crate->underlyingCell = map->getCellType(pos);
+    movableObjects.emplace(pos, crate);
+    map->setCellType(pos, CellType::CRATE);
+    
+    // Verify path still exists after pushing
+    std::vector<Point> pathAfter = findPathIgnoringMovables(startPos, endPos);
+    if (!pathAfter.empty()) {
+      blockedPockets++;
+      pathBlockedPockets++;
+    } else {
+      // Remove the object if it blocks completely
+      movableObjects.erase(pos);
+      map->setCellType(pos, crate->underlyingCell);
+    }
+  }
+  
+  // Then place objects at pocket entrances
+  for (const auto &[pos, dir] : pocketEntrances) {
+    if (blockedPockets >= minBlockedPockets + 1) break;
+    
+    // Check if position is already occupied
+    if (movableObjects.find(pos) != movableObjects.end()) continue;
+    
+    // Alternate between crates and barrels
+    std::shared_ptr<MovableObject> obj;
+    if (blockedPockets % 2 == 0) {
+      obj = std::make_shared<Barrel>(pos);
+    } else {
+      obj = std::make_shared<Crate>(pos);
+    }
+    
+    obj->underlyingCell = map->getCellType(pos);
+    movableObjects.emplace(pos, obj);
+    map->setCellType(pos, obj->cellType);
+    
+    // Verify path still exists after pushing
+    std::vector<Point> pathAfter = findPathIgnoringMovables(startPos, endPos);
+    if (!pathAfter.empty()) {
+      blockedPockets++;
+      
+      // Check if this pocket is on a path to the exit
+      bool onPath = std::find(mainPath.begin(), mainPath.end(), pos) != mainPath.end();
+      if (onPath && pathBlockedPockets < minPathBlockedPockets) {
+        pathBlockedPockets++;
+      }
+    } else {
+      // Remove the object if it blocks completely
+      movableObjects.erase(pos);
+      map->setCellType(pos, obj->underlyingCell);
+    }
+  }
+  
+  // If we still need more blocked pockets, place them at random locations
+  // that create meaningful blocking
+  int attempts = 0;
+  while (blockedPockets < minBlockedPockets && attempts < 50) {
+    attempts++;
+    
+    Point pos = map->randomFreePosition();
+    if (movableObjects.find(pos) != movableObjects.end()) continue;
+    
+    // Skip positions too close to start or end
+    int distToStart = std::abs(pos.x - startPos.x) + std::abs(pos.y - startPos.y);
+    int distToEnd = std::abs(pos.x - endPos.x) + std::abs(pos.y - endPos.y);
+    if (distToStart < 3 || distToEnd < 3) continue;
+    
+    auto crate = std::make_shared<Crate>(pos);
+    crate->underlyingCell = map->getCellType(pos);
+    movableObjects.emplace(pos, crate);
+    map->setCellType(pos, CellType::CRATE);
+    
+    // Verify path still exists
+    std::vector<Point> pathAfter = findPathIgnoringMovables(startPos, endPos);
+    if (!pathAfter.empty()) {
+      blockedPockets++;
+    } else {
+      movableObjects.erase(pos);
+      map->setCellType(pos, crate->underlyingCell);
+    }
+  }
+  
+  // Add a few extra random movable objects for variety
+  int extraObjects = 1 + (currentLevel / 2);
+  for (int i = 0; i < extraObjects && attempts < 100; ++i) {
+    attempts++;
+    
+    Point pos = map->randomFreePosition();
+    if (movableObjects.find(pos) != movableObjects.end()) continue;
+    
+    auto boulder = std::make_shared<Boulder>(pos);
+    boulder->underlyingCell = map->getCellType(pos);
+    movableObjects.emplace(pos, boulder);
+    map->setCellType(pos, CellType::BOULDER);
   }
 }
 
