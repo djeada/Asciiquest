@@ -1,4 +1,4 @@
-add_executable(unit_tests test_a_star.cpp test_spell.cpp test_movable_object.cpp test_terrain.cpp test_trap.cpp test_monster_follow.cpp test_map_generation.cpp)
+add_executable(unit_tests test_a_star.cpp test_spell.cpp test_movable_object.cpp test_terrain.cpp test_trap.cpp test_monster_follow.cpp test_map_generation.cpp test_maze_requirements.cpp)
 
 # Include the directories for gtest and gtest_main
 target_include_directories(unit_tests PRIVATE ${gtest_SOURCE_DIR} ${gtest_main_SOURCE_DIR})
