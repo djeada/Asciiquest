@@ -437,6 +437,7 @@ void Model::placeBlockingObjects() {
   int blockedPockets = 0;
   int pathBlockedPockets = 0;
   const int minBlockedPockets = 2;
+  const int maxPocketEntranceBlocks = 3; // minBlockedPockets + 1 extra for variety
   const int minPathBlockedPockets = 1;
   
   std::shuffle(chokepoints.begin(), chokepoints.end(), rng);
@@ -466,7 +467,7 @@ void Model::placeBlockingObjects() {
   
   // Then place objects at pocket entrances
   for (const auto &[pos, dir] : pocketEntrances) {
-    if (blockedPockets >= minBlockedPockets + 1) break;
+    if (blockedPockets >= maxPocketEntranceBlocks) break;
     
     // Check if position is already occupied
     if (movableObjects.find(pos) != movableObjects.end()) continue;
@@ -531,11 +532,16 @@ void Model::placeBlockingObjects() {
   
   // Add a few extra random movable objects for variety
   int extraObjects = 1 + (currentLevel / 2);
-  for (int i = 0; i < extraObjects && attempts < 100; ++i) {
-    attempts++;
+  int extraAttempts = 0;
+  for (int i = 0; i < extraObjects && extraAttempts < 50; ++i) {
+    extraAttempts++;
     
     Point pos = map->randomFreePosition();
-    if (movableObjects.find(pos) != movableObjects.end()) continue;
+    if (movableObjects.find(pos) != movableObjects.end()) {
+      // Position occupied, try again without counting this iteration
+      --i;
+      continue;
+    }
     
     auto boulder = std::make_shared<Boulder>(pos);
     boulder->underlyingCell = map->getCellType(pos);
