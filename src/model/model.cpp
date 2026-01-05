@@ -151,12 +151,38 @@ void Model::loadMap() {
 
   map->setCellType(map->getEnd(), CellType::END);
 
-  // Spawn movable objects
+  // Spawn movable objects - mix of strategic and random placement
   movableObjects.clear();
   int objectsPerType = 2 + (currentLevel / 2); // More objects at higher levels
   
-  // Add boulders
-  for (int i = 0; i < objectsPerType; ++i) {
+  // First, place objects strategically at blocked areas
+  const auto& blockedAreas = map->getBlockedAreas();
+  int strategicObjectCount = 0;
+  
+  for (const auto& area : blockedAreas) {
+    if (!map->isPositionFree(area.objectPosition)) {
+      continue;
+    }
+    
+    // Alternate between different object types for variety
+    std::shared_ptr<MovableObject> obj;
+    if (strategicObjectCount % 3 == 0) {
+      obj = std::make_shared<Boulder>(area.objectPosition);
+    } else if (strategicObjectCount % 3 == 1) {
+      obj = std::make_shared<Crate>(area.objectPosition);
+    } else {
+      obj = std::make_shared<Barrel>(area.objectPosition);
+    }
+    
+    obj->underlyingCell = map->getCellType(area.objectPosition);
+    movableObjects.emplace(area.objectPosition, obj);
+    map->setCellType(area.objectPosition, obj->cellType);
+    strategicObjectCount++;
+  }
+  
+  // Add remaining objects randomly
+  int remainingBoulders = std::max(0, objectsPerType - strategicObjectCount / 3);
+  for (int i = 0; i < remainingBoulders; ++i) {
     auto position = map->randomFreePosition();
     auto boulder = std::make_shared<Boulder>(position);
     boulder->underlyingCell = map->getCellType(position);
@@ -195,26 +221,68 @@ void Model::loadMap() {
   info->addMessage(MessageType::SYSTEM, &player->position,
                    "Find the exit to advance.");
   
-  // Spawn traps
+  // Spawn traps - prioritize arrow traps in corridors
   traps.clear();
-  int trapCount = 1 + (currentLevel / 3); // Fewer traps at higher levels
+  int trapCount = 1 + (currentLevel / 3);
   
-  // Add blade traps
+  // Place arrow traps in corridors deterministically
+  const auto& corridors = map->getCorridors();
+  int arrowTrapsPlaced = 0;
+  int minArrowTraps = std::min(3, std::max(2, static_cast<int>(corridors.size())));
+  
+  for (size_t i = 0; i < corridors.size() && arrowTrapsPlaced < minArrowTraps; ++i) {
+    const auto& corridor = corridors[i];
+    
+    // Place arrow trap at the start of the corridor, shooting along corridor direction
+    Point trapPos = Point(
+      corridor.start.x + corridor.direction.x,
+      corridor.start.y + corridor.direction.y
+    );
+    
+    // Ensure trap position is valid
+    if (map->isValidPoint(trapPos) && map->isPositionFree(trapPos)) {
+      auto trap = std::make_shared<ArrowTrap>(trapPos, corridor.direction);
+      traps.push_back(trap);
+      arrowTrapsPlaced++;
+      
+      // Optional: Add a movable object near the corridor for blocking
+      // Place it to the side of the arrow path
+      Point sideOffset;
+      if (corridor.direction.x != 0) {
+        // Horizontal corridor, place object to the side
+        sideOffset = Point(0, 1);
+      } else {
+        // Vertical corridor, place object to the side
+        sideOffset = Point(1, 0);
+      }
+      
+      Point objectPos = Point(trapPos.x + sideOffset.x, trapPos.y + sideOffset.y);
+      if (map->isValidPoint(objectPos) && map->isPositionFree(objectPos)) {
+        auto crate = std::make_shared<Crate>(objectPos);
+        crate->underlyingCell = map->getCellType(objectPos);
+        movableObjects.emplace(objectPos, crate);
+        map->setCellType(objectPos, CellType::CRATE);
+      }
+    }
+  }
+  
+  // Add blade traps randomly
   for (int i = 0; i < trapCount; ++i) {
     auto position = map->randomFreePosition();
     auto trap = std::make_shared<BladeTrap>(position);
     traps.push_back(trap);
   }
   
-  // Add spike traps
+  // Add spike traps randomly
   for (int i = 0; i < trapCount; ++i) {
     auto position = map->randomFreePosition();
     auto trap = std::make_shared<SpikeTrap>(position);
     traps.push_back(trap);
   }
   
-  // Add arrow traps (pointing in different directions)
-  for (int i = 0; i < trapCount; ++i) {
+  // Add remaining arrow traps randomly if needed
+  int remainingArrowTraps = std::max(0, trapCount - arrowTrapsPlaced);
+  for (int i = 0; i < remainingArrowTraps; ++i) {
     auto position = map->randomFreePosition();
     Point direction = (i % 2 == 0) ? Direction::DOWN : Direction::RIGHT;
     auto trap = std::make_shared<ArrowTrap>(position, direction);

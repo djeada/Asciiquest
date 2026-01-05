@@ -20,6 +20,10 @@ void Map::loadLevel() {
 
   // Convert maze to grid with CellType values
   grid = transformToGrid(maze, start, end);
+  
+  // Identify corridors and blocked areas for deterministic placement
+  identifyCorridors();
+  createBlockedAreas();
 }
 
 void Map::clear() {
@@ -528,6 +532,219 @@ Map::transformToGrid(const std::vector<std::string> &maze, const Point &startPoi
   }
 
   return grid;
+}
+
+void Map::identifyCorridors() {
+  corridors.clear();
+  
+  // Scan grid to find horizontal and vertical corridors of width >= 3
+  std::vector<std::vector<bool>> visited(height, std::vector<bool>(width, false));
+  
+  auto isFloor = [&](int x, int y) {
+    if (x < 0 || x >= static_cast<int>(width) || y < 0 || y >= static_cast<int>(height)) {
+      return false;
+    }
+    CellType type = grid[y][x];
+    return type == CellType::FLOOR || type == CellType::DOOR;
+  };
+  
+  // Find horizontal corridors
+  for (unsigned int y = 1; y + 2 < height; ++y) {
+    for (unsigned int x = 1; x < width - 1; ++x) {
+      if (visited[y][x] || !isFloor(x, y)) continue;
+      
+      // Check if this is start of a horizontal corridor (width >= 3)
+      bool isHorizontalCorridor = isFloor(x, y) && isFloor(x, y + 1) && isFloor(x, y + 2);
+      if (!isHorizontalCorridor) continue;
+      
+      // Measure width
+      int corridorWidth = 0;
+      for (int dy = 0; y + dy < height && isFloor(x, y + dy); ++dy) {
+        corridorWidth++;
+      }
+      
+      if (corridorWidth < 3) continue;
+      
+      // Measure length
+      int corridorLength = 0;
+      int startX = x;
+      for (int dx = 0; x + dx < width; ++dx) {
+        bool allFloor = true;
+        for (int dy = 0; dy < corridorWidth && y + dy < height; ++dy) {
+          if (!isFloor(x + dx, y + dy)) {
+            allFloor = false;
+            break;
+          }
+        }
+        if (!allFloor) break;
+        corridorLength++;
+        
+        // Mark as visited
+        for (int dy = 0; dy < corridorWidth; ++dy) {
+          visited[y + dy][x + dx] = true;
+        }
+      }
+      
+      if (corridorLength >= 5) {
+        Corridor corridor;
+        corridor.start = Point(startX, y);
+        corridor.end = Point(startX + corridorLength - 1, y + corridorWidth - 1);
+        corridor.direction = Point(1, 0);
+        corridor.width = corridorWidth;
+        corridor.length = corridorLength;
+        corridors.push_back(corridor);
+      }
+    }
+  }
+  
+  // Find vertical corridors
+  for (unsigned int x = 1; x + 2 < width; ++x) {
+    for (unsigned int y = 1; y < height - 1; ++y) {
+      if (visited[y][x] || !isFloor(x, y)) continue;
+      
+      // Check if this is start of a vertical corridor (width >= 3)
+      bool isVerticalCorridor = isFloor(x, y) && isFloor(x + 1, y) && isFloor(x + 2, y);
+      if (!isVerticalCorridor) continue;
+      
+      // Measure width
+      int corridorWidth = 0;
+      for (int dx = 0; x + dx < width && isFloor(x + dx, y); ++dx) {
+        corridorWidth++;
+      }
+      
+      if (corridorWidth < 3) continue;
+      
+      // Measure length
+      int corridorLength = 0;
+      int startY = y;
+      for (int dy = 0; y + dy < height; ++dy) {
+        bool allFloor = true;
+        for (int dx = 0; dx < corridorWidth && x + dx < width; ++dx) {
+          if (!isFloor(x + dx, y + dy)) {
+            allFloor = false;
+            break;
+          }
+        }
+        if (!allFloor) break;
+        corridorLength++;
+        
+        // Mark as visited
+        for (int dx = 0; dx < corridorWidth; ++dx) {
+          visited[y + dy][x + dx] = true;
+        }
+      }
+      
+      if (corridorLength >= 5) {
+        Corridor corridor;
+        corridor.start = Point(x, startY);
+        corridor.end = Point(x + corridorWidth - 1, startY + corridorLength - 1);
+        corridor.direction = Point(0, 1);
+        corridor.width = corridorWidth;
+        corridor.length = corridorLength;
+        corridors.push_back(corridor);
+      }
+    }
+  }
+}
+
+void Map::createBlockedAreas() {
+  blockedAreas.clear();
+  
+  // Find suitable locations for blocked areas
+  // These should be narrow passages or entrances to areas
+  std::vector<Point> candidatePositions;
+  
+  auto isFloor = [&](int x, int y) {
+    if (x < 0 || x >= static_cast<int>(width) || y < 0 || y >= static_cast<int>(height)) {
+      return false;
+    }
+    CellType type = grid[y][x];
+    return type == CellType::FLOOR || type == CellType::DOOR;
+  };
+  
+  auto isWall = [&](int x, int y) {
+    if (x < 0 || x >= static_cast<int>(width) || y < 0 || y >= static_cast<int>(height)) {
+      return true;
+    }
+    return grid[y][x] == CellType::WALL;
+  };
+  
+  // Find narrow passages (1-2 tiles wide)
+  for (unsigned int y = 2; y < height - 2; ++y) {
+    for (unsigned int x = 2; x < width - 2; ++x) {
+      if (!isFloor(x, y)) continue;
+      
+      // Check for horizontal narrow passage
+      if (isWall(x, y - 1) && isWall(x, y + 1) && 
+          isFloor(x - 1, y) && isFloor(x + 1, y)) {
+        // This is a horizontal passage, check if it leads to an area
+        bool hasAreaBeyond = false;
+        for (int dx = 1; dx <= 3 && x + dx < width - 1; ++dx) {
+          if (isFloor(x + dx, y) && isFloor(x + dx, y - 1) && isFloor(x + dx, y + 1)) {
+            hasAreaBeyond = true;
+            break;
+          }
+        }
+        if (hasAreaBeyond) {
+          candidatePositions.push_back(Point(x, y));
+        }
+      }
+      
+      // Check for vertical narrow passage
+      if (isWall(x - 1, y) && isWall(x + 1, y) && 
+          isFloor(x, y - 1) && isFloor(x, y + 1)) {
+        // This is a vertical passage, check if it leads to an area
+        bool hasAreaBeyond = false;
+        for (int dy = 1; dy <= 3 && y + dy < height - 1; ++dy) {
+          if (isFloor(x, y + dy) && isFloor(x - 1, y + dy) && isFloor(x + 1, y + dy)) {
+            hasAreaBeyond = true;
+            break;
+          }
+        }
+        if (hasAreaBeyond) {
+          candidatePositions.push_back(Point(x, y));
+        }
+      }
+    }
+  }
+  
+  // Shuffle candidates and select 2-3 positions
+  std::shuffle(candidatePositions.begin(), candidatePositions.end(), rng);
+  
+  int targetBlocks = std::min(3, std::max(2, static_cast<int>(candidatePositions.size()) / 3));
+  for (int i = 0; i < targetBlocks && i < static_cast<int>(candidatePositions.size()); ++i) {
+    Point pos = candidatePositions[i];
+    
+    // Determine direction of passage
+    Point direction;
+    if (isWall(pos.x, pos.y - 1) && isWall(pos.x, pos.y + 1)) {
+      // Horizontal passage
+      direction = Point(1, 0);
+    } else {
+      // Vertical passage
+      direction = Point(0, 1);
+    }
+    
+    // Find where to place the movable object (just before or at the passage)
+    Point objectPos = Point(pos.x - direction.x, pos.y - direction.y);
+    if (!isFloor(objectPos.x, objectPos.y)) {
+      objectPos = pos;
+    }
+    
+    BlockedArea area;
+    area.objectPosition = objectPos;
+    area.blockedPosition = pos;
+    area.direction = direction;
+    blockedAreas.push_back(area);
+  }
+}
+
+const std::vector<Corridor>& Map::getCorridors() const {
+  return corridors;
+}
+
+const std::vector<BlockedArea>& Map::getBlockedAreas() const {
+  return blockedAreas;
 }
 
 unsigned int Map::getWidth() const { return width; }

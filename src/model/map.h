@@ -6,6 +6,21 @@
 #include "utils/point.h"
 #include <random>
 #include <vector>
+
+struct Corridor {
+  Point start;
+  Point end;
+  Point direction;
+  int width;
+  int length;
+};
+
+struct BlockedArea {
+  Point objectPosition;
+  Point blockedPosition;
+  Point direction;
+};
+
 class Map {
 public:
   std::vector<std::vector<CellType>> grid;
@@ -24,6 +39,10 @@ public:
   std::vector<Point> getNeighbours(const Point &point) const;
   double distance(const Point &point1, const Point &point2) const;
   bool isValidPoint(const Point &point) const;
+  
+  // New methods for deterministic generation
+  const std::vector<Corridor>& getCorridors() const;
+  const std::vector<BlockedArea>& getBlockedAreas() const;
 
 private:
   mutable std::mt19937 rng;
@@ -31,10 +50,15 @@ private:
   unsigned int height;
   Point start;
   Point end;
+  std::vector<Corridor> corridors;
+  std::vector<BlockedArea> blockedAreas;
 
   std::vector<std::vector<CellType>>
   transformToGrid(const std::vector<std::string> &maze, const Point &start,
                   const Point &end) const;
+  
+  void identifyCorridors();
+  void createBlockedAreas();
 };
 
 #endif // MAP_H
