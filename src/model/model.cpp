@@ -157,31 +157,55 @@ void Model::loadMap() {
   
   // First, place objects strategically at blocked areas
   const auto& blockedAreas = map->getBlockedAreas();
-  int strategicObjectCount = 0;
+  int strategicBouldersPlaced = 0;
+  int strategicCratesPlaced = 0;
+  int strategicBarrelsPlaced = 0;
   
   for (const auto& area : blockedAreas) {
-    if (!map->isPositionFree(area.objectPosition)) {
-      continue;
+    Point targetPos = area.objectPosition;
+    
+    // If position isn't free, try to find a nearby free position
+    if (!map->isPositionFree(targetPos)) {
+      bool foundAlternative = false;
+      // Try adjacent positions
+      const std::vector<Point> offsets = {
+        Point(1, 0), Point(-1, 0), Point(0, 1), Point(0, -1),
+        Point(1, 1), Point(-1, -1), Point(1, -1), Point(-1, 1)
+      };
+      for (const auto& offset : offsets) {
+        Point altPos = Point(targetPos.x + offset.x, targetPos.y + offset.y);
+        if (map->isPositionFree(altPos)) {
+          targetPos = altPos;
+          foundAlternative = true;
+          break;
+        }
+      }
+      if (!foundAlternative) {
+        continue; // Skip this blocked area
+      }
     }
     
     // Alternate between different object types for variety
     std::shared_ptr<MovableObject> obj;
-    if (strategicObjectCount % 3 == 0) {
-      obj = std::make_shared<Boulder>(area.objectPosition);
-    } else if (strategicObjectCount % 3 == 1) {
-      obj = std::make_shared<Crate>(area.objectPosition);
+    int typeIndex = (strategicBouldersPlaced + strategicCratesPlaced + strategicBarrelsPlaced) % 3;
+    if (typeIndex == 0) {
+      obj = std::make_shared<Boulder>(targetPos);
+      strategicBouldersPlaced++;
+    } else if (typeIndex == 1) {
+      obj = std::make_shared<Crate>(targetPos);
+      strategicCratesPlaced++;
     } else {
-      obj = std::make_shared<Barrel>(area.objectPosition);
+      obj = std::make_shared<Barrel>(targetPos);
+      strategicBarrelsPlaced++;
     }
     
-    obj->underlyingCell = map->getCellType(area.objectPosition);
-    movableObjects.emplace(area.objectPosition, obj);
-    map->setCellType(area.objectPosition, obj->cellType);
-    strategicObjectCount++;
+    obj->underlyingCell = map->getCellType(targetPos);
+    movableObjects.emplace(targetPos, obj);
+    map->setCellType(targetPos, obj->cellType);
   }
   
-  // Add remaining objects randomly
-  int remainingBoulders = std::max(0, objectsPerType - strategicObjectCount / 3);
+  // Add remaining objects randomly to reach objectsPerType of each
+  int remainingBoulders = std::max(0, objectsPerType - strategicBouldersPlaced);
   for (int i = 0; i < remainingBoulders; ++i) {
     auto position = map->randomFreePosition();
     auto boulder = std::make_shared<Boulder>(position);
@@ -191,7 +215,8 @@ void Model::loadMap() {
   }
   
   // Add crates
-  for (int i = 0; i < objectsPerType; ++i) {
+  int remainingCrates = std::max(0, objectsPerType - strategicCratesPlaced);
+  for (int i = 0; i < remainingCrates; ++i) {
     auto position = map->randomFreePosition();
     auto crate = std::make_shared<Crate>(position);
     crate->underlyingCell = map->getCellType(position);
@@ -200,7 +225,8 @@ void Model::loadMap() {
   }
   
   // Add barrels
-  for (int i = 0; i < objectsPerType; ++i) {
+  int remainingBarrels = std::max(0, objectsPerType - strategicBarrelsPlaced);
+  for (int i = 0; i < remainingBarrels; ++i) {
     auto position = map->randomFreePosition();
     auto barrel = std::make_shared<Barrel>(position);
     barrel->underlyingCell = map->getCellType(position);

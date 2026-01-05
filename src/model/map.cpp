@@ -711,7 +711,14 @@ void Map::createBlockedAreas() {
   // Shuffle candidates and select 2-3 positions
   std::shuffle(candidatePositions.begin(), candidatePositions.end(), rng);
   
-  int targetBlocks = std::min(3, std::max(2, static_cast<int>(candidatePositions.size()) / 3));
+  // Ensure at least 2 blocked areas when candidates are available
+  int targetBlocks = 0;
+  if (candidatePositions.size() >= 2) {
+    targetBlocks = std::min(3, std::max(2, static_cast<int>(candidatePositions.size()) / 3));
+  } else if (!candidatePositions.empty()) {
+    targetBlocks = 1; // Use whatever we have
+  }
+  
   for (int i = 0; i < targetBlocks && i < static_cast<int>(candidatePositions.size()); ++i) {
     Point pos = candidatePositions[i];
     
@@ -725,10 +732,28 @@ void Map::createBlockedAreas() {
       direction = Point(0, 1);
     }
     
-    // Find where to place the movable object (just before or at the passage)
+    // Find where to place the movable object (just before the passage)
     Point objectPos = Point(pos.x - direction.x, pos.y - direction.y);
+    
+    // Try alternative positions if the preferred one isn't free
     if (!isFloor(objectPos.x, objectPos.y)) {
-      objectPos = pos;
+      // Try the opposite side
+      Point altPos = Point(pos.x + direction.x, pos.y + direction.y);
+      if (isFloor(altPos.x, altPos.y)) {
+        objectPos = altPos;
+      } else {
+        // Try positions adjacent to the passage
+        Point adjPos1 = Point(pos.x + direction.y, pos.y + direction.x);
+        Point adjPos2 = Point(pos.x - direction.y, pos.y - direction.x);
+        if (isFloor(adjPos1.x, adjPos1.y)) {
+          objectPos = adjPos1;
+        } else if (isFloor(adjPos2.x, adjPos2.y)) {
+          objectPos = adjPos2;
+        } else {
+          // Last resort: use the passage position itself
+          objectPos = pos;
+        }
+      }
     }
     
     BlockedArea area;
