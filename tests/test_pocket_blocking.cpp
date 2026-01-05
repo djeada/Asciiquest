@@ -28,6 +28,10 @@ bool hasPath(const std::shared_ptr<Map> &map, const Point &start, const Point &e
            cell == CellType::GRASS || cell == CellType::TREE ||
            cell == CellType::DESERT || cell == CellType::END ||
            cell == CellType::PLAYER || cell == CellType::START ||
+           cell == CellType::GOBLIN || cell == CellType::ORC ||
+           cell == CellType::TROLL || cell == CellType::DRAGON ||
+           cell == CellType::SKELETON || cell == CellType::TREASURE ||
+           cell == CellType::POTION ||
            (!treatMovablesAsBlocking && 
             (cell == CellType::CRATE || cell == CellType::BARREL || cell == CellType::BOULDER));
   };

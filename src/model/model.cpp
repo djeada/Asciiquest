@@ -6,6 +6,7 @@
 #include <cmath>
 #include <queue>
 #include <random>
+#include <unordered_set>
 
 const int monsterUpdateSpeed =
     GlobalConfig::getInstance().getConfig<int>("MonsterUpdateSpeed");
@@ -208,7 +209,11 @@ std::vector<Point> Model::findPath(const Point &start, const Point &end) const {
     return cell == CellType::FLOOR || cell == CellType::DOOR ||
            cell == CellType::GRASS || cell == CellType::TREE ||
            cell == CellType::DESERT || cell == CellType::END ||
-           cell == CellType::PLAYER || cell == CellType::START;
+           cell == CellType::PLAYER || cell == CellType::START ||
+           cell == CellType::GOBLIN || cell == CellType::ORC ||
+           cell == CellType::TROLL || cell == CellType::DRAGON ||
+           cell == CellType::SKELETON || cell == CellType::TREASURE ||
+           cell == CellType::POTION;
   };
   
   if (!isWalkableCell(start) && map->getCellType(start) != CellType::PLAYER) {
@@ -273,7 +278,11 @@ std::vector<Point> Model::findPathIgnoringMovables(const Point &start, const Poi
            cell == CellType::DESERT || cell == CellType::END ||
            cell == CellType::PLAYER || cell == CellType::START ||
            cell == CellType::CRATE || cell == CellType::BARREL ||
-           cell == CellType::BOULDER;
+           cell == CellType::BOULDER ||
+           cell == CellType::GOBLIN || cell == CellType::ORC ||
+           cell == CellType::TROLL || cell == CellType::DRAGON ||
+           cell == CellType::SKELETON || cell == CellType::TREASURE ||
+           cell == CellType::POTION;
   };
   
   std::queue<Point> frontier;
@@ -338,6 +347,9 @@ void Model::placeBlockingObjects() {
     return;
   }
   
+  // Create a set for O(1) path lookup
+  std::unordered_set<Point> mainPathSet(mainPath.begin(), mainPath.end());
+  
   std::random_device rd;
   std::mt19937 rng(rd());
   
@@ -381,15 +393,12 @@ void Model::placeBlockingObjects() {
   }
   
   // Find pocket entrances (areas that can be blocked off)
-  std::vector<std::pair<Point, Point>> pocketEntrances; // (entrance, direction to push into)
+  std::vector<std::pair<Point, Point>> pocketEntrances; // (entrance, direction toward pocket)
   
   for (int y = 1; y < static_cast<int>(map->getHeight()) - 1; ++y) {
     for (int x = 1; x < static_cast<int>(map->getWidth()) - 1; ++x) {
       Point pos{x, y};
       if (!isBlockable(pos)) continue;
-      
-      // Skip positions on the main path
-      bool onMainPath = std::find(mainPath.begin(), mainPath.end(), pos) != mainPath.end();
       
       // Check each direction for a potential pocket
       for (const auto &dir : directions) {
@@ -480,7 +489,7 @@ void Model::placeBlockingObjects() {
       blockedPockets++;
       
       // Check if this pocket is on a path to the exit
-      bool onPath = std::find(mainPath.begin(), mainPath.end(), pos) != mainPath.end();
+      bool onPath = mainPathSet.find(pos) != mainPathSet.end();
       if (onPath && pathBlockedPockets < minPathBlockedPockets) {
         pathBlockedPockets++;
       }
