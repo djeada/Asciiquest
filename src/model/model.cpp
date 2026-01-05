@@ -216,7 +216,7 @@ std::vector<Point> Model::findPath(const Point &start, const Point &end) const {
            cell == CellType::POTION;
   };
   
-  if (!isWalkableCell(start) && map->getCellType(start) != CellType::PLAYER) {
+  if (!isWalkableCell(start)) {
     return {};
   }
   
@@ -240,7 +240,7 @@ std::vector<Point> Model::findPath(const Point &start, const Point &end) const {
       // Reconstruct path
       std::vector<Point> path;
       Point step = end;
-      while (!(step == start)) {
+      while (step != start) {
         path.push_back(step);
         step = prev[step.y][step.x];
         if (!map->isValidPoint(step)) break;
@@ -304,7 +304,7 @@ std::vector<Point> Model::findPathIgnoringMovables(const Point &start, const Poi
     if (current == end) {
       std::vector<Point> path;
       Point step = end;
-      while (!(step == start)) {
+      while (step != start) {
         path.push_back(step);
         step = prev[step.y][step.x];
         if (!map->isValidPoint(step)) break;
@@ -489,7 +489,7 @@ void Model::placeBlockingObjects() {
       blockedPockets++;
       
       // Check if this pocket is on a path to the exit
-      bool onPath = mainPathSet.find(pos) != mainPathSet.end();
+      bool onPath = mainPathSet.count(pos) > 0;
       if (onPath && pathBlockedPockets < minPathBlockedPockets) {
         pathBlockedPockets++;
       }
