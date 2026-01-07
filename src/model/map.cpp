@@ -192,9 +192,13 @@ Map::transformToGrid(const std::vector<std::string> &maze, const Point &startPoi
   }
 
   // Create rooms at some corridor locations
+  // Room count scales with map area to create pockets for blocking objects
+  const int MIN_ROOMS = 3;
+  const int MAX_ROOMS = 8;
+  const int MAP_AREA_PER_ROOM = 800;
   int mapArea = static_cast<int>(grid.size() * grid[0].size());
-  int numRooms = std::max(3, mapArea / 800);
-  numRooms = std::min(numRooms, 8);
+  int numRooms = std::max(MIN_ROOMS, mapArea / MAP_AREA_PER_ROOM);
+  numRooms = std::min(numRooms, MAX_ROOMS);
   std::shuffle(corridorCells.begin(), corridorCells.end(), rng);
   std::uniform_int_distribution<int> roomSizeDist(3, 5);
 

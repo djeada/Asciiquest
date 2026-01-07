@@ -418,6 +418,7 @@ void Model::placeBlockingObjects() {
       if (isPushableLocation(pos, dir)) {
         // Verify that this position creates a meaningful block
         // (sides should be somewhat blocked, but there's a clear push direction)
+        // Calculate perpendicular directions by swapping x/y components
         Point side1{pos.x + dir.y, pos.y + dir.x};
         Point side2{pos.x - dir.y, pos.y - dir.x};
         
@@ -570,8 +571,9 @@ void Model::placeBlockingObjects() {
   
   // If we still need more blocked pockets, place them at random walkable locations
   // that have at least one pushable direction
+  const int MAX_RANDOM_PLACEMENT_ATTEMPTS = 100;
   int attempts = 0;
-  while (blockedPockets < minBlockedPockets && attempts < 100) {
+  while (blockedPockets < minBlockedPockets && attempts < MAX_RANDOM_PLACEMENT_ATTEMPTS) {
     attempts++;
     
     Point pos = map->randomFreePosition();
