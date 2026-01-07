@@ -166,6 +166,93 @@ Map::transformToGrid(const std::vector<std::string> &maze, const Point &startPoi
     }
   }
 
+  // Carve small rooms along corridors to create pockets for blocking objects
+  // These rooms provide space for pushing objects and create meaningful puzzles
+  std::vector<Point> corridorCells;
+  for (size_t y = 4; y + 4 < grid.size(); ++y) {
+    for (size_t x = 4; x + 4 < grid[y].size(); ++x) {
+      if (grid[y][x] == CellType::FLOOR) {
+        // Check if this is a corridor (not already in an open area)
+        int adjacentFloors = 0;
+        for (int dy = -1; dy <= 1; ++dy) {
+          for (int dx = -1; dx <= 1; ++dx) {
+            if (dx == 0 && dy == 0) continue;
+            if (grid[y + dy][x + dx] == CellType::FLOOR ||
+                grid[y + dy][x + dx] == CellType::DOOR) {
+              adjacentFloors++;
+            }
+          }
+        }
+        // Corridor cells typically have 2-4 adjacent floors
+        if (adjacentFloors >= 2 && adjacentFloors <= 4) {
+          corridorCells.emplace_back(static_cast<int>(x), static_cast<int>(y));
+        }
+      }
+    }
+  }
+
+  // Create rooms at some corridor locations
+  int mapArea = static_cast<int>(grid.size() * grid[0].size());
+  int numRooms = std::max(3, mapArea / 800);
+  numRooms = std::min(numRooms, 8);
+  std::shuffle(corridorCells.begin(), corridorCells.end(), rng);
+  std::uniform_int_distribution<int> roomSizeDist(3, 5);
+
+  int roomsCreated = 0;
+  for (const auto &center : corridorCells) {
+    if (roomsCreated >= numRooms) break;
+
+    int roomWidth = roomSizeDist(rng);
+    int roomHeight = roomSizeDist(rng);
+    int halfW = roomWidth / 2;
+    int halfH = roomHeight / 2;
+
+    // Check if room fits and doesn't overlap with start/end
+    bool canPlace = true;
+    int minY = center.y - halfH;
+    int maxY = center.y + halfH;
+    int minX = center.x - halfW;
+    int maxX = center.x + halfW;
+
+    // Ensure room is within bounds (with margin for walls)
+    if (minY < 2 || maxY >= static_cast<int>(grid.size()) - 2 ||
+        minX < 2 || maxX >= static_cast<int>(grid[0].size()) - 2) {
+      continue;
+    }
+
+    // Don't place rooms too close to start or end
+    int distToStart = std::abs(center.x - startPoint.x) + std::abs(center.y - startPoint.y);
+    int distToEnd = std::abs(center.x - endPoint.x) + std::abs(center.y - endPoint.y);
+    if (distToStart < 6 || distToEnd < 6) {
+      continue;
+    }
+
+    // Check for overlap with existing rooms (look for large floor areas)
+    int existingFloors = 0;
+    for (int ry = minY; ry <= maxY && canPlace; ++ry) {
+      for (int rx = minX; rx <= maxX; ++rx) {
+        if (grid[ry][rx] == CellType::FLOOR) {
+          existingFloors++;
+        }
+      }
+    }
+    // Skip if area is already mostly open
+    int roomArea = roomWidth * roomHeight;
+    if (existingFloors > roomArea / 2) {
+      continue;
+    }
+
+    // Carve the room
+    for (int ry = minY; ry <= maxY; ++ry) {
+      for (int rx = minX; rx <= maxX; ++rx) {
+        if (grid[ry][rx] == CellType::WALL) {
+          grid[ry][rx] = CellType::FLOOR;
+        }
+      }
+    }
+    roomsCreated++;
+  }
+
   int totalCells = static_cast<int>(maze.size() * maze[0].size());
   int maxWallCells = static_cast<int>(totalCells * 0.30);
   int wallCells = 0;
