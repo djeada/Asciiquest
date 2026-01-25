@@ -4,7 +4,7 @@ Asciiquest is an ASCII-based roguelike game. As the hero `@`, you're tasked with
 
 ## Screenshot
 
-![Peek 2023-07-27 21-58](https://github.com/djeada/Mysterious-Dungeon/assets/37275728/14089291-aaea-4272-a368-27fb6dfd8908)
+![screenshot](https://github.com/user-attachments/assets/23939c75-d47c-40dd-83b5-9686515d8a7e)
 
 ## Features
 
