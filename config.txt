@@ -1,5 +1,5 @@
-MapWidth=100
-MapHeight=100
+MapWidth=360
+MapHeight=280
 BoardRectLeft=0
 BoardRectTop=0
 BoardRectBottom=0.75

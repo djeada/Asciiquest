@@ -2,35 +2,32 @@
 #include "utils/game_settings.h"
 #include "gtest/gtest.h"
 
-TEST(TerrainTest, MapGeneratesTerrainTypes) {
+TEST(TerrainTest, MapGeneratesBasicTerrain) {
   // Arrange
   Map map(50, 50);
   
   // Act
   map.loadLevel();
   
-  // Assert - Check that terrain types are generated
-  bool hasGrass = false;
-  bool hasTree = false;
-  bool hasWater = false;
-  bool hasDesert = false;
-  bool hasMountain = false;
+  // Assert - Check that basic terrain types are generated (walls and floors)
+  bool hasWall = false;
+  bool hasFloor = false;
+  bool hasDoor = false;
   
   for (unsigned int y = 0; y < map.getHeight(); ++y) {
     for (unsigned int x = 0; x < map.getWidth(); ++x) {
       Point p(x, y);
       CellType cell = map.getCellType(p);
       
-      if (cell == CellType::GRASS) hasGrass = true;
-      if (cell == CellType::TREE) hasTree = true;
-      if (cell == CellType::WATER) hasWater = true;
-      if (cell == CellType::DESERT) hasDesert = true;
-      if (cell == CellType::MOUNTAIN) hasMountain = true;
+      if (cell == CellType::WALL) hasWall = true;
+      if (cell == CellType::FLOOR) hasFloor = true;
+      if (cell == CellType::DOOR) hasDoor = true;
     }
   }
   
-  // At least some terrain types should be present in a 50x50 map
-  EXPECT_TRUE(hasGrass || hasTree || hasWater || hasDesert || hasMountain);
+  // BSP dungeon should have walls, floors, and potentially doors
+  EXPECT_TRUE(hasWall);
+  EXPECT_TRUE(hasFloor);
 }
 
 TEST(TerrainTest, PassableTerrainAllowsMovement) {

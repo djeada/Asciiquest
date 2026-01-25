@@ -13,6 +13,7 @@
 enum class MazeGeneratorAlgorithm {
   DepthFirstSearch,
   RandomizedPrim,
+  BSP,
   RecursiveBacktracker,
   AldousBroder,
   Wilsons,
@@ -49,6 +50,24 @@ private:
   getNeighbors(unsigned int x, unsigned int y) const;
   void generateRecursiveDFS();
   void generateRandomizedPrim();
+  void generateBSP();
+  
+  // BSP helper structures and methods
+  struct BSPNode {
+    int x, y, width, height;
+    BSPNode* left = nullptr;
+    BSPNode* right = nullptr;
+    int roomX, roomY, roomW, roomH;
+    bool hasRoom = false;
+  };
+  
+  void splitBSP(BSPNode* node, int depth, std::default_random_engine& rng);
+  void createRooms(BSPNode* node, std::default_random_engine& rng);
+  void connectRooms(BSPNode* node, std::default_random_engine& rng);
+  std::pair<int, int> getRoomCenter(BSPNode* node);
+  std::pair<int, int> getRoomEdge(BSPNode* node, int dirX, int dirY);
+  void carveHorizontalCorridor(int x1, int x2, int y);
+  void carveVerticalCorridor(int y1, int y2, int x);
 
 public:
   MazeGenerator(int width, int height, MazeGeneratorAlgorithm algorithm);

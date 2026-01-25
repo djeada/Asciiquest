@@ -1,4 +1,5 @@
 #include "maze_generator.h"
+#include <functional>
 
 auto MazeGenerator::getNeighbors(unsigned int x, unsigned int y) const
     -> std::vector<std::pair<unsigned int, unsigned int>> {
@@ -114,6 +115,9 @@ MazeGenerator::MazeGenerator(int width, int height,
   case MazeGeneratorAlgorithm::RandomizedPrim:
     this->generateRandomizedPrim();
     break;
+  case MazeGeneratorAlgorithm::BSP:
+    this->generateBSP();
+    break;
   default:
     // throw exception not implemented
     throw "Not implemented";
@@ -142,4 +146,280 @@ auto MazeGenerator::getEnd() -> std::pair<unsigned int, unsigned int> {
    * @return The end position.
    */
   return this->end;
+}
+
+void MazeGenerator::generateBSP() {
+  // BSP dungeon generation - creates distinct rooms connected by narrow corridors
+  std::default_random_engine rng(time(0));
+  
+  // Create root node covering entire dungeon (minus border)
+  BSPNode* root = new BSPNode();
+  root->x = 1;
+  root->y = 1;
+  root->width = width - 2;
+  root->height = height - 2;
+  
+  // Recursively split the space
+  splitBSP(root, 0, rng);
+  
+  // Create rooms in leaf nodes
+  createRooms(root, rng);
+  
+  // Connect rooms with narrow corridors
+  connectRooms(root, rng);
+  
+  // Collect all rooms
+  std::vector<BSPNode*> leaves;
+  std::queue<BSPNode*> queue;
+  queue.push(root);
+  while (!queue.empty()) {
+    BSPNode* node = queue.front();
+    queue.pop();
+    if (node->hasRoom) {
+      leaves.push_back(node);
+    }
+    if (node->left) queue.push(node->left);
+    if (node->right) queue.push(node->right);
+  }
+  
+  if (!leaves.empty()) {
+    // Start in top-left-most room
+    BSPNode* startRoom = leaves.front();
+    for (auto* leaf : leaves) {
+      if (leaf->roomX + leaf->roomY < startRoom->roomX + startRoom->roomY) {
+        startRoom = leaf;
+      }
+    }
+    this->start = {startRoom->roomX + 1, startRoom->roomY + 1};
+    
+    // End in bottom-right-most room
+    BSPNode* endRoom = leaves.back();
+    for (auto* leaf : leaves) {
+      if (leaf->roomX + leaf->roomY > endRoom->roomX + endRoom->roomY) {
+        endRoom = leaf;
+      }
+    }
+    this->end = {endRoom->roomX + endRoom->roomW - 2,
+                 endRoom->roomY + endRoom->roomH - 2};
+  }
+  
+  // Mark start and end
+  this->maze[start.second][start.first] = ' ';
+  this->maze[end.second][end.first] = ' ';
+  
+  // Clean up BSP tree
+  std::function<void(BSPNode*)> cleanup = [&](BSPNode* node) {
+    if (!node) return;
+    cleanup(node->left);
+    cleanup(node->right);
+    delete node;
+  };
+  cleanup(root);
+}
+
+void MazeGenerator::splitBSP(BSPNode* node, int depth, std::default_random_engine& rng) {
+  const int MIN_SIZE = 25;  // Larger minimum partition for bigger rooms
+  const int MAX_DEPTH = 7;  // More splits = more rooms
+  
+  if (depth >= MAX_DEPTH) return;
+  if (node->width < MIN_SIZE * 2 && node->height < MIN_SIZE * 2) return;
+  
+  // Decide split direction based on aspect ratio
+  bool splitHorizontal;
+  if (node->width > node->height * 1.25) {
+    splitHorizontal = false; // Split vertically (left/right)
+  } else if (node->height > node->width * 1.25) {
+    splitHorizontal = true;  // Split horizontally (top/bottom)
+  } else {
+    std::uniform_int_distribution<int> coinFlip(0, 1);
+    splitHorizontal = coinFlip(rng) == 0;
+  }
+  
+  int max = (splitHorizontal ? node->height : node->width) - MIN_SIZE;
+  if (max <= MIN_SIZE) return;
+  
+  std::uniform_int_distribution<int> splitDist(MIN_SIZE, max);
+  int split = splitDist(rng);
+  
+  node->left = new BSPNode();
+  node->right = new BSPNode();
+  
+  if (splitHorizontal) {
+    node->left->x = node->x;
+    node->left->y = node->y;
+    node->left->width = node->width;
+    node->left->height = split;
+    
+    node->right->x = node->x;
+    node->right->y = node->y + split;
+    node->right->width = node->width;
+    node->right->height = node->height - split;
+  } else {
+    node->left->x = node->x;
+    node->left->y = node->y;
+    node->left->width = split;
+    node->left->height = node->height;
+    
+    node->right->x = node->x + split;
+    node->right->y = node->y;
+    node->right->width = node->width - split;
+    node->right->height = node->height;
+  }
+  
+  splitBSP(node->left, depth + 1, rng);
+  splitBSP(node->right, depth + 1, rng);
+}
+
+void MazeGenerator::createRooms(BSPNode* node, std::default_random_engine& rng) {
+  if (!node) return;
+  
+  if (node->left || node->right) {
+    // Not a leaf, recurse
+    createRooms(node->left, rng);
+    createRooms(node->right, rng);
+    return;
+  }
+  
+  // Leaf node - create a room with walls
+  const int MIN_ROOM = 20;  // Bigger minimum room size
+  const int PADDING = 2;    // Space between room and partition edge
+  
+  int maxW = node->width - PADDING * 2;
+  int maxH = node->height - PADDING * 2;
+  
+  if (maxW < MIN_ROOM || maxH < MIN_ROOM) return;
+  
+  // Room size - allow larger rooms (fill most of partition)
+  std::uniform_int_distribution<int> wDist(MIN_ROOM, std::min(maxW, 48));
+  std::uniform_int_distribution<int> hDist(MIN_ROOM, std::min(maxH, 36));
+  
+  node->roomW = wDist(rng);
+  node->roomH = hDist(rng);
+  
+  // Position room within partition
+  int xRange = node->width - node->roomW - PADDING;
+  int yRange = node->height - node->roomH - PADDING;
+  
+  std::uniform_int_distribution<int> xDist(0, std::max(0, xRange));
+  std::uniform_int_distribution<int> yDist(0, std::max(0, yRange));
+  
+  node->roomX = node->x + PADDING + xDist(rng);
+  node->roomY = node->y + PADDING + yDist(rng);
+  node->hasRoom = true;
+  
+  // Carve room interior (leave walls as '#')
+  for (int y = node->roomY + 1; y < node->roomY + node->roomH - 1; ++y) {
+    for (int x = node->roomX + 1; x < node->roomX + node->roomW - 1; ++x) {
+      if (y >= 0 && y < static_cast<int>(height) && 
+          x >= 0 && x < static_cast<int>(width)) {
+        this->maze[y][x] = ' ';
+      }
+    }
+  }
+}
+
+std::pair<int, int> MazeGenerator::getRoomCenter(BSPNode* node) {
+  if (!node) return {-1, -1};
+  
+  if (node->hasRoom) {
+    // Return interior center (accounting for walls)
+    return {node->roomX + node->roomW / 2, node->roomY + node->roomH / 2};
+  }
+  
+  // Get center from children
+  if (node->left) {
+    auto center = getRoomCenter(node->left);
+    if (center.first >= 0) return center;
+  }
+  if (node->right) {
+    auto center = getRoomCenter(node->right);
+    if (center.first >= 0) return center;
+  }
+  
+  return {-1, -1};
+}
+
+std::pair<int, int> MazeGenerator::getRoomEdge(BSPNode* node, int dirX, int dirY) {
+  // Get a point on the room edge in the given direction (for corridor connection)
+  if (!node) return {-1, -1};
+  
+  if (node->hasRoom) {
+    int cx = node->roomX + node->roomW / 2;
+    int cy = node->roomY + node->roomH / 2;
+    
+    if (dirX > 0) return {node->roomX + node->roomW - 1, cy}; // Right edge
+    if (dirX < 0) return {node->roomX, cy};                    // Left edge
+    if (dirY > 0) return {cx, node->roomY + node->roomH - 1}; // Bottom edge
+    if (dirY < 0) return {cx, node->roomY};                    // Top edge
+    return {cx, cy};
+  }
+  
+  // Get from children
+  if (node->left) {
+    auto edge = getRoomEdge(node->left, dirX, dirY);
+    if (edge.first >= 0) return edge;
+  }
+  if (node->right) {
+    auto edge = getRoomEdge(node->right, dirX, dirY);
+    if (edge.first >= 0) return edge;
+  }
+  
+  return {-1, -1};
+}
+
+void MazeGenerator::carveHorizontalCorridor(int x1, int x2, int y) {
+  int minX = std::min(x1, x2);
+  int maxX = std::max(x1, x2);
+  for (int x = minX; x <= maxX; ++x) {
+    if (y >= 0 && y < static_cast<int>(height) && 
+        x >= 0 && x < static_cast<int>(width)) {
+      this->maze[y][x] = ' ';
+    }
+  }
+}
+
+void MazeGenerator::carveVerticalCorridor(int y1, int y2, int x) {
+  int minY = std::min(y1, y2);
+  int maxY = std::max(y1, y2);
+  for (int y = minY; y <= maxY; ++y) {
+    if (y >= 0 && y < static_cast<int>(height) && 
+        x >= 0 && x < static_cast<int>(width)) {
+      this->maze[y][x] = ' ';
+    }
+  }
+}
+
+void MazeGenerator::connectRooms(BSPNode* node, std::default_random_engine& rng) {
+  if (!node) return;
+  if (!node->left || !node->right) return;
+  
+  // Recursively connect children first
+  connectRooms(node->left, rng);
+  connectRooms(node->right, rng);
+  
+  // Determine connection direction based on how nodes are arranged
+  auto leftCenter = getRoomCenter(node->left);
+  auto rightCenter = getRoomCenter(node->right);
+  
+  if (leftCenter.first < 0 || rightCenter.first < 0) return;
+  
+  // Get room edges facing each other for connection
+  int dx = (rightCenter.first > leftCenter.first) ? 1 : -1;
+  int dy = (rightCenter.second > leftCenter.second) ? 1 : -1;
+  
+  // Determine if rooms are more horizontal or vertical from each other
+  int horizDist = std::abs(rightCenter.first - leftCenter.first);
+  int vertDist = std::abs(rightCenter.second - leftCenter.second);
+  
+  // Create L-shaped corridor connecting room interiors
+  std::uniform_int_distribution<int> coinFlip(0, 1);
+  if (coinFlip(rng) == 0) {
+    // Horizontal first, then vertical
+    carveHorizontalCorridor(leftCenter.first, rightCenter.first, leftCenter.second);
+    carveVerticalCorridor(leftCenter.second, rightCenter.second, rightCenter.first);
+  } else {
+    // Vertical first, then horizontal
+    carveVerticalCorridor(leftCenter.second, rightCenter.second, leftCenter.first);
+    carveHorizontalCorridor(leftCenter.first, rightCenter.first, rightCenter.second);
+  }
 }
