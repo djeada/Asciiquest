@@ -34,6 +34,14 @@ void GameOverRenderer::drawGameOver() {
   int boxTop = std::max(1, (termHeight - boxHeight) / 2);
   int boxLeft = std::max(2, (termWidth - boxWidth) / 2);
 
+  // Clear the interior of the box first
+  attron(COLOR_PAIR(static_cast<int>(ColorPair::UI_BORDER)));
+  for (int y = boxTop + 1; y < boxTop + boxHeight - 1; ++y) {
+    mvhline(y, boxLeft + 1, ' ', boxWidth - 2);
+  }
+  attroff(COLOR_PAIR(static_cast<int>(ColorPair::UI_BORDER)));
+
+  // Draw the box border
   attron(COLOR_PAIR(static_cast<int>(ColorPair::UI_BORDER)));
   mvaddch(boxTop, boxLeft, ACS_ULCORNER);
   mvaddch(boxTop, boxLeft + boxWidth - 1, ACS_URCORNER);
